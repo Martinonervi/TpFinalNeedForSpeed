@@ -1,6 +1,17 @@
 # Prerequisites
 *.d
-
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+Makefile
+cmake_install.cmake
+*.o
+*.obj
+*.exe
+*.app
+*.out
+*.so
+*.a
 # Compiled Object files
 *.slo
 *.lo
@@ -42,9 +53,3 @@ server
 # Linux
 .*.swp
 *~
-
-# Build
-source/CMakeFiles/
-source/CMakeCache.txt
-source/Makefile
-source/cmake_install.cmake

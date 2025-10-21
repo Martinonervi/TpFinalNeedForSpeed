@@ -1,7 +1,8 @@
 #include "client_receiver.h"
+#include "../common_src/queue.h"
 
-ClientReceiver::ClientReceiver(Socket& peer_sock)
-    :protocol(peer_sock){}
+ClientReceiver::ClientReceiver(Socket& peer_sock, Queue<std::string>& recv_queue)
+    :protocol(peer_sock), recv_queue(recv_queue){}
 
 
 void ClientReceiver::run(){
@@ -9,8 +10,10 @@ void ClientReceiver::run(){
         constants::OutMsg msg = protocol.recvMsg();
         if (msg.event_type == constants::Opcode::NitroON) {
             printer.printNitroON();
+            recv_queue.push("Alguien le dio al nitro");
         } else if (msg.event_type == constants::Opcode::NitroOFF) {
             printer.printNitroOFF();
+            recv_queue.push("Alguien mato el nitro");
         } else {
             // nada
         }

@@ -4,7 +4,7 @@
 class ClientReceiver: public Thread{
     public:
 
-    ClientReceiver(Socket& peer_socket);
+    ClientReceiver(Socket& peer_socket, Queue<std::string>& recv_queue);
 
     protected:
 
@@ -13,5 +13,6 @@ class ClientReceiver: public Thread{
     private:
 
     ClientProtocol protocol;
+    Queue<std::string>& recv_queue;
     Printer printer;
 };

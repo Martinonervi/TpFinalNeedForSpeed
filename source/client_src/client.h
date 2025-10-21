@@ -1,9 +1,10 @@
+#pragma once
 #include <string>
 
-#include "client_protocol.h"
-#include "client_types.h"
 #include "client_receiver.h"
 #include "client_sender.h"
+#include "client_types.h"
+#include "client_window.h"
 
 class Client {
 public:
@@ -17,6 +18,7 @@ private:
     void join();
 
     Socket peer;
+    Queue<std::string> queue;
     ClientReceiver receiver;
     ClientSender sender;
     Printer printer;
