@@ -1,23 +1,27 @@
 #ifndef CLIENTWINDOW_H
 #define CLIENTWINDOW_H
 
-#include <QPushButton>
-#include <QTextEdit>
-#include "client_protocol.h"
+#include <string>
 
-class ClientWindow final: public QWidget {
-    // Macro obligatoria en clases Qt que usan signals, slots o el sistema de meta-objetos de Qt.
-    Q_OBJECT
+#include <SDL2pp/SDL2pp.hh>
+
+#include "../common_src/car.h"
+
+class ClientWindow {
+private:
+    SDL2pp::SDL sdl;                 // Inicialización SDL
+    SDL2pp::Window window;        // La ventana
+    SDL2pp::Renderer renderer;    // El renderer
+    SDL2pp::Texture carTexture;   // Textura de los autos
+    Car playerCar;                    // Auto controlado por el jugador
+    bool running;                     // Controla el bucle principal
+    void handleEvents();              // Maneja input del teclado
+    void render();                    // Dibuja todo
 
 public:
-    explicit ClientWindow(Queue<std::string>& recv_queue);
+    ClientWindow(int width, int height, const std::string& title, const std::string& carImagePath);
 
-private:
-    QTextEdit *logArea;
-    Queue<std::string>& recv_queue;
-    QPushButton *readButton;
-    void onReadClicked() const;
-
+    void run();                       // Bucle principal
 
 };
 

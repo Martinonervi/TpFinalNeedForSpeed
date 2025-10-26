@@ -1,29 +1,49 @@
 #include "client_window.h"
-#include <QMessageBox>
-#include <QVBoxLayout>
+#include <SDL2pp/SDL.hh>
+#include <SDL2pp/Window.hh>
+#include <SDL2pp/Renderer.hh>
+#include <SDL2pp/Texture.hh>
 
-ClientWindow::ClientWindow(Queue<std::string>& recv_queue)
-    : QWidget(nullptr), recv_queue(recv_queue)
-{
-    logArea = new QTextEdit(this);
-    logArea->setReadOnly(true);
-    readButton = new QPushButton("Read Message", this);
+// Constructor
+ClientWindow::ClientWindow(int width, int height, const std::string& title, const std::string& carImagePath)
+    : sdl(SDL_INIT_VIDEO),  // ⚠ debe ser lo primero
+      window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN),
+      renderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+      carTexture(renderer, carImagePath),
+      playerCar(carTexture, renderer, 0, 0, 64, 64, width/2, height/2, 5),
+      running(true)
+{}
 
-    auto *layout = new QVBoxLayout; // Leak de mem, ya veremos como lo resolvemos
-    layout->addWidget(readButton);
-    layout->addWidget(logArea);
-    setLayout(layout);
 
-    connect(readButton, &QPushButton::clicked, this, &ClientWindow::onReadClicked);
-
-    setWindowTitle("Cliente - Protocolo");
-}
-
-void ClientWindow::onReadClicked() const {
-    std::string message;
-    if (recv_queue.try_pop(message)) {
-        logArea->append(message.data());
-    } else {
-        logArea->append("No message recieved");
+// Bucle principal
+void ClientWindow::run() {
+    while(running) {
+        handleEvents();
+        renderer.SetDrawColor(0, 128, 0, 255);
+        renderer.Clear();
+        playerCar.draw();
+        renderer.Present();
+        SDL_Delay(16);
     }
 }
+
+// Maneja input del teclado
+void ClientWindow::handleEvents() {
+    SDL_Event event;
+    while(SDL_PollEvent(&event)) {
+        if(event.type == SDL_QUIT) {
+            running = false;
+        } else if(event.type == SDL_KEYDOWN) {
+            switch(event.key.keysym.sym) {
+                case SDLK_UP:    playerCar.move(0, -1); break;
+                case SDLK_DOWN:  playerCar.move(0, 1); break;
+                case SDLK_LEFT:  playerCar.move(-1, 0); break;
+                case SDLK_RIGHT: playerCar.move(1, 0); break;
+                case SDLK_ESCAPE: running = false; break;
+                default: break;
+            }
+        }
+    }
+}
+
+

@@ -1,9 +1,5 @@
 #include "client.h"
-#include <QApplication>
-#include <iostream>
-#include <sstream>
 #include <string>
-#include "../common_src/queue.h"
 
 
 Client::Client(const char* host, const char* service)
@@ -11,17 +7,54 @@ Client::Client(const char* host, const char* service)
 receiver(peer, queue), sender(peer)
 {}
 
+
+int jorge() {
+    try {
+        SDL2pp::SDL sdl(SDL_INIT_VIDEO);  // inicializar SDL primero
+
+        SDL2pp::Window window("SDL2pp demo",
+            SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+            640, 480,
+            SDL_WINDOW_RESIZABLE);
+
+        SDL2pp::Renderer renderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+        SDL2pp::Texture sprites(renderer, "../assets/cars/cars.png");
+
+        bool running = true;
+        SDL_Event event;
+        while(running) {
+            while(SDL_PollEvent(&event)) {
+                if(event.type == SDL_QUIT) running = false;
+            }
+
+            renderer.SetDrawColor(0, 128, 0, 255);
+            renderer.Clear();
+            renderer.Copy(sprites);
+            renderer.Present();
+            SDL_Delay(16);
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error SDL: " << e.what() << std::endl;
+        return 1;
+    }
+    return 0;
+}
+
 void Client::Main() {
     sender.start();
     receiver.start();
 
-    int fake_argc = 0;
-    char **fake_argv = nullptr;
-    QApplication app(fake_argc, fake_argv);
-    ClientWindow client_window(queue);
-    client_window.show();
-    app.exec();
+    ClientWindow client_window(
+        800,
+        600,
+        "Need For Speed",
+        "../assets/cars/cars.png"
+    );
 
+    client_window.run();
+
+    //jorge();
     stop();
     join();
 }
@@ -37,3 +70,4 @@ void Client::join(){
     close();
 }
 void Client::close() { peer.close(); }
+
