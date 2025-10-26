@@ -4,18 +4,16 @@
 #include <SDL2pp/Renderer.hh>
 #include <SDL2pp/Texture.hh>
 
-// Constructor
-ClientWindow::ClientWindow(int width, int height, const std::string& title, const std::string& carImagePath)
-    : sdl(SDL_INIT_VIDEO),  // ⚠ debe ser lo primero
+ClientWindow::ClientWindow(const int width, const int height, const std::string& title, const std::string& carImagePath)
+    : sdl(SDL_INIT_VIDEO),
       window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN),
       renderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
       carTexture(renderer, carImagePath),
-      playerCar(carTexture, renderer, 0, 0, 64, 64, width/2, height/2, 5),
+      playerCar(carTexture, renderer, 0, 0, 32, 32, width/2, height/2, 5),
       running(true)
 {}
 
 
-// Bucle principal
 void ClientWindow::run() {
     while(running) {
         handleEvents();
@@ -25,9 +23,10 @@ void ClientWindow::run() {
         renderer.Present();
         SDL_Delay(16);
     }
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
+    SDL_Quit();
 }
 
-// Maneja input del teclado
 void ClientWindow::handleEvents() {
     SDL_Event event;
     while(SDL_PollEvent(&event)) {

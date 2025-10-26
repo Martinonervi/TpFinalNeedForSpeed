@@ -1,12 +1,13 @@
-#include "client_types.h"
+#pragma once
 #include "client_protocol.h"
+#include "client_types.h"
 
-class ClientSender: public Thread{
+class ClientSender final: public Thread{
     public:
 
-    ClientSender(Socket& peer_sock);
+    explicit ClientSender(Socket& peer_sock);
 
-    bool is_listening();
+    bool is_listening() const;
 
     protected:
     

@@ -44,4 +44,4 @@ bool ClientSender::parseLine(const std::string& line, std::string& cmd, std::str
     return true;
 }
 
-bool ClientSender::is_listening() { return listening; }
+bool ClientSender::is_listening() const { return listening; }
