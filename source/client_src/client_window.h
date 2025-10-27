@@ -8,7 +8,12 @@
 #include "../common_src/car.h"
 
 class ClientWindow {
-private:
+public:
+    ClientWindow(int width, int height, const std::string& title, const std::string& carImagePath);
+
+    void run();
+
+ private:
     SDL2pp::SDL sdl;
     SDL2pp::Window window;
     SDL2pp::Renderer renderer;
@@ -16,11 +21,6 @@ private:
     Car playerCar;
     bool running;
     void handleEvents();
-
-public:
-    ClientWindow(int width, int height, const std::string& title, const std::string& carImagePath);
-
-    void run();
 
 };
 

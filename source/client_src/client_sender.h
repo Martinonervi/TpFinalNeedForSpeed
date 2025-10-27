@@ -3,7 +3,7 @@
 #include "client_types.h"
 
 class ClientSender final: public Thread{
-    public:
+public:
 
     explicit ClientSender(Socket& peer_sock);
 
@@ -13,7 +13,7 @@ class ClientSender final: public Thread{
     
     void run() override;
 
-    private:
+private:
 
     bool parseLine(const std::string& line, std::string& cmd, std::string& param);
 
