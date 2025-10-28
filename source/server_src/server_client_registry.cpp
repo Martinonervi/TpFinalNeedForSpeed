@@ -23,7 +23,7 @@ int ClientsRegistry::size() const {
     return clients.size();
 }
 
-void ClientsRegistry::broadcast(const constants::OutMsg& msg) {
+void ClientsRegistry::broadcast(const constants::CliMsg& msg) {
     std::vector<SendQPtr> qs;
     {
         std::lock_guard<std::mutex> lk(mx);

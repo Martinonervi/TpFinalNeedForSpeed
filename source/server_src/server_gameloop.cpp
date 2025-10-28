@@ -20,7 +20,7 @@ void GameLoop::run() {
 
 void GameLoop::processTrun() {
     std::list<serv_types::Cmd> to_process = emptyQueue();
-    constants::OutMsg msg;
+    constants::CliMsg msg;
     for (serv_types::Cmd& cmd: to_process) {  // paso 1, proceso comandos activando nitros
         if (cmd.type != serv_types::CommandType::Nitro)
             continue;  // siempre false pero podría hacer un switch acá por ej

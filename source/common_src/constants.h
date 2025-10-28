@@ -23,13 +23,21 @@ using Cars_W_Nitro = std::uint16_t;
 using Op = std::uint8_t;
 using ID = std::uint32_t;
 
-// Protocolo
-struct OutMsg {
-    Cars_W_Nitro cars_with_nitro{0};  // conteo
-    Op event_type{0};                 // 0x07 on, 0x08 off
+struct moveInfo {
+    bool accelerate;    // W / acelerar
+    bool brake;         // S / frenar
+    int8_t steer;       // -1 izquierda, 0 recto, +1 derecha
+    bool nitro;
 };
 
-enum Opcode : Op { ClientMSG = 0x04, ServerMSG = 0x10, NitroON = 0x07, NitroOFF = 0x08 };
+// Protocolo
+struct CliMsg {
+    Cars_W_Nitro cars_with_nitro{0};  // conteo
+    Op event_type{0};
+    moveInfo movement{};
+};
+
+enum Opcode : Op { Movement = 0x01, ClientMSG = 0x04, ServerMSG = 0x10, NitroON = 0x07, NitroOFF = 0x08 };
 
 struct Cmd {
     enum Type { Nitro } type;

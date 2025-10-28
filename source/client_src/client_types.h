@@ -7,6 +7,8 @@
 #define READ_CMD "read"
 #define EXIT_CMD "exit"
 
+#define ACCELERATE "w"
+
 namespace client_types{
 using constants::RETURN_FAILURE;
 using constants::RETURN_SUCCESS;
@@ -14,7 +16,8 @@ using constants::RETURN_SUCCESS;
 using Op = std::uint8_t;
 
 inline const std::unordered_map<std::string_view, Op> cmdToOp = {
-        {NITRO_CMD, static_cast<Op>(constants::Opcode::ClientMSG)},           // 0x04
+        {NITRO_CMD, static_cast<Op>(constants::Opcode::ClientMSG)},
+        {ACCELERATE, static_cast<Op>(constants::Opcode::Movement)},
 };
 
 }

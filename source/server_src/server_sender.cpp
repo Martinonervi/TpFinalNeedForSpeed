@@ -21,7 +21,7 @@ void Sender::run() {
         while (should_keep_running()) {
             // bucle de llamado al protocolo para envíar comandos serializados
             // consumidos de la cola
-            constants::OutMsg cur_msg = msg_queue->pop();  // bloqueante
+            constants::CliMsg cur_msg = msg_queue->pop();  // bloqueante
             int n = protocol.sendOutMsg(cur_msg);
             if (n == 0)
                 break;

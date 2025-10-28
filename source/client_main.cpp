@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 
     try {
         Client client(host, service);
-        client.Main();
+        client.run();
         return RETURN_SUCCESS;
     } catch (const std::exception& e) {
         std::cerr << "[client] error: " << e.what() << "\n";

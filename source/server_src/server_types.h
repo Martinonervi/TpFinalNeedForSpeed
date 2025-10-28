@@ -22,7 +22,7 @@ struct Cmd {
 };
 
 // Tipos server-side
-using SendQ = Queue<constants::OutMsg>;
+using SendQ = Queue<constants::CliMsg>;
 using SendQPtr = std::shared_ptr<SendQ>;
 using gameLoopQueue = Queue<Cmd>;
 

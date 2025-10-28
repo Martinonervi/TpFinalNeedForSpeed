@@ -1,6 +1,7 @@
 #pragma once
 
 #include "client_types.h"
+#include <cstring>
 
 class ClientProtocol {
 public:
@@ -10,10 +11,12 @@ public:
     int requestNitro();
 
     // recibe y devuelve el struct de msg
-    constants::OutMsg recvMsg();
+    constants::CliMsg recvMsg();
 
     // lee (y por ahora descarta) el primer byte
     constants::Op readActionByte();
+
+    int sendCliMsg(const constants::CliMsg& cliMsg);
 
 private:
     Socket& peer;

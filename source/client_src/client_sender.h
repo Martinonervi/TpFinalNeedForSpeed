@@ -3,20 +3,23 @@
 #include "client_types.h"
 
 class ClientSender final: public Thread{
-    public:
+public:
 
-    explicit ClientSender(Socket& peer_sock);
+    explicit ClientSender(Socket& peer_sock, Queue<constants::CliMsg>& senderQueue);
+
 
     bool is_listening() const;
 
-    protected:
+protected:
     
     void run() override;
 
-    private:
+private:
 
     bool parseLine(const std::string& line, std::string& cmd, std::string& param);
+    bool leerStdinYEncolar();
 
     ClientProtocol protocol;
+    Queue<constants::CliMsg>& senderQueue;
     bool listening{true};
 };

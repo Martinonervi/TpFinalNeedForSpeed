@@ -10,9 +10,9 @@
 
 ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 
-int ServerProtocol::sendOutMsg(const constants::OutMsg& msg) {
+int ServerProtocol::sendOutMsg(const constants::CliMsg& msg) {
     try {
-        std::vector<char> buf(sizeof(constants::Op) + sizeof(constants::OutMsg));
+        std::vector<char> buf(sizeof(constants::Op) + sizeof(constants::CliMsg));
         size_t offset = 0;
 
         constants::Op op =

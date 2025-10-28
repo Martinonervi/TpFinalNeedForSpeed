@@ -14,7 +14,7 @@
 class ClientsRegistry {
 
 public:
-    using SendQ = Queue<constants::OutMsg>;
+    using SendQ = Queue<constants::CliMsg>;
     using SendQPtr = std::shared_ptr<SendQ>;
     using ID = constants::ID;
 
@@ -32,7 +32,7 @@ public:
     int size() const;
 
     // broadcast
-    void broadcast(const constants::OutMsg& msg);
+    void broadcast(const constants::CliMsg& msg);
 
 private:
     mutable std::mutex mx;

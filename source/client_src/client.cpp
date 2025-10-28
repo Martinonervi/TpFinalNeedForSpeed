@@ -4,10 +4,10 @@
 
 Client::Client(const char* host, const char* service)
     : peer(host, service),
-receiver(peer, queue), sender(peer)
+receiver(peer, receiverQueue), sender(peer, senderQueue)
 {}
 
-void Client::Main() {
+void Client::run() {
     sender.start();
     receiver.start();
 
