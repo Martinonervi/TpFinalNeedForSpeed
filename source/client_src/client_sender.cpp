@@ -23,8 +23,7 @@ void ClientSender::run(){
                     break;
                 }
                 case (constants::Opcode::Movement): {
-                    protocol.sendCliMsg(cliMsg);
-                    std::cout << "entre al switch movemeent del client sender\n";
+                    protocol.sendCliMsg(cliMsg); //cambiar nombre y qhable de movement
                     break;
                 }
                 default: {
@@ -50,6 +49,9 @@ bool ClientSender::leerStdinYEncolar() {
     }
     if (!parseLine(line, cmd, param)){
         return false;
+    }
+    if (line.empty()) {
+        return true;
     }
 
     constants::Op op = client_types::cmdToOp.at(cmd);

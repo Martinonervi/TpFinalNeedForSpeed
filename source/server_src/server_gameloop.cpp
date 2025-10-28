@@ -27,7 +27,6 @@ void GameLoop::processTrun() {
         if (cmd.type == constants::Opcode::Movement){
             std::cout << "aca en el gameloop movement\n";
             movementHandler(msg, cmd);
-
         }
         if (cmd.type != constants::Opcode::Nitro)
             continue;  // siempre false pero podría hacer un switch acá por ej

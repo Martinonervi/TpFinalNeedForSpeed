@@ -8,7 +8,6 @@ ClientReceiver::ClientReceiver(Socket& peer_sock, Queue<std::string>& recv_queue
 void ClientReceiver::run(){
     while (should_keep_running()){
         constants::SrvMsg msg = protocol.recvMsg();
-        std::cout << "llegue al receiver d client\n";
         if (msg.type == constants::Opcode::NitroON) {
             printer.printNitroON();
             recv_queue.push("Alguien le dio al nitro");

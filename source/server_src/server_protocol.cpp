@@ -17,29 +17,29 @@ int ServerProtocol::sendOutMsg(const constants::SrvMsg& msg) {
         std::vector<char> buf(sizeof(constants::SrvMsg));
         size_t offset = 0;
 
-
         memcpy(buf.data() + offset, &msg.type, sizeof(constants::Opcode));
         offset += sizeof(constants::Opcode);
 
-        if (msg.type == constants::Opcode::NitroON || msg.type == constants::Opcode::NitroOFF) {
-            constants::Cars_W_Nitro cars_with_nitroBE = htons(msg.cars_with_nitro);
-            memcpy(buf.data() + offset, &cars_with_nitroBE, sizeof(constants::Cars_W_Nitro));
-            offset += sizeof(constants::Cars_W_Nitro);
+        //podria ni hacer un switch y que intente leer cosas vacias.
+        // Pero bueno, habria que analizar si hay campos que tiene valores por default.
+        switch (msg.type) {
+            case constants::Opcode::NitroON:
+            case constants::Opcode::NitroOFF: {
+                constants::Cars_W_Nitro cars_with_nitroBE = htons(msg.cars_with_nitro);
+                memcpy(buf.data() + offset, &cars_with_nitroBE, sizeof(constants::Cars_W_Nitro));
+                offset += sizeof(constants::Cars_W_Nitro);
+                break;
+            }
+            case constants::Opcode::Movement: {
+                memcpy(buf.data() + offset, &msg.posicion.player_id, sizeof(msg.posicion.player_id));
+                offset += sizeof(msg.posicion.player_id);
+                //terminar de pasar todos los campos
+                break;
+            }
         }
 
-
-        if (msg.type == constants::Opcode::Movement) {
-            memcpy(buf.data() + offset, &msg.posicion.player_id, sizeof(msg.posicion.player_id));
-            offset += sizeof(msg.posicion.player_id);
-            std::cout << "en in movement de server protoclo\n";
-        }
-
-        std::cout << "algo se mando\n";
         int n = peer.sendall(buf.data(), offset);
         return n;
-
-
-
 
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';

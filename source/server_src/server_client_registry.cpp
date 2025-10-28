@@ -59,6 +59,4 @@ void ClientsRegistry::sendTo(ID client_id, const constants::SrvMsg& msg) {
     } catch (const ClosedQueue&) {
         // cliente cerrándose
     }
-
-    std::cout << "termine send To\n";
 }

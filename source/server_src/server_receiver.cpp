@@ -22,6 +22,8 @@ void Receiver::run() {
             peerClosed = true;
             break;
         }
+
+        //hacer un switch
         if (op == constants::Opcode::Nitro) {  // 0x04
             cmdQueue.push(constants::Cmd{op, id});
         }

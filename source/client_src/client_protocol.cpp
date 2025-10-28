@@ -20,12 +20,12 @@ int ClientProtocol::requestNitro() {
 }
 
 
+
 int ClientProtocol::sendCliMsg(const constants::CliMsg& cliMsg) {
     try {
         std::vector<char> buf(sizeof(constants::CliMsg));
         size_t offset = 0;
 
-        //eventType
         memcpy(buf.data() + offset, &cliMsg.event_type, sizeof(cliMsg.event_type));
         offset += sizeof(cliMsg.event_type);
 
@@ -44,6 +44,7 @@ int ClientProtocol::sendCliMsg(const constants::CliMsg& cliMsg) {
         //movement.nitro
         memcpy(buf.data() + offset, &cliMsg.movement.nitro, sizeof(cliMsg.movement.nitro));
         offset += sizeof(cliMsg.movement.nitro);
+
 
         int n = peer.sendall(buf.data(), offset);
         return n;
@@ -67,7 +68,7 @@ constants::SrvMsg ClientProtocol::recvMsg() {
 
         if (msg.type == constants::Opcode::Movement) {
             peer.recvall(&msg.posicion.player_id, sizeof(msg.posicion.player_id)); //endianess?
-            std::cout << "entre if movement client protocolo\n";
+            //recibir todo
         }
 
 
