@@ -54,18 +54,24 @@ int ClientProtocol::sendCliMsg(const constants::CliMsg& cliMsg) {
 }
 
 
-constants::CliMsg ClientProtocol::recvMsg() {
+constants::SrvMsg ClientProtocol::recvMsg() {
     try {
-        if (readActionByte() == constants::Opcode::ServerMSG) {
-            // descarto byte
+        constants::SrvMsg msg;
+        peer.recvall(&msg.type, sizeof(constants::Opcode));
+
+        if (msg.type == constants::Opcode::NitroON || msg.type == constants::Opcode::NitroOFF) {
+            constants::Cars_W_Nitro car_w_nBE;
+            peer.recvall(&car_w_nBE, sizeof(constants::Cars_W_Nitro));
+            msg.cars_with_nitro = ntohs(car_w_nBE);
         }
-        constants::CliMsg msg;
-        constants::Cars_W_Nitro car_w_nBE;
 
-        peer.recvall(&car_w_nBE, sizeof(constants::Cars_W_Nitro));
-        msg.cars_with_nitro = ntohs(car_w_nBE);
+        if (msg.type == constants::Opcode::Movement) {
+            peer.recvall(&msg.posicion.player_id, sizeof(msg.posicion.player_id)); //endianess?
+            std::cout << "entre if movement client protocolo\n";
+        }
 
-        peer.recvall(&msg.event_type, sizeof(constants::Op));  // no hace falta revisar endianess
+
+
 
         return msg;
     } catch (const std::exception& e) {

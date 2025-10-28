@@ -30,9 +30,8 @@ struct MoveInfo {
     bool nitro;
 };
 
-// Protocolo
 struct CliMsg {
-    Cars_W_Nitro cars_with_nitro{0};  // conteo
+    Cars_W_Nitro cars_with_nitro{0};
     Op event_type{0};
     MoveInfo movement{};
 };
@@ -40,12 +39,6 @@ struct CliMsg {
 enum Opcode : Op { Movement = 0x01, ClientMSG = 0x04, ServerMSG = 0x10, NitroON = 0x07,
                    NitroOFF = 0x08, Nitro = 0x09 };
 
-/*
-struct Cmd {
-    enum Type { Nitro } type;
-    ID client_id{0};
-};
-*/
 
 struct Cmd {
     Opcode type;
@@ -53,5 +46,24 @@ struct Cmd {
     MoveInfo movimiento;
 };
 
+
+struct PlayerStateUpdate {
+    uint16_t player_id;  // quién es este auto (el server lo sabe)
+    uint32_t tick;       // número de tick simulado del server
+
+    float x;
+    float y;
+    float angle_deg;
+
+    float vx;
+    float vy;
+};
+
+
+struct SrvMsg {
+    Opcode type{};
+    Cars_W_Nitro cars_with_nitro{0};
+    PlayerStateUpdate posicion;
+};
 
 }  // namespace constants

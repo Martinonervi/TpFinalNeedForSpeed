@@ -22,8 +22,9 @@ void ClientSender::run(){
                     protocol.requestNitro();
                     break;
                 }
-                case (constants::Movement): {
+                case (constants::Opcode::Movement): {
                     protocol.sendCliMsg(cliMsg);
+                    std::cout << "entre al switch movemeent del client sender\n";
                     break;
                 }
                 default: {
@@ -67,7 +68,7 @@ bool ClientSender::parseLine(const std::string& line, std::string& cmd, std::str
 
     std::istringstream iss(line);
     iss >> cmd;
-    std::cout << cmd << '\n';
+
     if (cmd == EXIT_CMD)
         return false;  // salir del loop si el cliente pone exit
     iss >> param;      // si no encuentro nada no hace nada (param vacio)

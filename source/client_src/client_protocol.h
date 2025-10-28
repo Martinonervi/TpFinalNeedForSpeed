@@ -11,7 +11,7 @@ public:
     int requestNitro();
 
     // recibe y devuelve el struct de msg
-    constants::CliMsg recvMsg();
+    constants::SrvMsg recvMsg();
 
     // lee (y por ahora descarta) el primer byte
     constants::Op readActionByte();

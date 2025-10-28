@@ -21,6 +21,8 @@ private:
     std::list<constants::Cmd> emptyQueue();  // vacía cola para comenzar a procesar
 
 
+    void movementHandler(constants::SrvMsg& msg, constants::Cmd& cmd);
+
     std::map<serv_types::ID, int> nitros;
     serv_types::gameLoopQueue& queue;  // cola que consume el gameloop
     ClientsRegistry& registry;

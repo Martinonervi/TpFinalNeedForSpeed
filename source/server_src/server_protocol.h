@@ -9,7 +9,7 @@ public:
     explicit ServerProtocol(Socket& peer);
 
     // serializa y envía el mensaje por el socket
-    int sendOutMsg(const constants::CliMsg& msg);
+    int sendOutMsg(const constants::SrvMsg& msg);
 
     // recibe mensaje y devuelve el opcode del mensaje recibido
     constants::Opcode recvMsg();

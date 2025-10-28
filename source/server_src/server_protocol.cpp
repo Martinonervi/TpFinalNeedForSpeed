@@ -10,25 +10,37 @@
 
 ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 
-int ServerProtocol::sendOutMsg(const constants::CliMsg& msg) {
+
+
+int ServerProtocol::sendOutMsg(const constants::SrvMsg& msg) {
     try {
-        std::vector<char> buf(sizeof(constants::Op) + sizeof(constants::CliMsg));
+        std::vector<char> buf(sizeof(constants::SrvMsg));
         size_t offset = 0;
 
-        constants::Op op =
-                constants::Opcode::ServerMSG;  // un byte, no hace falta revisar endianess
-        memcpy(buf.data() + offset, &op, sizeof(constants::Op));
-        offset += sizeof(constants::Op);
 
-        constants::Cars_W_Nitro cars_with_nitroBE = htons(msg.cars_with_nitro);
-        memcpy(buf.data() + offset, &cars_with_nitroBE, sizeof(constants::Cars_W_Nitro));
-        offset += sizeof(constants::Cars_W_Nitro);
+        memcpy(buf.data() + offset, &msg.type, sizeof(constants::Opcode));
+        offset += sizeof(constants::Opcode);
 
-        memcpy(buf.data() + offset, &msg.event_type, sizeof(constants::Op));
-        offset += sizeof(constants::Op);
+        if (msg.type == constants::Opcode::NitroON || msg.type == constants::Opcode::NitroOFF) {
+            constants::Cars_W_Nitro cars_with_nitroBE = htons(msg.cars_with_nitro);
+            memcpy(buf.data() + offset, &cars_with_nitroBE, sizeof(constants::Cars_W_Nitro));
+            offset += sizeof(constants::Cars_W_Nitro);
+        }
 
+
+        if (msg.type == constants::Opcode::Movement) {
+            memcpy(buf.data() + offset, &msg.posicion.player_id, sizeof(msg.posicion.player_id));
+            offset += sizeof(msg.posicion.player_id);
+            std::cout << "en in movement de server protoclo\n";
+        }
+
+        std::cout << "algo se mando\n";
         int n = peer.sendall(buf.data(), offset);
         return n;
+
+
+
+
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
         throw("Error sending");

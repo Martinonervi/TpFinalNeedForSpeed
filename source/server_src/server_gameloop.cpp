@@ -22,10 +22,12 @@ void GameLoop::run() {
 
 void GameLoop::processTrun() {
     std::list<constants::Cmd> to_process = emptyQueue();
-    constants::CliMsg msg;
+    constants::SrvMsg msg;
     for (constants::Cmd& cmd: to_process) {  // paso 1, proceso comandos activando nitros
         if (cmd.type == constants::Opcode::Movement){
             std::cout << "aca en el gameloop movement\n";
+            movementHandler(msg, cmd);
+
         }
         if (cmd.type != constants::Opcode::Nitro)
             continue;  // siempre false pero podría hacer un switch acá por ej
@@ -33,7 +35,7 @@ void GameLoop::processTrun() {
         auto it = nitros.find(cmd.client_id);
         if (it == nitros.end()) {
             nitros.emplace(cmd.client_id, NITRO_TICKS);
-            msg.event_type = constants::Opcode::NitroON;
+            msg.type = constants::Opcode::NitroON;
             msg.cars_with_nitro = static_cast<constants::Cars_W_Nitro>(nitros.size());
             registry.broadcast(msg);
             printer.printNitroON();
@@ -44,7 +46,7 @@ void GameLoop::processTrun() {
         it->second -= 1;
         if (it->second == 0) {
             it = nitros.erase(it);
-            msg.event_type = constants::Opcode::NitroOFF;
+            msg.type = constants::Opcode::NitroOFF;
             msg.cars_with_nitro = static_cast<constants::Cars_W_Nitro>(nitros.size());
             registry.broadcast(msg);
             printer.printNitroOFF();
@@ -70,4 +72,13 @@ void GameLoop::stop() {
     try {
         queue.close();
     } catch (...) {}
+}
+
+
+void GameLoop::movementHandler(constants::SrvMsg& msg, constants::Cmd& cmd){
+    msg.posicion.player_id = cmd.client_id; //para testear, tendria q ser id1
+    msg.type = constants::Opcode::Movement;
+    //chequeo movimiento
+
+    registry.sendTo(cmd.client_id, msg);
 }

@@ -23,7 +23,7 @@ int ClientsRegistry::size() const {
     return clients.size();
 }
 
-void ClientsRegistry::broadcast(const constants::CliMsg& msg) {
+void ClientsRegistry::broadcast(const constants::SrvMsg& msg) {
     std::vector<SendQPtr> qs;
     {
         std::lock_guard<std::mutex> lk(mx);
@@ -41,4 +41,24 @@ void ClientsRegistry::broadcast(const constants::CliMsg& msg) {
             // cliente cerrándose
         }
     }
+}
+
+void ClientsRegistry::sendTo(ID client_id, const constants::SrvMsg& msg) {
+    SendQPtr q;
+    {
+        std::lock_guard<std::mutex> lk(mx);
+        auto it = clients.find(client_id);
+        if (it != clients.end()) {
+            q = it->second;
+        }
+    }
+    if (!q) return;
+
+    try {
+        q->push(msg);
+    } catch (const ClosedQueue&) {
+        // cliente cerrándose
+    }
+
+    std::cout << "termine send To\n";
 }
