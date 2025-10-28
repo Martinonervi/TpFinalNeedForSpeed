@@ -23,7 +23,7 @@ using Cars_W_Nitro = std::uint16_t;
 using Op = std::uint8_t;
 using ID = std::uint32_t;
 
-struct moveInfo {
+struct MoveInfo {
     bool accelerate;    // W / acelerar
     bool brake;         // S / frenar
     int8_t steer;       // -1 izquierda, 0 recto, +1 derecha
@@ -34,14 +34,24 @@ struct moveInfo {
 struct CliMsg {
     Cars_W_Nitro cars_with_nitro{0};  // conteo
     Op event_type{0};
-    moveInfo movement{};
+    MoveInfo movement{};
 };
 
-enum Opcode : Op { Movement = 0x01, ClientMSG = 0x04, ServerMSG = 0x10, NitroON = 0x07, NitroOFF = 0x08 };
+enum Opcode : Op { Movement = 0x01, ClientMSG = 0x04, ServerMSG = 0x10, NitroON = 0x07,
+                   NitroOFF = 0x08, Nitro = 0x09 };
 
+/*
 struct Cmd {
     enum Type { Nitro } type;
     ID client_id{0};
 };
+*/
+
+struct Cmd {
+    Opcode type;
+    ID client_id{0};
+    MoveInfo movimiento;
+};
+
 
 }  // namespace constants

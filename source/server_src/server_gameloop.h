@@ -18,7 +18,8 @@ protected:
 private:
     void processTrun();  // lógica de negocios (procesamiento)
 
-    std::list<serv_types::Cmd> emptyQueue();  // vacía cola para comenzar a procesar
+    std::list<constants::Cmd> emptyQueue();  // vacía cola para comenzar a procesar
+
 
     std::map<serv_types::ID, int> nitros;
     serv_types::gameLoopQueue& queue;  // cola que consume el gameloop

@@ -16,7 +16,7 @@ using constants::RETURN_SUCCESS;
 using Op = std::uint8_t;
 
 inline const std::unordered_map<std::string_view, Op> cmdToOp = {
-        {NITRO_CMD, static_cast<Op>(constants::Opcode::ClientMSG)},
+        {NITRO_CMD, static_cast<Op>(constants::Opcode::Nitro)},
         {ACCELERATE, static_cast<Op>(constants::Opcode::Movement)},
 };
 

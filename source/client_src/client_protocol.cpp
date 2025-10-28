@@ -9,7 +9,7 @@ ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}
 
 int ClientProtocol::requestNitro() {
     try {
-        constants::Op op = constants::Opcode::ClientMSG;
+        constants::Op op = constants::Opcode::Nitro;
         peer.sendall(&op, sizeof(constants::Op));
 
         return RETURN_SUCCESS;
@@ -30,11 +30,11 @@ int ClientProtocol::sendCliMsg(const constants::CliMsg& cliMsg) {
         offset += sizeof(cliMsg.event_type);
 
         //movement.accelerate
-        memcpy(buf.data() + offset, &cliMsg.movement, sizeof(cliMsg.movement.accelerate));
+        memcpy(buf.data() + offset, &cliMsg.movement.accelerate, sizeof(cliMsg.movement.accelerate));
         offset += sizeof(cliMsg.movement.accelerate);
 
         //movement.brake
-        memcpy(buf.data() + offset, &cliMsg.movement, sizeof(cliMsg.movement.brake));
+        memcpy(buf.data() + offset, &cliMsg.movement.brake, sizeof(cliMsg.movement.brake));
         offset += sizeof(cliMsg.movement.brake);
 
         //movement.steer

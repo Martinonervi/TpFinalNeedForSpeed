@@ -35,8 +35,8 @@ int ServerProtocol::sendOutMsg(const constants::CliMsg& msg) {
     }
 }
 
-constants::Op ServerProtocol::recvMsg() {
-    constants::Op op{};
+constants::Opcode ServerProtocol::recvMsg() {
+    constants::Opcode op{};
     size_t n = 0;
     try {
         n = peer.recvall(&op, sizeof(op));  // lanza en error o cierre parcial
@@ -47,4 +47,25 @@ constants::Op ServerProtocol::recvMsg() {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
     return op;
+}
+
+
+constants::MoveInfo ServerProtocol::recvMoveInfo() {
+    constants::MoveInfo moveInfo;
+    size_t n = 0;
+
+    try {
+        n = peer.recvall(&moveInfo.accelerate, sizeof(moveInfo.accelerate));
+        n += peer.recvall(&moveInfo.brake, sizeof(moveInfo.brake));
+        n += peer.recvall(&moveInfo.steer, sizeof(moveInfo.steer));
+        n += peer.recvall(&moveInfo.nitro, sizeof(moveInfo.nitro));
+
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return moveInfo;
+
 }

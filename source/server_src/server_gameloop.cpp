@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <thread>
+
 GameLoop::GameLoop(serv_types::gameLoopQueue& queue, ClientsRegistry& registry):
         queue(queue), registry(registry) {}
 
@@ -18,11 +19,15 @@ void GameLoop::run() {
     }
 }
 
+
 void GameLoop::processTrun() {
-    std::list<serv_types::Cmd> to_process = emptyQueue();
+    std::list<constants::Cmd> to_process = emptyQueue();
     constants::CliMsg msg;
-    for (serv_types::Cmd& cmd: to_process) {  // paso 1, proceso comandos activando nitros
-        if (cmd.type != serv_types::CommandType::Nitro)
+    for (constants::Cmd& cmd: to_process) {  // paso 1, proceso comandos activando nitros
+        if (cmd.type == constants::Opcode::Movement){
+            std::cout << "aca en el gameloop movement\n";
+        }
+        if (cmd.type != constants::Opcode::Nitro)
             continue;  // siempre false pero podría hacer un switch acá por ej
 
         auto it = nitros.find(cmd.client_id);
@@ -49,9 +54,9 @@ void GameLoop::processTrun() {
     }
 }
 
-std::list<serv_types::Cmd> GameLoop::emptyQueue() {
-    std::list<serv_types::Cmd> cmd_list;
-    serv_types::Cmd cmd_aux;
+std::list<constants::Cmd> GameLoop::emptyQueue() {
+    std::list<constants::Cmd> cmd_list;
+    constants::Cmd cmd_aux;
 
     while (queue.try_pop(cmd_aux)) {
         cmd_list.push_back(cmd_aux);

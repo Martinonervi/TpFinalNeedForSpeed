@@ -18,7 +18,7 @@ void ClientSender::run(){
             constants::CliMsg cliMsg = senderQueue.pop();
 
             switch (cliMsg.event_type) {
-                case (constants::ClientMSG): {
+                case (constants::Nitro): {
                     protocol.requestNitro();
                     break;
                 }
@@ -54,6 +54,7 @@ bool ClientSender::leerStdinYEncolar() {
     constants::Op op = client_types::cmdToOp.at(cmd);
     constants::CliMsg cliMsg;
     cliMsg.event_type = op;
+    cliMsg.movement.steer = 1;
     senderQueue.push(cliMsg);
 
     return true;

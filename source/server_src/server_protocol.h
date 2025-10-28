@@ -12,7 +12,9 @@ public:
     int sendOutMsg(const constants::CliMsg& msg);
 
     // recibe mensaje y devuelve el opcode del mensaje recibido
-    constants::Op recvMsg();
+    constants::Opcode recvMsg();
+
+    constants::MoveInfo recvMoveInfo();
 
 private:
     Socket& peer;
