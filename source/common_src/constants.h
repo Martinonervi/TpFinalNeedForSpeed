@@ -24,10 +24,10 @@ using Op = std::uint8_t;
 using ID = std::uint32_t;
 
 struct MoveInfo {
-    bool accelerate;    // W / acelerar
-    bool brake;         // S / frenar
+    uint8_t accelerate;    // W / acelerar, 0 false, 1 true
+    uint8_t brake;         // S / frenar, 0 false, 1 true
     int8_t steer;       // -1 izquierda, 0 recto, +1 derecha
-    bool nitro;
+    uint8_t nitro;  // 0 false, 1 true
 };
 
 struct CliMsg {
@@ -36,6 +36,7 @@ struct CliMsg {
     MoveInfo movement{};
 };
 
+// Cambiar a mayus
 enum Opcode : Op { Movement = 0x01, ClientMSG = 0x04, ServerMSG = 0x10, NitroON = 0x07,
                    NitroOFF = 0x08, Nitro = 0x09 };
 

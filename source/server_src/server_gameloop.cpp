@@ -77,7 +77,18 @@ void GameLoop::stop() {
 void GameLoop::movementHandler(constants::SrvMsg& msg, constants::Cmd& cmd){
     msg.posicion.player_id = cmd.client_id; //para testear, tendria q ser id1
     msg.type = constants::Opcode::Movement;
-    //chequeo movimiento
+    // Hay que cambiarlo esta rarisimo
+    if (cmd.movimiento.accelerate) {
+        msg.posicion.vx = -1;
+    } else if (cmd.movimiento.brake) {
+        msg.posicion.vx = 1;
+    }
+
+    if (cmd.movimiento.steer == -1) {
+        msg.posicion.vy = -1;
+    } else if (cmd.movimiento.steer == 1) {
+        msg.posicion.vy = 1;
+    }
 
     registry.sendTo(cmd.client_id, msg);
 }

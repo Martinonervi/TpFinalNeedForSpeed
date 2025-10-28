@@ -33,7 +33,19 @@ int ServerProtocol::sendOutMsg(const constants::SrvMsg& msg) {
             case constants::Opcode::Movement: {
                 memcpy(buf.data() + offset, &msg.posicion.player_id, sizeof(msg.posicion.player_id));
                 offset += sizeof(msg.posicion.player_id);
-                //terminar de pasar todos los campos
+                memcpy(buf.data() + offset, &msg.posicion.tick, sizeof(msg.posicion.tick));
+                offset += sizeof(msg.posicion.tick);
+                memcpy(buf.data() + offset, &msg.posicion.x, sizeof(msg.posicion.x));
+                offset += sizeof(msg.posicion.x);
+                memcpy(buf.data() + offset, &msg.posicion.y, sizeof(msg.posicion.y));
+                offset += sizeof(msg.posicion.y);
+                memcpy(buf.data() + offset, &msg.posicion.angle_deg, sizeof(msg.posicion.angle_deg));
+                offset += sizeof(msg.posicion.angle_deg);
+                memcpy(buf.data() + offset, &msg.posicion.vx, sizeof(msg.posicion.vx));
+                offset += sizeof(msg.posicion.vx);
+                memcpy(buf.data() + offset, &msg.posicion.vy, sizeof(msg.posicion.vy));
+                offset += sizeof(msg.posicion.vy);
+
                 break;
             }
         }

@@ -1,10 +1,11 @@
-#include "client_types.h"
+#pragma once
 #include "client_protocol.h"
+#include "client_types.h"
 
 class ClientReceiver: public Thread{
     public:
 
-    ClientReceiver(Socket& peer_socket, Queue<std::string>& recv_queue);
+    ClientReceiver(Socket& peer_socket, Queue<constants::SrvMsg>& receiverQueue);
 
     protected:
 
@@ -13,6 +14,6 @@ class ClientReceiver: public Thread{
     private:
 
     ClientProtocol protocol;
-    Queue<std::string>& recv_queue;
+    Queue<constants::SrvMsg>& receiverQueue;
     Printer printer;
 };

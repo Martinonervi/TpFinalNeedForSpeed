@@ -15,7 +15,9 @@ void Client::run() {
         800,
         600,
         "Need For Speed",
-        "../assets/cars/cars.png"
+        "../assets/cars/cars.png",
+        receiverQueue,
+        senderQueue
     );
 
     client_window.run();

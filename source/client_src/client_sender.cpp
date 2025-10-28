@@ -11,9 +11,9 @@ void ClientSender::run(){
     //while (std::getline(std::cin, line) && (parseLine(line, cmd, param) && should_keep_running())) {
 
     while(should_keep_running()){
-        if (!leerStdinYEncolar()) {
-            break;
-        }
+        //if (!leerStdinYEncolar()) {
+        //    break;
+        //}
         try{
             constants::CliMsg cliMsg = senderQueue.pop();
 

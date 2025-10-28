@@ -7,9 +7,9 @@ using client_types::RETURN_SUCCESS;
 
 ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}
 
-int ClientProtocol::requestNitro() {
+int ClientProtocol::requestNitro() const {
     try {
-        constants::Op op = constants::Opcode::Nitro;
+        const constants::Op op = constants::Opcode::Nitro;
         peer.sendall(&op, sizeof(constants::Op));
 
         return RETURN_SUCCESS;
@@ -21,7 +21,7 @@ int ClientProtocol::requestNitro() {
 
 
 
-int ClientProtocol::sendCliMsg(const constants::CliMsg& cliMsg) {
+int ClientProtocol::sendCliMsg(const constants::CliMsg& cliMsg) const {
     try {
         std::vector<char> buf(sizeof(constants::CliMsg));
         size_t offset = 0;
@@ -67,8 +67,14 @@ constants::SrvMsg ClientProtocol::recvMsg() {
         }
 
         if (msg.type == constants::Opcode::Movement) {
-            peer.recvall(&msg.posicion.player_id, sizeof(msg.posicion.player_id)); //endianess?
-            //recibir todo
+            peer.recvall(&msg.posicion.player_id, sizeof(msg.posicion.player_id));
+            peer.recvall(&msg.posicion.tick, sizeof(msg.posicion.tick));
+            peer.recvall(&msg.posicion.x, sizeof(msg.posicion.x));
+            peer.recvall(&msg.posicion.y, sizeof(msg.posicion.y));
+            peer.recvall(&msg.posicion.angle_deg, sizeof(msg.posicion.angle_deg));
+            peer.recvall(&msg.posicion.vx, sizeof(msg.posicion.vx));
+            peer.recvall(&msg.posicion.vy, sizeof(msg.posicion.vy));
+
         }
 
 
@@ -81,7 +87,7 @@ constants::SrvMsg ClientProtocol::recvMsg() {
     }
 }
 
-constants::Op ClientProtocol::readActionByte() {
+constants::Op ClientProtocol::readActionByte() const {
     try {
         constants::Op op = constants::Opcode::ClientMSG;
         peer.recvall(&op, sizeof(constants::Op));

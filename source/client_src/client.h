@@ -20,7 +20,7 @@ private:
     void join();
 
     Socket peer;
-    Queue<std::string> receiverQueue;
+    Queue<constants::SrvMsg> receiverQueue;
     Queue<constants::CliMsg> senderQueue;
     ClientReceiver receiver;
     ClientSender sender;

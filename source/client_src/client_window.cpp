@@ -1,14 +1,17 @@
 #include "client_window.h"
-#include <SDL2pp/SDL.hh>
-#include <SDL2pp/Window.hh>
+
 #include <SDL2pp/Renderer.hh>
+#include <SDL2pp/SDL.hh>
 #include <SDL2pp/Texture.hh>
+#include <SDL2pp/Window.hh>
 
 ClientWindow::ClientWindow(
     const int width,
     const int height,
     const std::string& title,
-    const std::string& carImagePath
+    const std::string& carImagePath,
+    Queue<constants::SrvMsg>& receiverQueue,
+    Queue<constants::CliMsg>& senderQueue
     )
     : sdl(SDL_INIT_VIDEO),
       window(
@@ -29,12 +32,20 @@ ClientWindow::ClientWindow(
           height/2,
           5
           ),
+      receiverQueue(receiverQueue),
+      senderQueue(senderQueue),
       running(true)
 {}
 
 
 void ClientWindow::run() {
     while (running) {
+        constants::SrvMsg srvMsg;
+        while (receiverQueue.try_pop(srvMsg)) {
+            if (srvMsg.type == constants::Movement) {
+                playerCar.move(srvMsg.posicion.vy, srvMsg.posicion.vx);
+            }
+        }
         handleEvents();
         renderer.SetDrawColor(0, 128, 0, 255);
         renderer.Clear();
@@ -52,12 +63,53 @@ void ClientWindow::handleEvents() {
         if(event.type == SDL_QUIT) {
             running = false;
         } else if(event.type == SDL_KEYDOWN) {
+            constants::MoveInfo moveInfo{};
+            constants::CliMsg clientMsg{};
             switch(event.key.keysym.sym) {
-                case SDLK_UP:    playerCar.move(0, -1); break;
-                case SDLK_DOWN:  playerCar.move(0, 1); break;
-                case SDLK_LEFT:  playerCar.move(-1, 0); break;
-                case SDLK_RIGHT: playerCar.move(1, 0); break;
-                case SDLK_ESCAPE: running = false; break;
+                case SDLK_w:
+                    moveInfo.accelerate = 1;
+                    moveInfo.brake = 0;
+                    moveInfo.steer = 0;
+                    moveInfo.nitro = 0;
+
+                    clientMsg.event_type = constants::Movement;
+                    clientMsg.movement = moveInfo;
+                    senderQueue.push(clientMsg);
+
+                    break;
+                case SDLK_s:
+                    moveInfo.accelerate = 0;
+                    moveInfo.brake = 1;
+                    moveInfo.steer = 0;
+                    moveInfo.nitro = 0;
+
+                    clientMsg.event_type = constants::Movement;
+                    clientMsg.movement = moveInfo;
+                    senderQueue.push(clientMsg);
+
+                    break;
+                case SDLK_a:
+                    moveInfo.accelerate = 0;
+                    moveInfo.brake = 0;
+                    moveInfo.steer = -1;
+                    moveInfo.nitro = 0;
+
+                    clientMsg.event_type = constants::Movement;
+                    clientMsg.movement = moveInfo;
+                    senderQueue.push(clientMsg);
+
+                    break;
+                case SDLK_d:
+                    moveInfo.accelerate = 0;
+                    moveInfo.brake = 0;
+                    moveInfo.steer = 1;
+                    moveInfo.nitro = 0;
+
+                    clientMsg.event_type = constants::Movement;
+                    clientMsg.movement = moveInfo;
+                    senderQueue.push(clientMsg);
+
+                    break;
                 default: break;
             }
         }
