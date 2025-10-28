@@ -4,18 +4,37 @@
 #include <SDL2pp/Renderer.hh>
 #include <SDL2pp/Texture.hh>
 
-ClientWindow::ClientWindow(const int width, const int height, const std::string& title, const std::string& carImagePath)
+ClientWindow::ClientWindow(
+    const int width,
+    const int height,
+    const std::string& title,
+    const std::string& carImagePath
+    )
     : sdl(SDL_INIT_VIDEO),
-      window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN),
+      window(
+          title,
+          SDL_WINDOWPOS_CENTERED,
+          SDL_WINDOWPOS_CENTERED,
+          width,
+          height,
+          SDL_WINDOW_SHOWN
+          ),
       renderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
       carTexture(renderer, carImagePath),
-      playerCar(carTexture, renderer, 0, 0, 32, 32, width/2, height/2, 5),
+      playerCar(
+          carTexture,
+          renderer,
+          CAR_PORSCHE,
+          width/2,
+          height/2,
+          5
+          ),
       running(true)
 {}
 
 
 void ClientWindow::run() {
-    while(running) {
+    while (running) {
         handleEvents();
         renderer.SetDrawColor(0, 128, 0, 255);
         renderer.Clear();

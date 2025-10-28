@@ -3,31 +3,30 @@
 
 #include <SDL2pp/SDL2pp.hh>
 #include <SDL2pp/Renderer.hh>
+#include "./car_sprites.h"
 
 class Car {
-private:
-    SDL2pp::Texture& texture;   // spritesheet
-    SDL2pp::Renderer& renderer; // renderer
-    SDL_Rect srcRect{};              // coordenadas dentro del spritesheet
-    SDL_Rect dstRect{};              // posición y tamaño en la ventana
-    int speed;                     // velocidad del auto
-
 public:
-    Car( SDL2pp::Texture& tex, SDL2pp::Renderer& rend,
-         int x, int y, int w, int h,
-         int screenX, int screenY, int spd = 5);
+    Car(
+        SDL2pp::Texture& tex,
+        SDL2pp::Renderer& rend,
+        int carIndex, int screenX,
+        int screenY, int spd
+        );
 
     void draw() const;
-
+    void update(int dx, int dy);
     void move(int dx, int dy);
 
-    int getX() const;
-    int getY() const;
+private:
+    SDL2pp::Texture& texture;
+    SDL2pp::Renderer& renderer;
+    SDL_Rect dstRect{};
+    int speed;
 
-    void setPosition(int x, int y);
-
-    void setSpeed(int spd);
-    int getSpeed() const;
+    int currentFrame = 0;
+    int direction = 0;
+    const CarSprite* sprite;
 };
 
 
