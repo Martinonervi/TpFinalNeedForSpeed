@@ -4,12 +4,14 @@
 #include <SDL2pp/Renderer.hh>
 #include <SDL2pp/Texture.hh>
 
+#include "../textures/texture_manager.h"
+
 class Entity {
 public:
-    Entity(SDL2pp::Renderer& renderer, SDL2pp::Texture& texture, int x, int y, float angle);
+    Entity(SDL2pp::Renderer& renderer, TextureManager& tm, int x, int y);
     virtual ~Entity() = default;
 
-    virtual void draw();
+    virtual void draw(int dx, int dy);
     virtual void setPosition(int newX, int newY);
 
     int getX() const;
@@ -17,7 +19,7 @@ public:
 
 protected:
     SDL2pp::Renderer& renderer;
-    SDL2pp::Texture& texture;
+    TextureManager& tm;
 
     int x;
     int y;

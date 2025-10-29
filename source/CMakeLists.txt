@@ -30,7 +30,7 @@ target_include_directories(common PUBLIC ${libSDL2pp_SOURCE_DIR}/include)
 target_link_libraries(common PUBLIC SDL2pp::SDL2pp pthread)
 
 # --- Cliente ---
-file(GLOB CLIENT_SOURCES "client_src/*.cpp")
+file(GLOB_RECURSE CLIENT_SOURCES "client_src/*.cpp")
 list(APPEND CLIENT_SOURCES "client_main.cpp")
 add_executable(client ${CLIENT_SOURCES})
 target_link_libraries(client PRIVATE Qt5::Widgets Qt5::Core common)

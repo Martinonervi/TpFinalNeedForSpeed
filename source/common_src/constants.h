@@ -89,3 +89,5 @@ struct CarInfo {
     int width;
     int height;
 };
+
+#define CARS_PATH  "../../assets/cars/cars.png"

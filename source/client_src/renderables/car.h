@@ -7,20 +7,22 @@ class Car final : public Entity {
 public:
     Car(
         SDL2pp::Renderer& renderer,
-        SDL2pp::Texture& texture,
-        int spriteX, int spriteY,
-        int spriteW, int spriteH,
-        int startX, int startY
+        TextureManager& tm,
+        int startX, int startY,
+        CarType carType,
+        float angle
         );
 
     void update(float newX, float newY, float newAngle);
+    void draw(int dx, int dy) override;
 
     void setAngle(float newAngle);
+    void setCarType(CarType newCarType);
     float getAngle() const;
 
 private:
-    SDL2pp::Rect srcRect;
     float angle;
+    CarType carType;
 };
 
 #endif //CAR_H

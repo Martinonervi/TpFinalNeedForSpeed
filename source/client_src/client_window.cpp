@@ -9,7 +9,6 @@ ClientWindow::ClientWindow(
     const int width,
     const int height,
     const std::string& title,
-    const std::string& carImagePath,
     Queue<SrvMsg>& receiverQueue,
     Queue<CliMsg>& senderQueue
     )
@@ -23,27 +22,27 @@ ClientWindow::ClientWindow(
           SDL_WINDOW_SHOWN
           ),
       renderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-      carTexture(renderer, carImagePath),
+      tm(renderer),
       playerCar(
-          carTexture,
           renderer,
-          CAR_PORSCHE,
+          tm,
           width/2,
           height/2,
-          5
+          CAR_PORSCHE,
+          0
           ),
       receiverQueue(receiverQueue),
       senderQueue(senderQueue),
       running(true)
 {}
 
-
+// Hay que arreglarlo teniendo en cuenta el manejo de autos
 void ClientWindow::run() {
     while (running) {
         SrvMsg srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
             if (srvMsg.type == Movement) {
-                playerCar.move(
+                playerCar.draw(
                     static_cast<int>(srvMsg.posicion.vy),
                     static_cast<int>(srvMsg.posicion.vx)
                     );
@@ -52,7 +51,6 @@ void ClientWindow::run() {
         handleEvents();
         renderer.SetDrawColor(0, 128, 0, 255);
         renderer.Clear();
-        playerCar.draw();
         renderer.Present();
         SDL_Delay(16);
     }

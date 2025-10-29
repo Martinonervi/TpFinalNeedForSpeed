@@ -5,14 +5,13 @@
 #include "../common_src/queue.h"
 #include <SDL2pp/SDL2pp.hh>
 #include "../common_src/constants.h"
-#include "../common_src/car.h"
+#include "../client_src/renderables/car.h"
 
 class ClientWindow {
 public:
     ClientWindow(
         int width, int height,
         const std::string& title,
-        const std::string& carImagePath,
         Queue<SrvMsg>& receiverQueue,
         Queue<CliMsg>& senderQueue
         );
@@ -23,7 +22,7 @@ public:
     SDL2pp::SDL sdl;
     SDL2pp::Window window;
     SDL2pp::Renderer renderer;
-    SDL2pp::Texture carTexture;
+    TextureManager tm;
     Car playerCar;
     Queue<SrvMsg>& receiverQueue;
     Queue<CliMsg>& senderQueue;
