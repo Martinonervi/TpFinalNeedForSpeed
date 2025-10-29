@@ -11,12 +11,11 @@
 #include "socket.h"
 #include "thread.h"
 
-namespace constants {
-
 #define NITRO_ON_MSG "A car hit the nitro!"
 #define NITRO_OFF_MSG "A car is out of juice."
 
-enum : int { RETURN_SUCCESS = 0, RETURN_FAILURE = 1 };
+#define RETURN_SUCCESS  0
+#define RETURN_FAILURE  1
 
 // Tipos personalizados
 using Cars_W_Nitro = std::uint16_t;
@@ -67,4 +66,26 @@ struct SrvMsg {
     PlayerStateUpdate posicion;
 };
 
-}  // namespace constants
+#define SMALL_CAR 32
+#define MEDIUM_CAR 40
+#define LARGE_CAR 48
+
+enum CarType {
+    CAR_GREEN,
+    CAR_RED,
+    CAR_PORSCHE,
+    CAR_LIGHT_BLUE,
+    CAR_JEEP,
+    CAR_PICKUP,
+    CAR_LIMO,
+    CAR_COUNT
+};
+
+#define FRAMES_PER_CAR 16
+#define FRAMES_PER_DIRECTION 8
+
+struct CarInfo {
+    int yOffset;
+    int width;
+    int height;
+};

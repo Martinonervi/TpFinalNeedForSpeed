@@ -13,8 +13,8 @@ public:
         int width, int height,
         const std::string& title,
         const std::string& carImagePath,
-        Queue<constants::SrvMsg>& receiverQueue,
-        Queue<constants::CliMsg>& senderQueue
+        Queue<SrvMsg>& receiverQueue,
+        Queue<CliMsg>& senderQueue
         );
 
     void run();
@@ -25,8 +25,8 @@ public:
     SDL2pp::Renderer renderer;
     SDL2pp::Texture carTexture;
     Car playerCar;
-    Queue<constants::SrvMsg>& receiverQueue;
-    Queue<constants::CliMsg>& senderQueue;
+    Queue<SrvMsg>& receiverQueue;
+    Queue<CliMsg>& senderQueue;
 
     bool running;
     void handleEvents();

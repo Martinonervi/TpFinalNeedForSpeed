@@ -9,8 +9,6 @@
 
 
 int main(int argc, char** argv) {
-    using constants::RETURN_FAILURE;
-    using constants::RETURN_SUCCESS;
 
     if (argc != 3) {
         std::cerr << "usage: client_main <host> <service>\n";

@@ -1,18 +1,18 @@
 #include "client_receiver.h"
 #include "../common_src/queue.h"
 
-ClientReceiver::ClientReceiver(Socket& peer_sock, Queue<constants::SrvMsg>& receiverQueue)
+ClientReceiver::ClientReceiver(Socket& peer_sock, Queue<SrvMsg>& receiverQueue)
     :protocol(peer_sock), receiverQueue(receiverQueue){}
 
 
 void ClientReceiver::run(){
     while (should_keep_running()){
-        constants::SrvMsg msg = protocol.recvMsg();
-        if (msg.type == constants::Opcode::NitroON) {
+        SrvMsg msg = protocol.recvMsg();
+        if (msg.type == Opcode::NitroON) {
             printer.printNitroON();
-        } else if (msg.type == constants::Opcode::NitroOFF) {
+        } else if (msg.type == Opcode::NitroOFF) {
             printer.printNitroOFF();
-        }else if (msg.type == constants::Opcode::Movement) {
+        }else if (msg.type == Opcode::Movement) {
             receiverQueue.push(msg);
         } else {
             // nada

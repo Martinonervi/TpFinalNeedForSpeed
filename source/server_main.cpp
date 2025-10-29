@@ -10,8 +10,6 @@
 #include "server_src/server.h"
 
 int main(int argc, char** argv) {
-    using constants::RETURN_FAILURE;
-    using constants::RETURN_SUCCESS;
     using serv_types::Cmd;
 
     if (argc != 2) {

@@ -20,10 +20,10 @@ protected:
 private:
     void processTrun();  // lógica de negocios (procesamiento)
 
-    std::list<constants::Cmd> emptyQueue();  // vacía cola para comenzar a procesar
-    b2WorldId world;
+    std::list<Cmd> emptyQueue();  // vacía cola para comenzar a procesar
 
-    void movementHandler(constants::SrvMsg& msg, constants::Cmd& cmd);
+
+    void movementHandler(SrvMsg& msg, Cmd& cmd);
 
     std::map<serv_types::ID, int> nitros;
     serv_types::gameLoopQueue& queue;  // cola que consume el gameloop

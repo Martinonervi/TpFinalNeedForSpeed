@@ -11,20 +11,20 @@
 #define TICK_MS 250
 
 namespace serv_types {
-using ID = constants::ID;
+using ID = ID;
 
 // Mensaje interno Receiver -> GameLoop
 enum class CommandType : std::uint8_t { Nitro = 0x01 , MoveRequest = 0x02};
 
 struct Cmd {
-    constants::Opcode type;
+    Opcode type;
     ID client_id{0};
-    constants::MoveInfo movimiento;
+    MoveInfo movimiento;
 };
 
 // Tipos server-side
-using SendQ = Queue<constants::SrvMsg>;
+using SendQ = Queue<SrvMsg>;
 using SendQPtr = std::shared_ptr<SendQ>;
-using gameLoopQueue = Queue<constants::Cmd>;
+using gameLoopQueue = Queue<Cmd>;
 
 }  // namespace serv_types
