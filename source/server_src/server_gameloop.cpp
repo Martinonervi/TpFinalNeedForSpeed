@@ -21,21 +21,21 @@ void GameLoop::run() {
 
 
 void GameLoop::processTrun() {
-    std::list<constants::Cmd> to_process = emptyQueue();
-    constants::SrvMsg msg;
-    for (constants::Cmd& cmd: to_process) {  // paso 1, proceso comandos activando nitros
-        if (cmd.type == constants::Opcode::Movement){
+    std::list<Cmd> to_process = emptyQueue();
+    SrvMsg msg;
+    for (Cmd& cmd: to_process) {  // paso 1, proceso comandos activando nitros
+        if (cmd.type == Opcode::Movement){
             std::cout << "aca en el gameloop movement\n";
             movementHandler(msg, cmd);
         }
-        if (cmd.type != constants::Opcode::Nitro)
+        if (cmd.type != Opcode::Nitro)
             continue;  // siempre false pero podría hacer un switch acá por ej
 
         auto it = nitros.find(cmd.client_id);
         if (it == nitros.end()) {
             nitros.emplace(cmd.client_id, NITRO_TICKS);
-            msg.type = constants::Opcode::NitroON;
-            msg.cars_with_nitro = static_cast<constants::Cars_W_Nitro>(nitros.size());
+            msg.type = Opcode::NitroON;
+            msg.cars_with_nitro = static_cast<Cars_W_Nitro>(nitros.size());
             registry.broadcast(msg);
             printer.printNitroON();
         }
@@ -45,8 +45,8 @@ void GameLoop::processTrun() {
         it->second -= 1;
         if (it->second == 0) {
             it = nitros.erase(it);
-            msg.type = constants::Opcode::NitroOFF;
-            msg.cars_with_nitro = static_cast<constants::Cars_W_Nitro>(nitros.size());
+            msg.type = Opcode::NitroOFF;
+            msg.cars_with_nitro = static_cast<Cars_W_Nitro>(nitros.size());
             registry.broadcast(msg);
             printer.printNitroOFF();
         } else {
@@ -55,9 +55,9 @@ void GameLoop::processTrun() {
     }
 }
 
-std::list<constants::Cmd> GameLoop::emptyQueue() {
-    std::list<constants::Cmd> cmd_list;
-    constants::Cmd cmd_aux;
+std::list<Cmd> GameLoop::emptyQueue() {
+    std::list<Cmd> cmd_list;
+    Cmd cmd_aux;
 
     while (queue.try_pop(cmd_aux)) {
         cmd_list.push_back(cmd_aux);
@@ -74,9 +74,9 @@ void GameLoop::stop() {
 }
 
 
-void GameLoop::movementHandler(constants::SrvMsg& msg, constants::Cmd& cmd){
+void GameLoop::movementHandler(SrvMsg& msg, Cmd& cmd){
     msg.posicion.player_id = cmd.client_id; //para testear, tendria q ser id1
-    msg.type = constants::Opcode::Movement;
+    msg.type = Opcode::Movement;
     // Hay que cambiarlo esta rarisimo
     if (cmd.movimiento.accelerate) {
         msg.posicion.vx = -1;

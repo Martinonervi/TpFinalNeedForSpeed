@@ -20,8 +20,8 @@ private:
     void join();
 
     Socket peer;
-    Queue<constants::SrvMsg> receiverQueue;
-    Queue<constants::CliMsg> senderQueue;
+    Queue<SrvMsg> receiverQueue;
+    Queue<CliMsg> senderQueue;
     ClientReceiver receiver;
     ClientSender sender;
     Printer printer;

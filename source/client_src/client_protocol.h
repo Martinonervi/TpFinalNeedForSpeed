@@ -11,12 +11,12 @@ public:
     int requestNitro() const;
 
     // recibe y devuelve el struct de msg
-    constants::SrvMsg recvMsg();
+    SrvMsg recvMsg();
 
     // lee (y por ahora descarta) el primer byte
-    constants::Op readActionByte() const;
+    Op readActionByte() const;
 
-    int sendCliMsg(const constants::CliMsg& cliMsg) const;
+    int sendCliMsg(const CliMsg& cliMsg) const;
 
 private:
     Socket& peer;

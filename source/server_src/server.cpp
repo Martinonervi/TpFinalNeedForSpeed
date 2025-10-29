@@ -25,15 +25,15 @@ int Server::Main() {
             if (c == 'q' || c == 'Q') {
                 stop_workers();
                 join_workers();
-                return constants::RETURN_SUCCESS;
+                return RETURN_SUCCESS;
             }
         }
         stop_workers();
         join_workers();
 
-        return constants::RETURN_SUCCESS;
+        return RETURN_SUCCESS;
     } catch (...) {
-        return constants::RETURN_FAILURE;
+        return RETURN_FAILURE;
     }
 }
 

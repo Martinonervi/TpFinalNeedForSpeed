@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-ClientSender::ClientSender(Socket& peer_sock, Queue<constants::CliMsg>& senderQueue)
+ClientSender::ClientSender(Socket& peer_sock, Queue<CliMsg>& senderQueue)
     :protocol(peer_sock), senderQueue(senderQueue){}
 
 //voy a leer de la queue de la interfaz grafica
@@ -15,14 +15,14 @@ void ClientSender::run(){
         //    break;
         //}
         try{
-            constants::CliMsg cliMsg = senderQueue.pop();
+            CliMsg cliMsg = senderQueue.pop();
 
             switch (cliMsg.event_type) {
-                case (constants::Nitro): {
+                case (Nitro): {
                     protocol.requestNitro();
                     break;
                 }
-                case (constants::Opcode::Movement): {
+                case (Opcode::Movement): {
                     protocol.sendCliMsg(cliMsg); //cambiar nombre y qhable de movement
                     break;
                 }
@@ -54,8 +54,8 @@ bool ClientSender::leerStdinYEncolar() {
         return true;
     }
 
-    constants::Op op = client_types::cmdToOp.at(cmd);
-    constants::CliMsg cliMsg;
+    Op op = client_types::cmdToOp.at(cmd);
+    CliMsg cliMsg;
     cliMsg.event_type = op;
     cliMsg.movement.steer = 1;
     senderQueue.push(cliMsg);
