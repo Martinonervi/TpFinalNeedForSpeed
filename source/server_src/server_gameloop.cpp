@@ -4,12 +4,26 @@
 #include <thread>
 
 GameLoop::GameLoop(serv_types::gameLoopQueue& queue, ClientsRegistry& registry):
-        queue(queue), registry(registry) {}
+        queue(queue), registry(registry) {
+
+    b2WorldDef worldDef = b2DefaultWorldDef();
+    worldDef.gravity = (b2Vec2){0.0f, 0.0f};   // sin gravedad
+    this->world = b2CreateWorld(&worldDef);
+
+}
 
 void GameLoop::run() {
     try {
+        const float timeStep = 1.0f / 60.0f; //cuánto tiempo avanza el mundo en esa llamada.
+        const int subStepCount = 4; //por cada timeStep resuelve problemas 4 veces mas rapido o algo asi
+        //sobre todo para hacer calculos de colisiones
+
         while (should_keep_running()) {
             processTrun();
+
+            // avanza la física del mundo
+            b2World_Step(this->world, timeStep,  subStepCount);
+
             std::this_thread::sleep_for(std::chrono::milliseconds(TICK_MS));
         }
     } catch (const std::exception& e) {
@@ -91,4 +105,12 @@ void GameLoop::movementHandler(constants::SrvMsg& msg, constants::Cmd& cmd){
     }
 
     registry.sendTo(cmd.client_id, msg);
+}
+
+
+GameLoop::~GameLoop() {
+    if (world.index1) {
+        b2DestroyWorld(this->world);
+        this->world = {0};
+    }
 }

@@ -4,6 +4,7 @@
 #include "server_client_registry.h"
 #include "server_types.h"
 
+#include <box2d/box2d.h>
 
 class GameLoop: public Thread {
 
@@ -11,6 +12,7 @@ public:
     GameLoop(serv_types::gameLoopQueue& queue, ClientsRegistry& registry);
 
     void stop() override;
+    virtual ~GameLoop();
 
 protected:
     void run() override;  // lógica disparadora y el gameloop en si
@@ -19,7 +21,7 @@ private:
     void processTrun();  // lógica de negocios (procesamiento)
 
     std::list<constants::Cmd> emptyQueue();  // vacía cola para comenzar a procesar
-
+    b2WorldId world;
 
     void movementHandler(constants::SrvMsg& msg, constants::Cmd& cmd);
 
