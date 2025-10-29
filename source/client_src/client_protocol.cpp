@@ -2,15 +2,13 @@
 
 #include <arpa/inet.h>
 
-using client_types::RETURN_FAILURE;
-using client_types::RETURN_SUCCESS;
 
 ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}
 
 int ClientProtocol::requestNitro() const {
     try {
-        const constants::Op op = constants::Opcode::Nitro;
-        peer.sendall(&op, sizeof(constants::Op));
+        const Op op = Opcode::Nitro;
+        peer.sendall(&op, sizeof(Op));
 
         return RETURN_SUCCESS;
     } catch (const std::exception& e) {
@@ -21,9 +19,9 @@ int ClientProtocol::requestNitro() const {
 
 
 
-int ClientProtocol::sendCliMsg(const constants::CliMsg& cliMsg) const {
+int ClientProtocol::sendCliMsg(const CliMsg& cliMsg) const {
     try {
-        std::vector<char> buf(sizeof(constants::CliMsg));
+        std::vector<char> buf(sizeof(CliMsg));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &cliMsg.event_type, sizeof(cliMsg.event_type));
@@ -55,18 +53,18 @@ int ClientProtocol::sendCliMsg(const constants::CliMsg& cliMsg) const {
 }
 
 
-constants::SrvMsg ClientProtocol::recvMsg() {
+SrvMsg ClientProtocol::recvMsg() {
     try {
-        constants::SrvMsg msg;
-        peer.recvall(&msg.type, sizeof(constants::Opcode));
+        SrvMsg msg;
+        peer.recvall(&msg.type, sizeof(Opcode));
 
-        if (msg.type == constants::Opcode::NitroON || msg.type == constants::Opcode::NitroOFF) {
-            constants::Cars_W_Nitro car_w_nBE;
-            peer.recvall(&car_w_nBE, sizeof(constants::Cars_W_Nitro));
+        if (msg.type == Opcode::NitroON || msg.type == Opcode::NitroOFF) {
+            Cars_W_Nitro car_w_nBE;
+            peer.recvall(&car_w_nBE, sizeof(Cars_W_Nitro));
             msg.cars_with_nitro = ntohs(car_w_nBE);
         }
 
-        if (msg.type == constants::Opcode::Movement) {
+        if (msg.type == Opcode::Movement) {
             peer.recvall(&msg.posicion.player_id, sizeof(msg.posicion.player_id));
             peer.recvall(&msg.posicion.tick, sizeof(msg.posicion.tick));
             peer.recvall(&msg.posicion.x, sizeof(msg.posicion.x));
@@ -87,10 +85,10 @@ constants::SrvMsg ClientProtocol::recvMsg() {
     }
 }
 
-constants::Op ClientProtocol::readActionByte() const {
+Op ClientProtocol::readActionByte() const {
     try {
-        constants::Op op = constants::Opcode::ClientMSG;
-        peer.recvall(&op, sizeof(constants::Op));
+        Op op = Opcode::ClientMSG;
+        peer.recvall(&op, sizeof(Op));
 
         return op;
     } catch (const std::exception& e) {

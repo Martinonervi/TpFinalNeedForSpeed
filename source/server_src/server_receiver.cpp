@@ -14,7 +14,7 @@ void Receiver::stop() {
 }
 
 void Receiver::run() {
-    constants::Opcode op{};
+    Opcode op{};
     while (should_keep_running()) {
         try {
             op = protocol.recvMsg();  // bloquea hasta que lee el byte o falla
@@ -24,14 +24,14 @@ void Receiver::run() {
         }
 
         //hacer un switch
-        if (op == constants::Opcode::Nitro) {  // 0x04
-            cmdQueue.push(constants::Cmd{op, id});
+        if (op == Opcode::Nitro) {  // 0x04
+            cmdQueue.push(Cmd{op, id});
         }
-        if (op == constants::Opcode::Movement) {
-            constants::MoveInfo moveInfo = protocol.recvMoveInfo();
+        if (op == Opcode::Movement) {
+            MoveInfo moveInfo = protocol.recvMoveInfo();
             std::cout << int(moveInfo.steer) << '\n'; //SE IMPRIME
 
-            cmdQueue.push(constants::Cmd{op, id, moveInfo});
+            cmdQueue.push(Cmd{op, id, moveInfo});
 
         }
     }

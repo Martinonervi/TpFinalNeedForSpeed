@@ -9,6 +9,7 @@ receiver(peer, receiverQueue), sender(peer, senderQueue)
 
 void Client::run() {
     sender.start();
+    // Se maneja x aca logica de lobby
     receiver.start();
 
     ClientWindow client_window(

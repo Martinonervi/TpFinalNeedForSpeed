@@ -5,7 +5,7 @@
 class ClientSender final: public Thread{
 public:
 
-    explicit ClientSender(Socket& peer_sock, Queue<constants::CliMsg>& senderQueue);
+    explicit ClientSender(Socket& peer_sock, Queue<CliMsg>& senderQueue);
 
 
     bool is_listening() const;
@@ -20,6 +20,6 @@ private:
     bool leerStdinYEncolar();
 
     ClientProtocol protocol;
-    Queue<constants::CliMsg>& senderQueue;
+    Queue<CliMsg>& senderQueue;
     bool listening{true};
 };

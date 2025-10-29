@@ -12,25 +12,25 @@ ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 
 
 
-int ServerProtocol::sendOutMsg(const constants::SrvMsg& msg) {
+int ServerProtocol::sendOutMsg(const SrvMsg& msg) {
     try {
-        std::vector<char> buf(sizeof(constants::SrvMsg));
+        std::vector<char> buf(sizeof(SrvMsg));
         size_t offset = 0;
 
-        memcpy(buf.data() + offset, &msg.type, sizeof(constants::Opcode));
-        offset += sizeof(constants::Opcode);
+        memcpy(buf.data() + offset, &msg.type, sizeof(Opcode));
+        offset += sizeof(Opcode);
 
         //podria ni hacer un switch y que intente leer cosas vacias.
         // Pero bueno, habria que analizar si hay campos que tiene valores por default.
         switch (msg.type) {
-            case constants::Opcode::NitroON:
-            case constants::Opcode::NitroOFF: {
-                constants::Cars_W_Nitro cars_with_nitroBE = htons(msg.cars_with_nitro);
-                memcpy(buf.data() + offset, &cars_with_nitroBE, sizeof(constants::Cars_W_Nitro));
-                offset += sizeof(constants::Cars_W_Nitro);
+            case Opcode::NitroON:
+            case Opcode::NitroOFF: {
+                Cars_W_Nitro cars_with_nitroBE = htons(msg.cars_with_nitro);
+                memcpy(buf.data() + offset, &cars_with_nitroBE, sizeof(Cars_W_Nitro));
+                offset += sizeof(Cars_W_Nitro);
                 break;
             }
-            case constants::Opcode::Movement: {
+            case Opcode::Movement: {
                 memcpy(buf.data() + offset, &msg.posicion.player_id, sizeof(msg.posicion.player_id));
                 offset += sizeof(msg.posicion.player_id);
                 memcpy(buf.data() + offset, &msg.posicion.tick, sizeof(msg.posicion.tick));
@@ -59,8 +59,8 @@ int ServerProtocol::sendOutMsg(const constants::SrvMsg& msg) {
     }
 }
 
-constants::Opcode ServerProtocol::recvMsg() {
-    constants::Opcode op{};
+Opcode ServerProtocol::recvMsg() {
+    Opcode op{};
     size_t n = 0;
     try {
         n = peer.recvall(&op, sizeof(op));  // lanza en error o cierre parcial
@@ -74,8 +74,8 @@ constants::Opcode ServerProtocol::recvMsg() {
 }
 
 
-constants::MoveInfo ServerProtocol::recvMoveInfo() {
-    constants::MoveInfo moveInfo;
+MoveInfo ServerProtocol::recvMoveInfo() {
+    MoveInfo moveInfo;
     size_t n = 0;
 
     try {

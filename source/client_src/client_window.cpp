@@ -10,8 +10,8 @@ ClientWindow::ClientWindow(
     const int height,
     const std::string& title,
     const std::string& carImagePath,
-    Queue<constants::SrvMsg>& receiverQueue,
-    Queue<constants::CliMsg>& senderQueue
+    Queue<SrvMsg>& receiverQueue,
+    Queue<CliMsg>& senderQueue
     )
     : sdl(SDL_INIT_VIDEO),
       window(
@@ -40,10 +40,13 @@ ClientWindow::ClientWindow(
 
 void ClientWindow::run() {
     while (running) {
-        constants::SrvMsg srvMsg;
+        SrvMsg srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
-            if (srvMsg.type == constants::Movement) {
-                playerCar.move(srvMsg.posicion.vy, srvMsg.posicion.vx);
+            if (srvMsg.type == Movement) {
+                playerCar.move(
+                    static_cast<int>(srvMsg.posicion.vy),
+                    static_cast<int>(srvMsg.posicion.vx)
+                    );
             }
         }
         handleEvents();
@@ -63,8 +66,8 @@ void ClientWindow::handleEvents() {
         if(event.type == SDL_QUIT) {
             running = false;
         } else if(event.type == SDL_KEYDOWN) {
-            constants::MoveInfo moveInfo{};
-            constants::CliMsg clientMsg{};
+            MoveInfo moveInfo{};
+            CliMsg clientMsg{};
             switch(event.key.keysym.sym) {
                 case SDLK_w:
                     moveInfo.accelerate = 1;
@@ -72,7 +75,7 @@ void ClientWindow::handleEvents() {
                     moveInfo.steer = 0;
                     moveInfo.nitro = 0;
 
-                    clientMsg.event_type = constants::Movement;
+                    clientMsg.event_type = Movement;
                     clientMsg.movement = moveInfo;
                     senderQueue.push(clientMsg);
 
@@ -83,7 +86,7 @@ void ClientWindow::handleEvents() {
                     moveInfo.steer = 0;
                     moveInfo.nitro = 0;
 
-                    clientMsg.event_type = constants::Movement;
+                    clientMsg.event_type = Movement;
                     clientMsg.movement = moveInfo;
                     senderQueue.push(clientMsg);
 
@@ -94,7 +97,7 @@ void ClientWindow::handleEvents() {
                     moveInfo.steer = -1;
                     moveInfo.nitro = 0;
 
-                    clientMsg.event_type = constants::Movement;
+                    clientMsg.event_type = Movement;
                     clientMsg.movement = moveInfo;
                     senderQueue.push(clientMsg);
 
@@ -105,7 +108,7 @@ void ClientWindow::handleEvents() {
                     moveInfo.steer = 1;
                     moveInfo.nitro = 0;
 
-                    clientMsg.event_type = constants::Movement;
+                    clientMsg.event_type = Movement;
                     clientMsg.movement = moveInfo;
                     senderQueue.push(clientMsg);
 
@@ -115,5 +118,6 @@ void ClientWindow::handleEvents() {
         }
     }
 }
+
 
 

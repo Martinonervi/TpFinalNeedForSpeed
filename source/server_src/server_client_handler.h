@@ -16,7 +16,7 @@ public:
     using gameLoopQueue = serv_types::gameLoopQueue;
 
 
-    ClientHandler(Socket peer_sock, const ID id, SendQPtr sendq, gameLoopQueue& cmd_queue);
+    ClientHandler(Socket peer_sock, ID id, SendQPtr sendq, gameLoopQueue& cmd_queue);
 
     void start();
     void poll();      // Reacciona al flag de EOF del Receiver
@@ -28,8 +28,8 @@ public:
     ID getID();
 
     ClientHandler() = delete;
-    ClientHandler(ClientHandler&&) = default;
-    ClientHandler& operator=(ClientHandler&&) = default;
+    ClientHandler(ClientHandler&&) = delete;
+    ClientHandler& operator=(ClientHandler&&) = delete;
     ClientHandler(const ClientHandler&) = delete;
     ClientHandler& operator=(const ClientHandler&) = delete;
     ~ClientHandler() = default;
