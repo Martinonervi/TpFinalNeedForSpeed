@@ -23,11 +23,20 @@ set(SDL2PP_WITH_TTF ON)
 set(SDL2PP_WITH_MIXER ON)
 FetchContent_MakeAvailable(libSDL2pp)
 
+# Box2D
+FetchContent_Declare(
+        box2d
+        GIT_REPOSITORY https://github.com/erincatto/box2d.git
+        GIT_TAG v3.1.1
+)
+FetchContent_MakeAvailable(box2d)
+
 # --- Librería common ---
 file(GLOB COMMON_SOURCES "common_src/*.cpp")
 add_library(common STATIC ${COMMON_SOURCES})
 target_include_directories(common PUBLIC ${libSDL2pp_SOURCE_DIR}/include)
-target_link_libraries(common PUBLIC SDL2pp::SDL2pp pthread)
+target_link_libraries(common PUBLIC SDL2pp::SDL2pp pthread box2d::box2d)
+
 
 # --- Cliente ---
 file(GLOB CLIENT_SOURCES "client_src/*.cpp")
