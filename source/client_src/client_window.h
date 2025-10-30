@@ -27,6 +27,14 @@ public:
     Queue<SrvMsg>& receiverQueue;
     Queue<CliMsg>& senderQueue;
 
+    const std::unordered_map<SDL_Keycode, MoveInfo> keyToMove = {
+        { SDLK_w, { 1, 0, 0, 0 } },
+        { SDLK_s, { 0, 1, 0, 0 } },
+        { SDLK_a, { 0, 0, -1, 0 } },
+        { SDLK_d, { 0, 0,  1, 0 } },
+        { SDLK_n, { 0, 0,  0, 1 } },
+    };
+
     bool running;
     void handleEvents();
 
