@@ -1,4 +1,3 @@
-// path: common/constants.h
 #pragma once
 
 #include <cstdint>
@@ -83,3 +82,5 @@ struct CarInfo {
     int width;
     int height;
 };
+
+#define CARS_PATH  "../../assets/cars/cars.png"
