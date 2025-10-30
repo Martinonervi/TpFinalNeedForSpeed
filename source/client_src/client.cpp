@@ -1,5 +1,4 @@
 #include "client.h"
-#include <string>
 
 
 Client::Client(const char* host, const char* service)
@@ -9,10 +8,9 @@ receiver(peer, receiverQueue), sender(peer, senderQueue)
 
 void Client::run() {
     sender.start();
-    // Se maneja x aca logica de lobby
     receiver.start();
 
-    ClientWindow client_window(
+    /*ClientWindow client_window(
         800,
         600,
         "Need For Speed",
@@ -22,7 +20,7 @@ void Client::run() {
     );
 
     client_window.run();
-
+*/  while (true) {};
     stop();
     join();
 }

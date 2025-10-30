@@ -19,11 +19,26 @@ void Sender::stop() {
 void Sender::run() {
     try {
         while (should_keep_running()) {
-            // bucle de llamado al protocolo para envíar comandos serializados
-            // consumidos de la cola
-            SrvMsg msg = msg_queue->pop();  // bloqueante
+            SrvMsg msg = msg_queue->pop();
 
-            int n = protocol.sendOutMsg(msg);
+            int n;
+
+            switch (msg.type) {
+                case Opcode::NitroON:
+                case Opcode::NitroOFF: {
+                    n = protocol.sendOutMsg(msg);
+                    break;
+
+                }
+                case Opcode::Movement: {
+                    n = protocol.sendPlayerState(msg);
+                    break;
+                }
+                default: {
+                    std::cout << "cmd desconocido: " << msg.type << "\n";
+                    n = 0; //quiero salir
+                }
+            }
 
             if (n == 0)
                 break;

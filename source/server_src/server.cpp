@@ -11,7 +11,7 @@ Server::Server(const char* service):
         acc_sock(service),
         acceptor(std::move(acc_sock), registry, cmd_queue) {}
 
-int Server::Main() {
+int Server::run() {
     try {
         gameloop.start();
         acceptor.start();

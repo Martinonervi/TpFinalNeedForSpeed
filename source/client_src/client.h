@@ -1,12 +1,9 @@
 #pragma once
 #include <string>
-
 #include "client_receiver.h"
 #include "client_sender.h"
 #include "client_types.h"
-#include "client_window.h"
 #include "../common_src/constants.h"
-#include "../common_src/queue.h"
 
 class Client {
 public:

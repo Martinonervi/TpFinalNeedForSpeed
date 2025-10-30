@@ -1,7 +1,5 @@
 #pragma once
-
 #include <memory>
-
 #include "server_types.h"
 
 class ServerProtocol {
@@ -10,6 +8,7 @@ public:
 
     // serializa y envía el mensaje por el socket
     int sendOutMsg(const SrvMsg& msg);
+    int sendPlayerState(const SrvMsg& msg);
 
     // recibe mensaje y devuelve el opcode del mensaje recibido
     Opcode recvMsg();

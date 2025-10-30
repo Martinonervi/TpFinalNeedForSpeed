@@ -1,11 +1,10 @@
 #include "server_client_registry.h"
-
 #include <algorithm>
 #include <utility>
 
 ClientsRegistry::ClientsRegistry(): last_id(0) {}
 
-std::pair<ClientsRegistry::ID, ClientsRegistry::SendQPtr> ClientsRegistry::AddClient() {
+std::pair<ID, SendQPtr> ClientsRegistry::AddClient() {
     auto q = std::make_shared<SendQ>();
     std::lock_guard<std::mutex> lk(mx);
     const ID id = ++last_id;

@@ -6,8 +6,7 @@
 class Server {
 public:
     explicit Server(const char* service);
-
-    int Main();  // disparador de la lógica del servidor
+    int run();
 private:
     // frena al acceptor y al gameloop
     void stop_workers();
@@ -16,7 +15,7 @@ private:
     void join_workers();
 
     ClientsRegistry registry;
-    serv_types::gameLoopQueue cmd_queue;
+    gameLoopQueue cmd_queue;
     GameLoop gameloop;
     Socket acc_sock;
     Acceptor acceptor;

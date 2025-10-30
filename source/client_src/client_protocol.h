@@ -1,5 +1,4 @@
 #pragma once
-
 #include "client_types.h"
 #include <cstring>
 

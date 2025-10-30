@@ -1,42 +1,17 @@
-// path: server_src/server_acceptor.cpp
 #include "server_acceptor.h"
-
 #include <utility>
-
-#include "../common_src/constants.h"
-
 #include "server_types.h"
-
-void Acceptor::stop() {
-    Thread::stop();
-    try {
-        acceptor.shutdown(2);
-    } catch (...) {}
-    try {
-        acceptor.close();
-    } catch (...) {}
-}
 
 
 Acceptor::Acceptor(Socket listen_sock, ClientsRegistry& registry_ref,
-                   serv_types::gameLoopQueue& cmd_queue_ref):
+                   gameLoopQueue& cmd_queue_ref):
         acceptor(std::move(listen_sock)), registry(registry_ref), cmd_queue(cmd_queue_ref) {}
 
 
 void Acceptor::run() {
     try {
-        Main();
-    } catch (const std::exception& e) {
-        std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
-    } catch (...) {
-        std::cerr << "[Acceptor] fatal: unknown\n";
-    }
-}
+        while (should_keep_running()) {
 
-
-void Acceptor::Main() {
-    while (should_keep_running()) {
-        try {
             Socket peer = acceptor.accept();
 
             auto [id, sendq] = registry.AddClient();
@@ -50,10 +25,11 @@ void Acceptor::Main() {
                     it->poll();  // checkeo señal del receiver para cerrar
 
             reap_dead();
-        } catch (...) {
-            break;
         }
+    } catch (const std::exception& e) {
+        //std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
     }
+
     kill_all();
 }
 
@@ -77,4 +53,14 @@ void Acceptor::kill_all() {
         registry.EraseQueue(h->getID());
     }
     handlers.clear();
+}
+
+void Acceptor::stop() {
+    Thread::stop();
+    try {
+        acceptor.shutdown(2);
+    } catch (...) {}
+    try {
+        acceptor.close();
+    } catch (...) {}
 }

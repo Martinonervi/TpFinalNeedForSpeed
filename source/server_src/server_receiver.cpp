@@ -3,7 +3,7 @@
 #include <memory>
 #include <utility>
 
-Receiver::Receiver(Socket& peer_socket, gameLoopQueue& queue, serv_types::ID clientID):
+Receiver::Receiver(Socket& peer_socket, gameLoopQueue& queue, ID clientID):
         peer(peer_socket), cmdQueue(queue), id(clientID), protocol(peer) {}
 
 void Receiver::stop() {

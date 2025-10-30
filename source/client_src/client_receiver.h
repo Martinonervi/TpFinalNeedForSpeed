@@ -3,16 +3,12 @@
 #include "client_types.h"
 
 class ClientReceiver: public Thread{
-    public:
-
+public:
     ClientReceiver(Socket& peer_socket, Queue<SrvMsg>& receiverQueue);
-
-    protected:
 
     void run() override;
 
-    private:
-
+private:
     ClientProtocol protocol;
     Queue<SrvMsg>& receiverQueue;
     Printer printer;

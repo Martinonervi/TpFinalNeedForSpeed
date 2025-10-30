@@ -7,10 +7,8 @@ ClientHandler::ClientHandler(Socket peer_sock, const ID id, SendQPtr sendq,
                              gameLoopQueue& cmd_queue):
         id(id),
         peer(std::move(peer_sock)),
-        sendq(std::move(sendq)),
-        cmd_queue(cmd_queue),
-        sender(peer, this->sendq),
-        receiver(peer, this->cmd_queue, this->id) {}
+        sender(peer, sendq),
+        receiver(peer, cmd_queue, this->id) {}
 
 void ClientHandler::start() {
     sender.start();
@@ -43,4 +41,4 @@ void ClientHandler::close() {
 
 bool ClientHandler::is_alive() { return sender.is_listening() && receiver.is_listening(); }
 
-serv_types::ID ClientHandler::getID() { return id; }
+ID ClientHandler::getID() { return id; }

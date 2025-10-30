@@ -1,5 +1,4 @@
 #include "client_protocol.h"
-
 #include <arpa/inet.h>
 
 
@@ -74,9 +73,6 @@ SrvMsg ClientProtocol::recvMsg() {
             peer.recvall(&msg.posicion.vy, sizeof(msg.posicion.vy));
 
         }
-
-
-
 
         return msg;
     } catch (const std::exception& e) {

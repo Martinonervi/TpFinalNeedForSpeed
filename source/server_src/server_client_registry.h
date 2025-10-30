@@ -1,22 +1,17 @@
 #pragma once
-
 #include <map>
 #include <memory>
 #include <mutex>
 #include <utility>
 #include <vector>
-
 #include "../common_src/constants.h"
+#include "server_types.h"
 #include "../common_src/queue.h"
 
 
-// monitor: registra sendQueues por cliente para broadcast seguro
 class ClientsRegistry {
 
 public:
-    using SendQ = Queue<SrvMsg>;
-    using SendQPtr = std::shared_ptr<SendQ>;
-    using ID = ID;
 
     ClientsRegistry();
     ClientsRegistry(const ClientsRegistry&) = delete;

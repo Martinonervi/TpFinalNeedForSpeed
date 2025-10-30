@@ -11,11 +11,6 @@
 
 class ClientHandler {
 public:
-    using ID = serv_types::ID;
-    using SendQPtr = serv_types::SendQPtr;
-    using gameLoopQueue = serv_types::gameLoopQueue;
-
-
     ClientHandler(Socket peer_sock, ID id, SendQPtr sendq, gameLoopQueue& cmd_queue);
 
     void start();
@@ -38,8 +33,6 @@ public:
 private:
     ID id{0};
     Socket peer;
-    SendQPtr sendq;
-    gameLoopQueue& cmd_queue;
     Sender sender;
     Receiver receiver;
 };

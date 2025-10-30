@@ -11,10 +11,9 @@
 #include "server_types.h"
 
 class Receiver: public Thread {
-    using gameLoopQueue = serv_types::gameLoopQueue;
 
 public:
-    Receiver(Socket& peerSocket, gameLoopQueue& queue, serv_types::ID clientId);
+    Receiver(Socket& peerSocket, gameLoopQueue& queue, ID clientId);
     void stop() override;
 
     // señal: sender desconectado
@@ -28,7 +27,7 @@ protected:
 private:
     Socket& peer;
     gameLoopQueue& cmdQueue;
-    serv_types::ID id{0};
+    ID id{0};
     ServerProtocol protocol;
 
     bool listening{true};

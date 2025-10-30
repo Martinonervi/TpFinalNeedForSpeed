@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 
-GameLoop::GameLoop(serv_types::gameLoopQueue& queue, ClientsRegistry& registry):
+GameLoop::GameLoop(gameLoopQueue& queue, ClientsRegistry& registry):
         queue(queue), registry(registry) {
 
     b2WorldDef worldDef = b2DefaultWorldDef();
@@ -88,7 +88,15 @@ void GameLoop::stop() {
 }
 
 
+//cola de eventos
 void GameLoop::movementHandler(SrvMsg& msg, Cmd& cmd){
+    auto it = cars.find(cmd.client_id);
+    if (it == cars.end()) {
+        cars[cmd.client_id] = Car{};
+    }
+
+    auto buscado = cars.find(cmd.client_id);
+
     msg.posicion.player_id = cmd.client_id; //para testear, tendria q ser id1
     msg.type = Opcode::Movement;
     // Hay que cambiarlo esta rarisimo

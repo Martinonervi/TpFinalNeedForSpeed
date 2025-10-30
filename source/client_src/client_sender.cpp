@@ -1,24 +1,19 @@
 #include "client_sender.h"
-
 #include <sstream>
 
 ClientSender::ClientSender(Socket& peer_sock, Queue<CliMsg>& senderQueue)
     :protocol(peer_sock), senderQueue(senderQueue){}
 
-//voy a leer de la queue de la interfaz grafica
 void ClientSender::run(){
     //std::string line, cmd, param;
     //while (std::getline(std::cin, line) && (parseLine(line, cmd, param) && should_keep_running())) {
 
-    while(should_keep_running()){
-        //if (!leerStdinYEncolar()) {
-        //    break;
-        //}
+    while(should_keep_running() and leerStdinYEncolar()) {
         try{
             CliMsg cliMsg = senderQueue.pop();
 
             switch (cliMsg.event_type) {
-                case (Nitro): {
+                case (Opcode::Nitro): {
                     protocol.requestNitro();
                     break;
                 }
@@ -54,7 +49,7 @@ bool ClientSender::leerStdinYEncolar() {
         return true;
     }
 
-    Op op = client_types::cmdToOp.at(cmd);
+    Op op = cmdToOp.at(cmd);
     CliMsg cliMsg;
     cliMsg.event_type = op;
     cliMsg.movement.steer = 1;

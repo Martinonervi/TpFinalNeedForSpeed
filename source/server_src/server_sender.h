@@ -1,17 +1,13 @@
 #pragma once
-
 #include <memory>
-
 #include "../common_src/constants.h"
 #include "../common_src/socket.h"
 #include "../common_src/thread.h"
-
 #include "server_client_registry.h"
 #include "server_protocol.h"
 #include "server_types.h"
 
 class Sender: public Thread {
-    using SendQPtr = serv_types::SendQPtr;
 
 public:
     Sender(Socket& peer_socket, SendQPtr queue);
