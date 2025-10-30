@@ -6,11 +6,9 @@ class ClientProtocol {
 public:
     explicit ClientProtocol(Socket& peer);
 
-    // manda por el socket el opcode para pedir nitro
-    int requestNitro() const;
 
     // recibe y devuelve el struct de msg
-    SrvMsg recvMsg();
+    SrvMsg recvSrvMsg();
 
     // lee (y por ahora descarta) el primer byte
     Op readActionByte() const;

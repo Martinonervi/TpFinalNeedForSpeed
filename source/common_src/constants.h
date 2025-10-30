@@ -30,7 +30,6 @@ struct MoveInfo {
 };
 
 struct CliMsg {
-    Cars_W_Nitro cars_with_nitro{0};
     Op event_type{0};
     MoveInfo movement{};
 };
@@ -48,21 +47,16 @@ struct Cmd {
 
 
 struct PlayerStateUpdate {
-    uint16_t player_id;  // quién es este auto (el server lo sabe)
-    uint32_t tick;       // número de tick simulado del server
+    uint16_t player_id;
 
-    float x;
+    float x; //box2d usa metros
     float y;
-    float angle_deg;
-
-    float vx;
-    float vy;
+    float angleRad;
 };
 
 
 struct SrvMsg {
     Opcode type{};
-    Cars_W_Nitro cars_with_nitro{0};
     PlayerStateUpdate posicion;
 };
 

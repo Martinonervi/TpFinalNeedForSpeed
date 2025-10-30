@@ -13,10 +13,6 @@ void ClientSender::run(){
             CliMsg cliMsg = senderQueue.pop();
 
             switch (cliMsg.event_type) {
-                case (Opcode::Nitro): {
-                    protocol.requestNitro();
-                    break;
-                }
                 case (Opcode::Movement): {
                     protocol.sendCliMsg(cliMsg); //cambiar nombre y qhable de movement
                     break;

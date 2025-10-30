@@ -7,15 +7,17 @@ ClientReceiver::ClientReceiver(Socket& peer_sock, Queue<SrvMsg>& receiverQueue)
 
 void ClientReceiver::run(){
     while (should_keep_running()){
-        SrvMsg msg = protocol.recvMsg();
-        if (msg.type == Opcode::NitroON) {
-            printer.printNitroON();
-        } else if (msg.type == Opcode::NitroOFF) {
-            printer.printNitroOFF();
-        }else if (msg.type == Opcode::Movement) {
-            receiverQueue.push(msg);
-        } else {
-            // nada
+        SrvMsg msg = protocol.recvSrvMsg();
+        switch (msg.type) {
+            case (Opcode::Movement): {
+                std::cout << "llegue al client Receiver, id:" << msg.posicion.player_id << "\n";
+                receiverQueue.push(msg);
+                break;
+            }
+            default: {
+                std::cout << "cmd desconocido: " << msg.type << "\n";
+            }
         }
     }
 }
+

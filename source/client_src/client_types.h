@@ -9,7 +9,6 @@
 
 
 inline const std::unordered_map<std::string_view, Op> cmdToOp = {
-        {NITRO_CMD, static_cast<Op>(Opcode::Nitro)},
         {ACCELERATE, static_cast<Op>(Opcode::Movement)},
 };
 

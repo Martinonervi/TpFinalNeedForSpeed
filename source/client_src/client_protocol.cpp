@@ -4,18 +4,6 @@
 
 ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}
 
-int ClientProtocol::requestNitro() const {
-    try {
-        const Op op = Opcode::Nitro;
-        peer.sendall(&op, sizeof(Op));
-
-        return RETURN_SUCCESS;
-    } catch (const std::exception& e) {
-        std::cerr << "client_main error: " << e.what() << "\n";
-        return RETURN_FAILURE;
-    }
-}
-
 
 
 int ClientProtocol::sendCliMsg(const CliMsg& cliMsg) const {
@@ -52,27 +40,16 @@ int ClientProtocol::sendCliMsg(const CliMsg& cliMsg) const {
 }
 
 
-SrvMsg ClientProtocol::recvMsg() {
+SrvMsg ClientProtocol::recvSrvMsg() {
     try {
         SrvMsg msg;
         peer.recvall(&msg.type, sizeof(Opcode));
 
-        if (msg.type == Opcode::NitroON || msg.type == Opcode::NitroOFF) {
-            Cars_W_Nitro car_w_nBE;
-            peer.recvall(&car_w_nBE, sizeof(Cars_W_Nitro));
-            msg.cars_with_nitro = ntohs(car_w_nBE);
-        }
+        peer.recvall(&msg.posicion.player_id, sizeof(msg.posicion.player_id));
+        peer.recvall(&msg.posicion.x, sizeof(msg.posicion.x));
+        peer.recvall(&msg.posicion.y, sizeof(msg.posicion.y));
+        peer.recvall(&msg.posicion.angleRad, sizeof(msg.posicion.angleRad));
 
-        if (msg.type == Opcode::Movement) {
-            peer.recvall(&msg.posicion.player_id, sizeof(msg.posicion.player_id));
-            peer.recvall(&msg.posicion.tick, sizeof(msg.posicion.tick));
-            peer.recvall(&msg.posicion.x, sizeof(msg.posicion.x));
-            peer.recvall(&msg.posicion.y, sizeof(msg.posicion.y));
-            peer.recvall(&msg.posicion.angle_deg, sizeof(msg.posicion.angle_deg));
-            peer.recvall(&msg.posicion.vx, sizeof(msg.posicion.vx));
-            peer.recvall(&msg.posicion.vy, sizeof(msg.posicion.vy));
-
-        }
 
         return msg;
     } catch (const std::exception& e) {

@@ -11,18 +11,18 @@ GameLoop::GameLoop(gameLoopQueue& queue, ClientsRegistry& registry):
     this->world = b2CreateWorld(&worldDef);
 
 }
+const float timeStep = 1.0f / 60.0f; //cuánto tiempo avanza el mundo en esa llamada.
+const int subStepCount = 4; //por cada timeStep resuelve problemas 4 veces mas rapido o algo asi
+//sobre todo para hacer calculos de colisiones
 
 void GameLoop::run() {
     try {
-        const float timeStep = 1.0f / 60.0f; //cuánto tiempo avanza el mundo en esa llamada.
-        const int subStepCount = 4; //por cada timeStep resuelve problemas 4 veces mas rapido o algo asi
-        //sobre todo para hacer calculos de colisiones
-
         while (should_keep_running()) {
-            processTrun();
+            processCmds();
 
-            // avanza la física del mundo
             b2World_Step(this->world, timeStep,  subStepCount);
+
+            broadcastCarSnapshots();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(TICK_MS));
         }
@@ -34,38 +34,54 @@ void GameLoop::run() {
 }
 
 
-void GameLoop::processTrun() {
+void GameLoop::processCmds() {
     std::list<Cmd> to_process = emptyQueue();
-    SrvMsg msg;
-    for (Cmd& cmd: to_process) {  // paso 1, proceso comandos activando nitros
+    for (Cmd& cmd: to_process) {
         if (cmd.type == Opcode::Movement){
             std::cout << "aca en el gameloop movement\n";
-            movementHandler(msg, cmd);
-        }
-        if (cmd.type != Opcode::Nitro)
-            continue;  // siempre false pero podría hacer un switch acá por ej
-
-        auto it = nitros.find(cmd.client_id);
-        if (it == nitros.end()) {
-            nitros.emplace(cmd.client_id, NITRO_TICKS);
-            msg.type = Opcode::NitroON;
-            msg.cars_with_nitro = static_cast<Cars_W_Nitro>(nitros.size());
-            registry.broadcast(msg);
-            printer.printNitroON();
+            movementHandler(cmd);
         }
     }
-    for (auto it = nitros.begin();
-         it != nitros.end();) {  // paso 2, simulo iteracion desactivando nitros
-        it->second -= 1;
-        if (it->second == 0) {
-            it = nitros.erase(it);
-            msg.type = Opcode::NitroOFF;
-            msg.cars_with_nitro = static_cast<Cars_W_Nitro>(nitros.size());
-            registry.broadcast(msg);
-            printer.printNitroOFF();
-        } else {
-            ++it;
+}
+
+void GameLoop::movementHandler(Cmd& cmd) {
+    auto it = cars.find(cmd.client_id);
+    if (it == cars.end()) {
+        // separo autos 3m en X para que no spawneen superpuestos
+        b2Vec2 spawn = { 3.0f * static_cast<float>(cars.size()), 0.0f };
+        float angle  = 0.0f;
+
+        // try_emplace construye el Car in-place
+        auto [insIt, inserted] =
+                cars.try_emplace(cmd.client_id, cmd.client_id, this->world, spawn, angle);
+        it = insIt;
+        if (!inserted) {
+            return;
         }
+    }
+
+    it->second.applyControlsToBody(cmd.movimiento, timeStep);
+
+    //tendria q actualizar para todos los autos siempre, por un tema de por ej: que vayan frenando
+    // si no aceleran mas
+
+    //voy a dejar esto para testear q la info esta llegando bien por ahora
+    //msg.posicion.player_id = cmd.client_id;
+    //msg.type = Opcode::Movement;
+    //registry.sendTo(cmd.client_id, msg);
+}
+
+
+
+void GameLoop::broadcastCarSnapshots() {
+    for (auto& [id, car] : cars) {
+        PlayerStateUpdate ps{};
+        ps.player_id = id;
+        car.snapshotState(ps);
+        SrvMsg msg{};
+        msg.type = Opcode::Movement;
+        msg.posicion = ps;
+        registry.sendTo(id, msg);
     }
 }
 
@@ -86,35 +102,6 @@ void GameLoop::stop() {
         queue.close();
     } catch (...) {}
 }
-
-
-//cola de eventos
-void GameLoop::movementHandler(SrvMsg& msg, Cmd& cmd){
-    auto it = cars.find(cmd.client_id);
-    if (it == cars.end()) {
-        cars[cmd.client_id] = Car{};
-    }
-
-    auto buscado = cars.find(cmd.client_id);
-
-    msg.posicion.player_id = cmd.client_id; //para testear, tendria q ser id1
-    msg.type = Opcode::Movement;
-    // Hay que cambiarlo esta rarisimo
-    if (cmd.movimiento.accelerate) {
-        msg.posicion.vx = -1;
-    } else if (cmd.movimiento.brake) {
-        msg.posicion.vx = 1;
-    }
-
-    if (cmd.movimiento.steer == -1) {
-        msg.posicion.vy = -1;
-    } else if (cmd.movimiento.steer == 1) {
-        msg.posicion.vy = 1;
-    }
-
-    registry.sendTo(cmd.client_id, msg);
-}
-
 
 GameLoop::~GameLoop() {
     if (world.index1) {

@@ -24,12 +24,6 @@ void Sender::run() {
             int n;
 
             switch (msg.type) {
-                case Opcode::NitroON:
-                case Opcode::NitroOFF: {
-                    n = protocol.sendOutMsg(msg);
-                    break;
-
-                }
                 case Opcode::Movement: {
                     n = protocol.sendPlayerState(msg);
                     break;
