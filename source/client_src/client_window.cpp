@@ -83,7 +83,7 @@ void ClientWindow::handleServerMessage(const SrvMsg& msg) {
                 std::cout << msg.posicion.x << std::endl;
                 std::cout << msg.posicion.y << std::endl;
                 std::cout << msg.posicion.angleRad << std::endl;
-                cars[msg.posicion.player_id]->update(msg.posicion.x*10, msg.posicion.y,
+                cars[msg.posicion.player_id]->update(msg.posicion.x*10, msg.posicion.y*100,
                     msg.posicion.angleRad*10);
             }
             break;
