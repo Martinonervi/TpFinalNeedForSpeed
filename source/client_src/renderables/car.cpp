@@ -3,7 +3,7 @@
 Car::Car(
     SDL2pp::Renderer& renderer,
     TextureManager& tm,
-    const int startX, const int startY,
+    const float startX, const float startY,
     const CarType carType,
     const float angle
     )
@@ -11,17 +11,17 @@ Car::Car(
 {}
 
 void Car::update(const float newX, const float newY, const float newAngle) {
-    setPosition(static_cast<int>(newX), static_cast<int>(newY));
+    setPosition((newX), (newY));
     setAngle(newAngle);
 }
 
-void Car::draw(const int dx, const int dy) {
+void Car::draw() {
     SDL2pp::Texture& texture(tm.getCarsTexture());
     const int w = texture.GetWidth();
     const int h = texture.GetHeight();
 
     SDL2pp::Rect srcRect(tm.getCarFrame(carType, angle));
-    SDL2pp::Rect dstRect( dx, dy, w, h );
+    SDL2pp::Rect dstRect( x, y, w, h ); // Tengo que ver como manejar esto
 
     renderer.Copy(texture, srcRect,dstRect);
 }

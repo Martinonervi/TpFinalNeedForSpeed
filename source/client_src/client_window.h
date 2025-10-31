@@ -18,14 +18,15 @@ public:
 
     void run();
 
- private:
+private:
     SDL2pp::SDL sdl;
     SDL2pp::Window window;
     SDL2pp::Renderer renderer;
     TextureManager tm;
-    Car playerCar;
     Queue<SrvMsg>& receiverQueue;
     Queue<CliMsg>& senderQueue;
+    std::unordered_map<int, std::unique_ptr<Car>> cars;
+    int myCarId;
 
     const std::unordered_map<SDL_Keycode, MoveInfo> keyToMove = {
         { SDLK_w, { 1, 0, 0, 0 } },
@@ -37,7 +38,7 @@ public:
 
     bool running;
     void handleEvents();
-
+    void handleServerMessage(const SrvMsg& msg);
 };
 
 #endif // CLIENTWINDOW_H

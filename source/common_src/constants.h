@@ -30,12 +30,13 @@ struct MoveInfo {
 
 struct CliMsg {
     Op event_type{0};
+    ID player_id;
     MoveInfo movement{};
 };
 
 // Cambiar a mayus
-enum Opcode : Op { Movement = 0x01, ClientMSG = 0x04, ServerMSG = 0x10, NitroON = 0x07,
-                   NitroOFF = 0x08, Nitro = 0x09 };
+enum Opcode : Op { Movement = 0x01, ClientMSG = 0x04, ServerMSG = 0x10, InitPlayer = 0x07,
+                   NewCar = 0x08, Disconnect = 0x09 };
 
 
 struct Cmd {

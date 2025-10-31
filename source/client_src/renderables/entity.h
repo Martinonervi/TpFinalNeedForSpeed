@@ -8,21 +8,21 @@
 
 class Entity {
 public:
-    Entity(SDL2pp::Renderer& renderer, TextureManager& tm, int x, int y);
+    Entity(SDL2pp::Renderer& renderer, TextureManager& tm, float x, float y);
     virtual ~Entity() = default;
 
-    virtual void draw(int dx, int dy);
-    virtual void setPosition(int newX, int newY);
+    virtual void draw();
+    virtual void setPosition(float newX, float newY);
 
-    int getX() const;
-    int getY() const;
+    float getX() const;
+    float getY() const;
 
 protected:
     SDL2pp::Renderer& renderer;
     TextureManager& tm;
 
-    int x;
-    int y;
+    float x;
+    float y;
 };
 
 #endif //ENTITY_H

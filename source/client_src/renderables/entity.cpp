@@ -5,7 +5,7 @@
 Entity::Entity(
     SDL2pp::Renderer& renderer,
     TextureManager& tm,
-    const int x, const int y
+    const float x, const float y
     )
     :
 renderer(renderer),
@@ -13,7 +13,7 @@ tm(tm),
 x(x), y(y)
 {}
 
-void Entity::draw(const int dx, const int dy) {
+void Entity::draw() {
     /*
     const int w = texture.GetWidth();
     const int h = texture.GetHeight();
@@ -25,11 +25,11 @@ void Entity::draw(const int dx, const int dy) {
 */
 }
 
-void Entity::setPosition(const int newX, const int newY) {
+void Entity::setPosition(const float newX, const float newY) {
     x = newX;
     y = newY;
 }
 
-int Entity::getX() const { return x; }
-int Entity::getY() const { return y; }
+float Entity::getX() const { return x; }
+float Entity::getY() const { return y; }
 

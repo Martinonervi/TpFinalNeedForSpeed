@@ -1,4 +1,5 @@
 #include "client.h"
+#include "client_window.h"
 
 
 Client::Client(const char* host, const char* service)
@@ -10,7 +11,7 @@ void Client::run() {
     sender.start();
     receiver.start();
 
-    /*ClientWindow client_window(
+    ClientWindow client_window(
         800,
         600,
         "Need For Speed",
@@ -19,7 +20,6 @@ void Client::run() {
     );
 
     client_window.run();
-*/  while (true) {};
     stop();
     join();
 }

@@ -8,13 +8,13 @@ public:
     Car(
         SDL2pp::Renderer& renderer,
         TextureManager& tm,
-        int startX, int startY,
+        float startX, float startY,
         CarType carType,
         float angle
         );
 
     void update(float newX, float newY, float newAngle);
-    void draw(int dx, int dy) override;
+    void draw() override;
 
     void setAngle(float newAngle);
     void setCarType(CarType newCarType);
