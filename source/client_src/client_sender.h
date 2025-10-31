@@ -9,9 +9,6 @@ public:
     void run() override;
 
 private:
-    bool parseLine(const std::string& line, std::string& cmd, std::string& param);
-    bool leerStdinYEncolar();
-
     ClientProtocol protocol;
     Queue<CliMsg>& senderQueue;
     bool listening{true};

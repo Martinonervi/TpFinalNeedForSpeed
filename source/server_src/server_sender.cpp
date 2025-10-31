@@ -24,7 +24,7 @@ void Sender::run() {
             int n;
 
             switch (msg.type) {
-                case Opcode::Movement: {
+                case Movement: {
                     n = protocol.sendPlayerState(msg);
                     break;
                 }

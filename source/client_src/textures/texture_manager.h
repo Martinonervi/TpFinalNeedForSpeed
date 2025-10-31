@@ -7,15 +7,13 @@
 
 class TextureManager {
 public:
-    explicit TextureManager(SDL2pp::Renderer& renderer);
+    explicit TextureManager(SDL2pp::Texture& carsTexture);
     SDL2pp::Rect getCarFrame(CarType type, float angle);
 
-    SDL2pp::Texture& getCarsTexture();
+    SDL2pp::Texture& getCarsTexture() const;
 
 private:
-    SDL2pp::Renderer& renderer;
-    SDL2pp::Texture carsTexture;
-
+    SDL2pp::Texture& carsTexture;
     std::array<CarInfo, CAR_COUNT> carInfos{};
 };
 

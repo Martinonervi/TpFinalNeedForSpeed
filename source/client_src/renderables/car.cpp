@@ -17,11 +17,9 @@ void Car::update(const float newX, const float newY, const float newAngle) {
 
 void Car::draw() {
     SDL2pp::Texture& texture(tm.getCarsTexture());
-    const int w = texture.GetWidth();
-    const int h = texture.GetHeight();
 
     SDL2pp::Rect srcRect(tm.getCarFrame(carType, angle));
-    SDL2pp::Rect dstRect( x, y, w, h ); // Tengo que ver como manejar esto
+    SDL2pp::Rect dstRect( x, y, srcRect.w, srcRect.h );
 
     renderer.Copy(texture, srcRect,dstRect);
 }

@@ -1,7 +1,7 @@
 #include "texture_manager.h"
 #include <cmath>
 
-TextureManager::TextureManager(SDL2pp::Renderer& renderer): renderer(renderer), carsTexture(renderer, CARS_PATH) {
+TextureManager::TextureManager(SDL2pp::Texture& carsTexture): carsTexture(carsTexture) {
     carInfos[CAR_GREEN] = {0, SMALL_CAR, SMALL_CAR};
     carInfos[CAR_RED] = {64, MEDIUM_CAR, MEDIUM_CAR};
     carInfos[CAR_PORSCHE] = {144, MEDIUM_CAR, MEDIUM_CAR};
@@ -30,4 +30,6 @@ SDL2pp::Rect TextureManager::getCarFrame(const CarType type, const float angle) 
     return {x, y, width, height};
 }
 
-SDL2pp::Texture& TextureManager::getCarsTexture() { return carsTexture; }
+SDL2pp::Texture& TextureManager::getCarsTexture() const {
+    return carsTexture;
+}

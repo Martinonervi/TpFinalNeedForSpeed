@@ -11,19 +11,21 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
                SDL_WINDOW_SHOWN),
         renderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-        tm(renderer),
+        carsTexture(renderer, "../assets/cars/cars.png"),
+        tm(carsTexture),
         receiverQueue(receiverQueue),
         senderQueue(senderQueue),
         running(true),
-        myCarId(-1)
-{}
+        myCarId(1) {
+    cars[myCarId] = std::make_unique<Car>(renderer, tm, width/2,
+                height/2, CAR_PORSCHE, 0);
+}
 
-// Tengo que tener en cuenta la camara a la hora de dibujar, voy a recibir una posicion x,y que
-// es relativa y la transformo en pixeles (ya lo hare)
 void ClientWindow::run() {
     while (running) {
         SrvMsg srvMsg;
-        while (receiverQueue.try_pop(srvMsg)) {
+        if (receiverQueue.try_pop(srvMsg)) {
+            std::cout << "LLegue al while" << std::endl;
             handleServerMessage(srvMsg);
         }
 
@@ -37,7 +39,6 @@ void ClientWindow::run() {
         }
 
         renderer.Present();
-        SDL_Delay(16);
     }
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     SDL_Quit();
@@ -64,7 +65,6 @@ void ClientWindow::handleEvents() {
 }
 
 
-// Podria ser un hash
 void ClientWindow::handleServerMessage(const SrvMsg& msg) {
     switch (msg.type) {
         case InitPlayer:
@@ -80,8 +80,11 @@ void ClientWindow::handleServerMessage(const SrvMsg& msg) {
 
         case Movement:
             if (cars.count(msg.posicion.player_id)) {
-                cars[msg.posicion.player_id]->update(msg.posicion.x, msg.posicion.y,
-                    msg.posicion.angleRad);
+                std::cout << msg.posicion.x << std::endl;
+                std::cout << msg.posicion.y << std::endl;
+                std::cout << msg.posicion.angleRad << std::endl;
+                cars[msg.posicion.player_id]->update(msg.posicion.x*10, msg.posicion.y,
+                    msg.posicion.angleRad*10);
             }
             break;
 

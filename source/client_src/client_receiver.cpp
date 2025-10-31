@@ -9,7 +9,7 @@ void ClientReceiver::run(){
     while (should_keep_running()){
         SrvMsg msg = protocol.recvSrvMsg();
         switch (msg.type) {
-            case (Opcode::Movement): {
+            case (Movement): {
                 std::cout << "llegue al client Receiver, id:" << msg.posicion.player_id << "\n";
                 receiverQueue.push(msg);
                 break;
