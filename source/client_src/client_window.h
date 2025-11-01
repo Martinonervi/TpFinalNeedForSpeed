@@ -2,11 +2,16 @@
 #define CLIENTWINDOW_H
 
 #include <string>
-#include "../common_src/queue.h"
+
 #include <SDL2pp/SDL2pp.hh>
+
 #include "../common_src/constants.h"
+#include "../common_src/queue.h"
 #include "renderables/car.h"
+#include "renderables/map.h"
 #include "textures/texture_manager.h"
+
+#include "client_camera.h"
 
 class ClientWindow {
 public:
@@ -24,10 +29,12 @@ private:
     SDL2pp::Window window;
     SDL2pp::Renderer renderer;
     SDL2pp::Texture carsTexture;
+    SDL2pp::Texture mapsTexture;
     TextureManager tm;
     Queue<SrvMsgPtr>& receiverQueue;
     Queue<CliMsgPtr>& senderQueue;
     std::unordered_map<int, std::unique_ptr<Car>> cars;
+    Camera camera;
     int myCarId;
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
@@ -40,7 +47,7 @@ private:
 
     bool running;
     void handleEvents();
-    void handleServerMessage(SrvMsgPtr msg);
+    void handleServerMessage(const SrvMsgPtr& msg);
 };
 
 #endif // CLIENTWINDOW_H

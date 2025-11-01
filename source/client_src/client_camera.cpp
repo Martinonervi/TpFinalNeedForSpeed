@@ -2,9 +2,9 @@
 
 Camera::Camera(const int screenWidth, const int screenHeight, const int worldWidth,
                const int worldHeight)
-        : screenWidth(screenWidth), screenHeight(screenHeight),
-          worldWidth(worldWidth), worldHeight(worldHeight),
-          x(0), y(0) {}
+        : x(0), y(0),
+          screenWidth(screenWidth), screenHeight(screenHeight),
+          worldWidth(worldWidth), worldHeight(worldHeight) {}
 
 void Camera::follow(const int targetX, const int targetY) {
     x = targetX - screenWidth / 2;
@@ -16,5 +16,6 @@ void Camera::follow(const int targetX, const int targetY) {
     if (y + screenHeight > worldHeight) y = worldHeight - screenHeight;
 }
 
-int Camera::getX() const { return x; }
-int Camera::getY() const { return y; }
+SDL2pp::Rect Camera::getView() const {
+    return {x, y, screenWidth, screenHeight};
+}

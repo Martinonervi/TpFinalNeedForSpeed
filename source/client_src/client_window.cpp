@@ -12,17 +12,18 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
                SDL_WINDOW_SHOWN),
         renderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
         carsTexture(renderer, "../assets/cars/cars.png"),
-        tm(carsTexture),
+        mapsTexture(renderer, "../assets/cities/LibertyCity.png"),
+        tm(carsTexture, mapsTexture),
         receiverQueue(receiverQueue),
         senderQueue(senderQueue),
         running(true),
-        myCarId(1) {
-    cars[myCarId] = std::make_unique<Car>(renderer, tm, width/2,
-                height/2, CAR_LIMO, 0);
-}
+        camera(width, height, 4640, 4672), // Agregar consts
+        myCarId(-1)
+{}
 
 // Hay que manejar FPS
 void ClientWindow::run() {
+    const Map map(renderer, tm);
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
@@ -31,10 +32,14 @@ void ClientWindow::run() {
 
         handleEvents();
 
-        renderer.SetDrawColor(0, 128, 0, 255);
+        renderer.SetDrawColor(0, 0, 0, 0);
         renderer.Clear();
+        map.draw(camera);
 
         for (auto& [id, car] : cars) {
+            if (id == myCarId) {
+                camera.follow(car->getX(), car->getY()); // Problemas float/ int
+            }
             car->draw();
         }
 
@@ -63,19 +68,23 @@ void ClientWindow::handleEvents() {
 }
 
 
-void ClientWindow::handleServerMessage(const SrvMsgPtr msg) {
-    switch (msg->type()) { // Get
-       /* case InitPlayer:
-            myCarId = msg.posicion.player_id;
-            cars[myCarId] = std::make_unique<Car>(renderer, tm, msg.posicion.x,
-                msg.posicion.y, CAR_PORSCHE, msg.posicion.angleRad);
+void ClientWindow::handleServerMessage(const SrvMsgPtr& msg) {
+    switch (msg->type()) {
+        case INIT_PLAYER: {
+            const auto sp = dynamic_cast<const SendPlayer&>(*msg);
+            myCarId = sp.getPlayerId();
+            std::cout << "Bienvenido Player:" << myCarId << std::endl;
+            cars[myCarId] = std::make_unique<Car>(renderer, tm, sp.getX(),
+                sp.getY(), sp.getCarType(), sp.getAngleRad());
             break;
-
-        case NewCar:
-            cars[msg.posicion.player_id] = std::make_unique<Car>(renderer, tm, msg.posicion.x,
-                msg.posicion.y, CAR_PORSCHE, msg.posicion.angleRad);
+        }
+        case NEW_CAR: {
+            const auto snc = dynamic_cast<const SendNewCar&>(*msg);
+            std::cout << "Se Unio Player:" << snc.getPlayerId() << std::endl;
+            cars[snc.getPlayerId()] = std::make_unique<Car>(renderer, tm, snc.getX(),
+                snc.getY(), snc.getCarType(), snc.getAngleRad());
             break;
-*/
+        }
         case Movement: {
             const auto ps = dynamic_cast<const PlayerState&>(*msg);
             if (cars.count(ps.getPlayerId())) {

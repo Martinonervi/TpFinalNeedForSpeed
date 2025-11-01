@@ -13,18 +13,6 @@ tm(tm),
 x(x), y(y)
 {}
 
-void Entity::draw() {
-    /*
-    const int w = texture.GetWidth();
-    const int h = texture.GetHeight();
-
-    SDL2pp::Rect srcRect( dx, y - h / 2, w, h ); // Dsps tengo que ver bien que pongo aca
-    SDL2pp::Rect dstRect( dx, dy, w, h );
-
-    renderer.Copy(texture, srcRect,dstRect);
-*/
-}
-
 void Entity::setPosition(const float newX, const float newY) {
     x = newX;
     y = newY;

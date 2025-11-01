@@ -11,6 +11,26 @@ void Client::run() {
     sender.start();
     receiver.start();
 
+    std::string line;
+    while (std::getline(std::cin, line)) {
+        if (line.empty())
+            continue;
+
+        int num = std::stoi(line);
+
+        if (num < 0 || num >= CAR_COUNT) {
+            std::cerr << "Tipo de auto inválido: " << num << std::endl;
+            continue;
+        }
+
+        auto type = static_cast<CarType>(num);
+
+        InitPlayer ip("jugador", type);
+        senderQueue.push(ip);
+    }
+
+
+
     ClientWindow client_window(
         800,
         600,

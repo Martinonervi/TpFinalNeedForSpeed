@@ -1,5 +1,6 @@
 #ifndef CLIENT_CAMERA_H
 #define CLIENT_CAMERA_H
+#include <SDL2pp/Texture.hh>
 
 class Camera {
 public:
@@ -7,8 +8,7 @@ public:
 
     void follow(int targetX, int targetY);
 
-    int getX() const;
-    int getY() const;
+    SDL2pp::Rect getView() const;
 
 private:
     int x, y;
