@@ -7,32 +7,47 @@
 ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 
 
-int ServerProtocol::sendPlayerState(const SrvMsg& msg) {
+
+int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
     try {
-        std::vector<char> buf(sizeof(SrvMsg));
+
+        //endianess para los floats??
+        uint16_t player_id = htons(ps.getPlayerId());
+        float    x = ps.getX();
+        float    y = ps.getY();
+        float    angleRad = ps.getAngleRad();
+        Op type = ps.type();
+
+        std::vector<char> buf(sizeof(CliMsg));
         size_t offset = 0;
 
-        memcpy(buf.data() + offset, &msg.type, sizeof(Opcode));
-        offset += sizeof(Opcode);
+        memcpy(buf.data() + offset, &type, sizeof(type));
+        offset += sizeof(type);
 
-        memcpy(buf.data() + offset, &msg.posicion.player_id, sizeof(msg.posicion.player_id));
-        offset += sizeof(msg.posicion.player_id);
-        memcpy(buf.data() + offset, &msg.posicion.x, sizeof(msg.posicion.x));
-        offset += sizeof(msg.posicion.x);
-        memcpy(buf.data() + offset, &msg.posicion.y, sizeof(msg.posicion.y));
-        offset += sizeof(msg.posicion.y);
-        memcpy(buf.data() + offset, &msg.posicion.angleRad, sizeof(msg.posicion.angleRad));
-        offset += sizeof(msg.posicion.angleRad);
+        memcpy(buf.data() + offset, &player_id, sizeof(player_id));
+        offset += sizeof(player_id);
 
+        memcpy(buf.data() + offset, &x, sizeof(x));
+        offset += sizeof(x);
+
+        //movement.steer
+        memcpy(buf.data() + offset, &y, sizeof(y));
+        offset += sizeof(y);
+
+        //movement.nitro
+        memcpy(buf.data() + offset, &angleRad, sizeof(angleRad));
+        offset += sizeof(angleRad);
 
         int n = peer.sendall(buf.data(), offset);
         return n;
-
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
         throw("Error sending");
     }
 }
+
+
+
 
 
 Opcode ServerProtocol::recvOpcode() {
@@ -50,15 +65,20 @@ Opcode ServerProtocol::recvOpcode() {
 }
 
 
-MoveInfo ServerProtocol::recvMoveInfo() {
-    MoveInfo moveInfo;
+MoveMsg ServerProtocol::recvMoveInfo() {
     size_t n = 0;
 
+    uint8_t a;
+    uint8_t b;
+    int8_t s;
+    uint8_t ni;
+
     try {
-        n = peer.recvall(&moveInfo.accelerate, sizeof(moveInfo.accelerate));
-        n += peer.recvall(&moveInfo.brake, sizeof(moveInfo.brake));
-        n += peer.recvall(&moveInfo.steer, sizeof(moveInfo.steer));
-        n += peer.recvall(&moveInfo.nitro, sizeof(moveInfo.nitro));
+        n = peer.recvall(&a, sizeof(a));
+        n += peer.recvall(&b, sizeof(b));
+        n += peer.recvall(&s, sizeof(s));
+        n += peer.recvall(&ni, sizeof(ni));
+
 
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
@@ -66,6 +86,7 @@ MoveInfo ServerProtocol::recvMoveInfo() {
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
-    return moveInfo;
+    MoveMsg moveMsg(a,b,s,ni);
+    return moveMsg;
 
 }

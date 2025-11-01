@@ -1,6 +1,7 @@
 #include "car.h"
 #include <algorithm>
 #include <cmath>
+
 Car::Car(ID id, b2WorldId world, b2Vec2 pos, float angleRad){
     this->id = id;
 
@@ -27,12 +28,9 @@ Car::Car(ID id, b2WorldId world, b2Vec2 pos, float angleRad){
 }
 
 
-void Car::snapshotState(PlayerStateUpdate& ps){
-    //podria agregar el id (tendria q pasar el otro struct)
+PlayerState Car::snapshotState(){
     b2Transform xf = b2Body_GetTransform(body);
-    ps.x = xf.p.x;
-    ps.y = xf.p.y;
-    ps.angleRad = b2Rot_GetAngle(xf.q);
+    return PlayerState(id, xf.p.x, xf.p.y, b2Rot_GetAngle(xf.q));
 }
 
 
@@ -52,13 +50,13 @@ const float stopEps     = 0.05f;   // m/s  umbral para “snap to zero”
 // Convención pedida: eje X local = DERECHA, eje Y local = ADELANTE
 static inline float clampf(float x, float a, float b){ return std::max(a, std::min(b, x)); }
 
-void Car::applyControlsToBody(const MoveInfo& in, float dt) {
+void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     b2BodyId body = this->body;
 
     // Inputs
-    const float throttle = clampf(in.accelerate, 0.f, 1.f);
-    const float brake    = clampf(in.brake,       0.f, 1.f);
-    const float steer    = clampf(in.steer,      -1.f, 1.f);
+    const float throttle = clampf(in.getAccelerate(), 0.f, 1.f);
+    const float brake    = clampf(in.getBrake(), 0.f, 1.f);
+    const float steer    = clampf(in.getSteer(), -1.f, 1.f);
 
 
     //  (X = derecha, Y = adelante) -> hablar con fran

@@ -5,8 +5,8 @@
 class Car {
 public:
     Car(ID id, b2WorldId world, b2Vec2 pos, float angleRad);
-    void snapshotState(PlayerStateUpdate& ps);
-    void applyControlsToBody(const MoveInfo& in, float dt);
+    PlayerState snapshotState();
+    void applyControlsToBody(const MoveMsg& in, float dt);
 
 private:
     ID id;

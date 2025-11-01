@@ -27,8 +27,8 @@ public:
     int size() const;
 
     // broadcast
-    void broadcast(const SrvMsg& msg);
-    void sendTo(ID client_id, const SrvMsg& msg);
+    void broadcast(const SrvMsgPtr& msg);
+    void sendTo(ID client_id, const SrvMsgPtr& msg);
 
 private:
     mutable std::mutex mx;

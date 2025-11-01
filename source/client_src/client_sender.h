@@ -4,12 +4,12 @@
 
 class ClientSender: public Thread {
 public:
-    explicit ClientSender(Socket& peer_sock, Queue<CliMsg>& senderQueue);
+    explicit ClientSender(Socket& peer_sock, Queue<CliMsgPtr>& senderQueue);
     bool is_listening() const;
     void run() override;
 
 private:
     ClientProtocol protocol;
-    Queue<CliMsg>& senderQueue;
+    Queue<CliMsgPtr>& senderQueue;
     bool listening{true};
 };

@@ -15,21 +15,20 @@ void Sender::stop() {
         peer.shutdown(1);
     } catch (...) {}
 }
-
 void Sender::run() {
     try {
         while (should_keep_running()) {
-            SrvMsg msg = msg_queue->pop();
+            SrvMsgPtr msg = msg_queue->pop();
 
             int n;
 
-            switch (msg.type) {
-                case Movement: {
-                    n = protocol.sendPlayerState(msg);
+            switch (msg->type()) {
+                case Opcode::Movement: {
+                    n = protocol.sendPlayerState(dynamic_cast<const PlayerState&>(*msg));
                     break;
                 }
                 default: {
-                    std::cout << "cmd desconocido: " << msg.type << "\n";
+                    std::cout << "cmd desconocido: " << msg->type() << "\n";
                     n = 0; //quiero salir
                 }
             }

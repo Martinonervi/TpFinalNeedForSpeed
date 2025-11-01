@@ -1,14 +1,22 @@
 #include "client_sender.h"
 #include <sstream>
 
-ClientSender::ClientSender(Socket& peer_sock, Queue<CliMsg>& senderQueue)
+ClientSender::ClientSender(Socket& peer_sock, Queue<CliMsgPtr>& senderQueue)
     :protocol(peer_sock), senderQueue(senderQueue){}
 
 void ClientSender::run(){
-    while(should_keep_running()) {
+    while(should_keep_running() and leerStdinYEncolar()) {
         try{
-            CliMsg cliMsg = senderQueue.pop();
-            protocol.sendCliMsg(cliMsg); //cambiar nombre y qhable de movement
+            CliMsgPtr cliMsg = senderQueue.pop();
+            switch (cliMsg->type()) {
+                case (Opcode::Movement): {
+                    protocol.sendClientMove(dynamic_cast<const MoveMsg&>(*cliMsg));
+                    break;
+                }
+                default: {
+                    std::cout << "cmd desconocido: " << cliMsg->type() << "\n";
+                }
+            }
         } catch (const std::out_of_range& e) {
             std::cout << "cmd desconocido: " << "\n";
         } catch (const std::exception& e) {
@@ -17,6 +25,48 @@ void ClientSender::run(){
         
     }
     listening = false;
+}
+
+//esta funcion esta muy util para probar de stdin el protocolo
+bool ClientSender::leerStdinYEncolar() {
+    std::string line, cmd, param;
+
+
+    if (!std::getline(std::cin, line)) {
+        return false;
+    }
+    if (!parseLine(line, cmd, param)){
+        return false;
+    }
+    if (line.empty()) {
+        return true;
+    }
+
+    // input -> solo para testear que se mande bien los mensajes
+    uint8_t accel = 1;
+    uint8_t brake = 1;
+    int8_t  steer = 1;
+    uint8_t nitro = 1;
+
+    auto move = std::make_shared<MoveMsg>(accel, brake, steer, nitro);
+    CliMsgPtr base = move; //ni hace falta casteo
+    senderQueue.push(base);
+    return true;
+
+}
+
+bool ClientSender::parseLine(const std::string& line, std::string& cmd, std::string& param) {
+    cmd.clear();  // vaciamos los buffers por las dudas
+    param.clear();
+
+    std::istringstream iss(line);
+    iss >> cmd;
+
+    if (cmd == EXIT_CMD)
+        return false;  // salir del loop si el cliente pone exit
+    iss >> param;      // si no encuentro nada no hace nada (param vacio)
+
+    return true;
 }
 
 bool ClientSender::is_listening() const { return listening; }
