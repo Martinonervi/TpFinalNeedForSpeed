@@ -6,7 +6,7 @@
 #include <SDL2pp/Window.hh>
 
 ClientWindow::ClientWindow(const int width, const int height, const std::string& title,
-                           Queue<SrvMsg>& receiverQueue, Queue<CliMsg>& senderQueue):
+                           Queue<SrvMsgPtr>& receiverQueue, Queue<CliMsgPtr>& senderQueue):
         sdl(SDL_INIT_VIDEO),
         window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
                SDL_WINDOW_SHOWN),
@@ -18,13 +18,13 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         running(true),
         myCarId(1) {
     cars[myCarId] = std::make_unique<Car>(renderer, tm, width/2,
-                height/2, CAR_PORSCHE, 0);
+                height/2, CAR_LIMO, 0);
 }
 
 // Hay que manejar FPS
 void ClientWindow::run() {
     while (running) {
-        SrvMsg srvMsg;
+        SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
             handleServerMessage(srvMsg);
         }
@@ -54,10 +54,8 @@ void ClientWindow::handleEvents() {
         } else if (event.type == SDL_KEYDOWN && myCarId != -1) {
             auto it = keyToMove.find(event.key.keysym.sym);
             if (it != keyToMove.end()) {
-                CliMsg clientMsg{};
-                clientMsg.player_id = myCarId;
-                clientMsg.event_type = Movement;
-                clientMsg.movement = it->second;
+                auto msg = std::make_shared<MoveMsg>(it->second);
+                CliMsgPtr clientMsg = msg;
                 senderQueue.push(clientMsg);
             }
         }
@@ -65,9 +63,9 @@ void ClientWindow::handleEvents() {
 }
 
 
-void ClientWindow::handleServerMessage(const SrvMsg& msg) {
-    switch (msg.type) {
-        case InitPlayer:
+void ClientWindow::handleServerMessage(const SrvMsgPtr msg) {
+    switch (msg->type()) { // Get
+       /* case InitPlayer:
             myCarId = msg.posicion.player_id;
             cars[myCarId] = std::make_unique<Car>(renderer, tm, msg.posicion.x,
                 msg.posicion.y, CAR_PORSCHE, msg.posicion.angleRad);
@@ -77,17 +75,19 @@ void ClientWindow::handleServerMessage(const SrvMsg& msg) {
             cars[msg.posicion.player_id] = std::make_unique<Car>(renderer, tm, msg.posicion.x,
                 msg.posicion.y, CAR_PORSCHE, msg.posicion.angleRad);
             break;
-
-        case Movement:
-            if (cars.count(msg.posicion.player_id)) {
-                std::cout << msg.posicion.x << std::endl;
-                std::cout << msg.posicion.y << std::endl;
-                std::cout << msg.posicion.angleRad << std::endl;
-                cars[msg.posicion.player_id]->update(msg.posicion.x*100, msg.posicion.y*100,
-                    msg.posicion.angleRad);
+*/
+        case Movement: {
+            const auto ps = dynamic_cast<const PlayerState&>(*msg);
+            if (cars.count(ps.getPlayerId())) {
+                std::cout << ps.getX() << std::endl;
+                std::cout << ps.getY() << std::endl;
+                std::cout << ps.getAngleRad() << std::endl;
+                cars[ps.getPlayerId()]->update(ps.getX()*100, ps.getY()*100,
+                    ps.getAngleRad());
             }
             break;
-
+        }
+/*
         case Disconnect:
             cars.erase(msg.posicion.player_id);
             if (msg.posicion.player_id == myCarId) {
@@ -95,9 +95,10 @@ void ClientWindow::handleServerMessage(const SrvMsg& msg) {
                 running = false;
             }
             break;
-
+*/
         default:
             break;
     }
 }
+
 
