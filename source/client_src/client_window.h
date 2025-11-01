@@ -11,6 +11,9 @@
 #include "renderables/map.h"
 #include "textures/texture_manager.h"
 
+#include "../common_src/move_Info.h"
+#include "../common_src/player_state.h"
+
 #include "client_camera.h"
 
 class ClientWindow {
@@ -47,7 +50,7 @@ private:
 
     bool running;
     void handleEvents();
-    void handleServerMessage(const SrvMsgPtr& msg);
+    void handleServerMessage(SrvMsgPtr msg);
 };
 
 #endif // CLIENTWINDOW_H

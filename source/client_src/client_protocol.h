@@ -2,6 +2,12 @@
 #include "client_types.h"
 #include <cstring>
 
+#include "../common_src/move_Info.h"
+#include "../common_src/player_state.h"
+
+#include "../common_src/init_player.h"
+#include "../common_src/send_player.h"
+
 class ClientProtocol {
 public:
     explicit ClientProtocol(Socket& peer);
@@ -13,6 +19,8 @@ public:
     // lee (y por ahora descarta) el primer byte
     Op readActionByte() const;
     int sendClientMove(const MoveMsg& moveMsg) const;
+    int sendInitPlayer(const InitPlayer& ip) const;
+    SendPlayer recvSendPlayer();
 
 private:
     Socket& peer;

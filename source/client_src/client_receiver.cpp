@@ -4,18 +4,26 @@
 ClientReceiver::ClientReceiver(Socket& peer_sock, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(peer_sock), receiverQueue(receiverQueue){}
 
-
 void ClientReceiver::run(){
     while (should_keep_running()){
         Op op = protocol.readActionByte();
 
         switch (op) {
             case (Opcode::Movement): {
-                PlayerState msg = protocol.recvSrvMsg();
+                PlayerState ps = protocol.recvSrvMsg();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<PlayerState>(std::move(msg)));
-                std::cout << "llegue al client Receiver, id:" << msg.getPlayerId() << "\n";
+                        std::make_shared<PlayerState>(std::move(ps)));
+                std::cout << "[client Receiver] movement, id:" << ps.getPlayerId() << "\n";
                 receiverQueue.push(base);
+                break;
+            }
+            case (Opcode::INIT_PLAYER): {
+                SendPlayer sp = protocol.recvSendPlayer();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<SendPlayer>(std::move(sp)));
+                std::cout << "[client Receiver] initPlayer, id:" << sp.getPlayerId() << "\n";
+                receiverQueue.push(base);
+
                 break;
             }
             default: {

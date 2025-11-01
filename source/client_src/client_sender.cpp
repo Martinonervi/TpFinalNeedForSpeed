@@ -5,12 +5,18 @@ ClientSender::ClientSender(Socket& peer_sock, Queue<CliMsgPtr>& senderQueue)
     :protocol(peer_sock), senderQueue(senderQueue){}
 
 void ClientSender::run(){
-    while(should_keep_running() /*and leerStdinYEncolar()*/) {
+    while(should_keep_running() and leerStdinYEncolar()) {
         try{
             CliMsgPtr cliMsg = senderQueue.pop();
             switch (cliMsg->type()) {
                 case (Opcode::Movement): {
                     protocol.sendClientMove(dynamic_cast<const MoveMsg&>(*cliMsg));
+                    break;
+                }
+                case(Opcode::INIT_PLAYER): {
+                    std::cout << "entre a init player del sender client\n";
+                    int n = protocol.sendInitPlayer(dynamic_cast<const InitPlayer&>(*cliMsg));
+                    std::cout << "lei" << n << "\n";
                     break;
                 }
                 default: {
@@ -42,7 +48,9 @@ bool ClientSender::leerStdinYEncolar() {
         return true;
     }
 
+
     // input -> solo para testear que se mande bien los mensajes
+/*
     uint8_t accel = 1;
     uint8_t brake = 1;
     int8_t  steer = 1;
@@ -50,7 +58,12 @@ bool ClientSender::leerStdinYEncolar() {
 
     auto move = std::make_shared<MoveMsg>(accel, brake, steer, nitro);
     CliMsgPtr base = move; //ni hace falta casteo
+*/
+
+    std::shared_ptr<InitPlayer> ip = std::make_shared<InitPlayer>("pancho",CarType::CAR_GREEN);
+    CliMsgPtr base = ip;
     senderQueue.push(base);
+    std::cout << "mandando el cmd por la senderQueue de client\n";
     return true;
 
 }

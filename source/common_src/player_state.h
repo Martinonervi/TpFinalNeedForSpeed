@@ -6,7 +6,7 @@
 class PlayerState: public SrvMsg {
 public:
 
-    PlayerState(uint16_t id, float x, float y, float ang) noexcept
+    PlayerState(ID id, float x, float y, float ang) noexcept
             : player_id(id), x(x), y(y), angleRad(ang) {}
 
     Op type() const override { return Opcode::Movement; }
@@ -18,7 +18,7 @@ public:
 
 
 private:
-    uint16_t player_id;
+    ID player_id;
     float    x;
     float    y;
     float    angleRad;

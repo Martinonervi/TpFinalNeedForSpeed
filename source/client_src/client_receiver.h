@@ -5,8 +5,8 @@
 class ClientReceiver: public Thread{
 public:
     ClientReceiver(Socket& peer_socket, Queue<SrvMsgPtr>& receiverQueue);
-
     void run() override;
+
 
 private:
     ClientProtocol protocol;

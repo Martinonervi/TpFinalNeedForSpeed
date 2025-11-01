@@ -4,7 +4,34 @@
 
 ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}
 
+int ClientProtocol::sendInitPlayer(const InitPlayer& ip) const {
+    try {
+        std::cout << "empece en sendInitPlayer en client protoclo\n";
+        Op type = ip.type();
+        //std::string name = ip.getName();
+        CarType carType = ip.getCarType();
 
+        std::vector<char> buf(sizeof(CliMsg));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type, sizeof(type));
+        offset += sizeof(type);
+
+        //memcpy(buf.data() + offset, &name, sizeof(name));
+        //offset += sizeof(name);
+
+        memcpy(buf.data() + offset, &carType, sizeof(carType));
+        offset += sizeof(carType);
+
+        int n = peer.sendall(buf.data(), offset);
+        std::cout << "termine en sendInitPlayer en client protoclo\n";
+        return n;
+    }  catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+
+}
 
 int ClientProtocol::sendClientMove(const MoveMsg& moveMsg) const {
     try {
@@ -78,4 +105,30 @@ Op ClientProtocol::readActionByte() const {
         std::cerr << "client_main error: " << e.what() << "\n";
         throw RETURN_FAILURE;
     }
+}
+
+SendPlayer ClientProtocol::recvSendPlayer() {
+    size_t n = 0;
+
+    uint16_t player_id;
+    CarType carType;
+    float x;
+    float y;
+    float angleRad;
+
+    try {
+        n = peer.recvall(&player_id, sizeof(player_id));
+        n += peer.recvall(&carType, sizeof(carType));
+        n += peer.recvall(&x, sizeof(x));
+        n += peer.recvall(&y, sizeof(y));
+        n += peer.recvall(&angleRad, sizeof(angleRad));
+
+
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return SendPlayer(player_id, carType, x, y, angleRad);
 }

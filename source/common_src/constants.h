@@ -9,10 +9,9 @@
 
 #include "opcodes.h"
 #include "client_msg.h"
-#include "move_Info.h"
-#include "player_state.h"
-#include "queue.h"
 #include "server_msg.h"
+
+#include "queue.h"
 #include "socket.h"
 #include "thread.h"
 

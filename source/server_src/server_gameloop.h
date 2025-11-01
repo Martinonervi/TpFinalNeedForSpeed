@@ -21,6 +21,7 @@ private:
     std::list<Cmd> emptyQueue();
 
     void movementHandler(Cmd& cmd);
+    void initPlayerHandler(Cmd& cmd);
     void broadcastCarSnapshots();
 
     b2WorldId world;
