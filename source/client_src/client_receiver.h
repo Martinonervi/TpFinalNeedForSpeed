@@ -4,12 +4,12 @@
 
 class ClientReceiver: public Thread{
 public:
-    ClientReceiver(Socket& peer_socket, Queue<SrvMsg>& receiverQueue);
+    ClientReceiver(Socket& peer_socket, Queue<SrvMsgPtr>& receiverQueue);
 
     void run() override;
 
 private:
     ClientProtocol protocol;
-    Queue<SrvMsg>& receiverQueue;
+    Queue<SrvMsgPtr>& receiverQueue;
     Printer printer;
 };

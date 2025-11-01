@@ -17,8 +17,8 @@ private:
     void join();
 
     Socket peer;
-    Queue<SrvMsg> receiverQueue;
-    Queue<CliMsg> senderQueue;
+    Queue<SrvMsgPtr> receiverQueue;
+    Queue<CliMsgPtr> senderQueue;
     ClientReceiver receiver;
     ClientSender sender;
     Printer printer;

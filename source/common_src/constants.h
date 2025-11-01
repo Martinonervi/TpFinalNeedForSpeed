@@ -7,9 +7,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include "opcodes.h"
+#include "client_msg.h"
+#include "move_Info.h"
+#include "player_state.h"
 #include "queue.h"
+#include "server_msg.h"
 #include "socket.h"
 #include "thread.h"
+
 
 #define NITRO_ON_MSG "A car hit the nitro!"
 #define NITRO_OFF_MSG "A car is out of juice."
@@ -17,48 +23,19 @@
 #define RETURN_SUCCESS  0
 #define RETURN_FAILURE  1
 
-// Tipos personalizados
 using Cars_W_Nitro = std::uint16_t;
-using Op = std::uint8_t;
+
 using ID = std::uint32_t;
 
-struct MoveInfo {
-    uint8_t accelerate;    // W / acelerar, 0 false, 1 true
-    uint8_t brake;         // S / frenar, 0 false, 1 true
-    int8_t steer;       // -1 izquierda, 0 recto, +1 derecha
-    uint8_t nitro;  // 0 false, 1 true
-};
+using CliMsgPtr = std::shared_ptr<CliMsg>;
+using SrvMsgPtr = std::shared_ptr<SrvMsg>;
 
-struct CliMsg {
-    Op event_type{0};
-    MoveInfo movement{};
-};
-
-// Cambiar a mayus
-enum Opcode : Op { Movement = 0x01, ClientMSG = 0x04, ServerMSG = 0x10, NitroON = 0x07,
-                   NitroOFF = 0x08, Nitro = 0x09 };
-
-
+//no veo ganancia en que Cmd sea una clase, cumple su funcion perfecta como struct
 struct Cmd {
-    Opcode type;
-    ID client_id{0};
-    MoveInfo movimiento;
+    ID client_id;
+    std::shared_ptr<CliMsg> msg;
 };
 
-
-struct PlayerStateUpdate {
-    uint16_t player_id;
-
-    float x; //box2d usa metros
-    float y;
-    float angleRad;
-};
-
-
-struct SrvMsg {
-    Opcode type{};
-    PlayerStateUpdate posicion;
-};
 
 #define SMALL_CAR 32
 #define MEDIUM_CAR 40

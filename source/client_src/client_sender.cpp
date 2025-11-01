@@ -1,26 +1,22 @@
 #include "client_sender.h"
 #include <sstream>
 
-ClientSender::ClientSender(Socket& peer_sock, Queue<CliMsg>& senderQueue)
+ClientSender::ClientSender(Socket& peer_sock, Queue<CliMsgPtr>& senderQueue)
     :protocol(peer_sock), senderQueue(senderQueue){}
 
 void ClientSender::run(){
-    //std::string line, cmd, param;
-    //while (std::getline(std::cin, line) && (parseLine(line, cmd, param) && should_keep_running())) {
-
     while(should_keep_running() and leerStdinYEncolar()) {
         try{
-            CliMsg cliMsg = senderQueue.pop();
-
-            switch (cliMsg.event_type) {
+            CliMsgPtr cliMsg = senderQueue.pop();
+            switch (cliMsg->type()) {
                 case (Opcode::Movement): {
-                    protocol.sendCliMsg(cliMsg); //cambiar nombre y qhable de movement
+                    protocol.sendClientMove(dynamic_cast<const MoveMsg&>(*cliMsg));
                     break;
                 }
                 default: {
-                    std::cout << "cmd desconocido: " << cliMsg.event_type << "\n";
+                    std::cout << "cmd desconocido: " << cliMsg->type() << "\n";
                 }
-            } 
+            }
         } catch (const std::out_of_range& e) {
             std::cout << "cmd desconocido: " << "\n";
         } catch (const std::exception& e) {
@@ -31,6 +27,7 @@ void ClientSender::run(){
     listening = false;
 }
 
+//esta funcion esta muy util para probar de stdin el protocolo
 bool ClientSender::leerStdinYEncolar() {
     std::string line, cmd, param;
 
@@ -45,12 +42,15 @@ bool ClientSender::leerStdinYEncolar() {
         return true;
     }
 
-    Op op = cmdToOp.at(cmd);
-    CliMsg cliMsg;
-    cliMsg.event_type = op;
-    cliMsg.movement.steer = 1;
-    senderQueue.push(cliMsg);
+    // input -> solo para testear que se mande bien los mensajes
+    uint8_t accel = 1;
+    uint8_t brake = 1;
+    int8_t  steer = 1;
+    uint8_t nitro = 1;
 
+    auto move = std::make_shared<MoveMsg>(accel, brake, steer, nitro);
+    CliMsgPtr base = move; //ni hace falta casteo
+    senderQueue.push(base);
     return true;
 
 }

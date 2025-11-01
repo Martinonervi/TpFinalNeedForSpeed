@@ -8,7 +8,7 @@
 #define NITRO_TICKS 12
 #define TICK_MS 250
 
-using SendQ = Queue<SrvMsg>;
+using SendQ = Queue<SrvMsgPtr>;
 using SendQPtr = std::shared_ptr<SendQ>;
 using gameLoopQueue = Queue<Cmd>;
 
