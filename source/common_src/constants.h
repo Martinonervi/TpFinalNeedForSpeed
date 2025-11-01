@@ -61,3 +61,8 @@ struct CarInfo {
 };
 
 #define CARS_PATH  "../../assets/cars/cars.png"
+
+enum class EntityLayer {
+    GROUND,
+    BRIDGE
+};

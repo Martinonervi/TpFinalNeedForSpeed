@@ -30,6 +30,9 @@ void Entity::setPosition(const float newX, const float newY) {
     y = newY;
 }
 
+void Entity::setLayer(const EntityLayer l) { layer = l; }
+EntityLayer Entity::getLayer() const { return layer; }
+
 float Entity::getX() const { return x; }
 float Entity::getY() const { return y; }
 

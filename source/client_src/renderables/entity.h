@@ -5,6 +5,7 @@
 #include <SDL2pp/Texture.hh>
 
 #include "../textures/texture_manager.h"
+#include "../../common_src/constants.h"
 
 class Entity {
 public:
@@ -12,14 +13,17 @@ public:
     virtual ~Entity() = default;
 
     virtual void draw();
-    virtual void setPosition(float newX, float newY);
+    void setPosition(float newX, float newY);
+    void setLayer(EntityLayer l);
 
+    EntityLayer getLayer() const;
     float getX() const;
     float getY() const;
 
 protected:
     SDL2pp::Renderer& renderer;
     TextureManager& tm;
+    EntityLayer layer;
 
     float x;
     float y;
