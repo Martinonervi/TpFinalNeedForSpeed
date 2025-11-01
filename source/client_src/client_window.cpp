@@ -21,11 +21,11 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
                 height/2, CAR_PORSCHE, 0);
 }
 
+// Hay que manejar FPS
 void ClientWindow::run() {
     while (running) {
         SrvMsg srvMsg;
-        if (receiverQueue.try_pop(srvMsg)) {
-            std::cout << "LLegue al while" << std::endl;
+        while (receiverQueue.try_pop(srvMsg)) {
             handleServerMessage(srvMsg);
         }
 
@@ -83,8 +83,8 @@ void ClientWindow::handleServerMessage(const SrvMsg& msg) {
                 std::cout << msg.posicion.x << std::endl;
                 std::cout << msg.posicion.y << std::endl;
                 std::cout << msg.posicion.angleRad << std::endl;
-                cars[msg.posicion.player_id]->update(msg.posicion.x*10, msg.posicion.y*100,
-                    msg.posicion.angleRad*10);
+                cars[msg.posicion.player_id]->update(msg.posicion.x*100, msg.posicion.y*100,
+                    msg.posicion.angleRad);
             }
             break;
 

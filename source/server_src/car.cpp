@@ -45,7 +45,7 @@ const float aLong       = 10.0f;   // m/s² aceleración máxima
 const float dBrake      = 14.0f;   // m/s² desaceleración de freno
 const float dragCoeff   = 0.8f;    // 1/s  arrastre lineal
 const float maxSpeed    = 25.0f;   // m/s  tope de velocidad
-const float turnRateMax = 2.5f;    // rad/s giro máximo
+const float turnRateMax = 20.5f;    // rad/s giro máximo
 const float stopEps     = 0.05f;   // m/s  umbral para “snap to zero”
 
 

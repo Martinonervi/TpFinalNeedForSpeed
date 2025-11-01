@@ -14,7 +14,7 @@ TextureManager::TextureManager(SDL2pp::Texture& carsTexture): carsTexture(carsTe
 SDL2pp::Rect TextureManager::getCarFrame(const CarType type, const float angle) {
     const auto& [yOffset, width, height] = carInfos[type];
 
-    float adjusted = angle + M_PI / 2.0f;
+    const float adjusted = angle + M_PI / 2.0f;
 
     float normalized = fmod(adjusted, 2.0f * M_PI);
     if (normalized < 0)
@@ -25,7 +25,6 @@ SDL2pp::Rect TextureManager::getCarFrame(const CarType type, const float angle) 
 
     const int col = frameIndex % FRAMES_PER_DIRECTION;
     const int row = frameIndex >= FRAMES_PER_DIRECTION ? 1 : 0;
-    std::cout << col << frameIndex << std::endl;
     const int x = col * width;
     const int y = yOffset + row * height;
 
