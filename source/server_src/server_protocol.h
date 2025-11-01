@@ -7,12 +7,12 @@ public:
     explicit ServerProtocol(Socket& peer);
 
     // serializa y envía el mensaje por el socket
-    int sendPlayerState(const SrvMsg& msg);
+    int sendPlayerState(const PlayerState& ps) const;
 
     // recibe mensaje y devuelve el opcode del mensaje recibido
     Opcode recvOpcode();
 
-    MoveInfo recvMoveInfo();
+    MoveMsg recvMoveInfo();
 
 private:
     Socket& peer;

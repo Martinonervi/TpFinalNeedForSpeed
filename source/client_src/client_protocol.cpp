@@ -6,30 +6,36 @@ ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}
 
 
 
-int ClientProtocol::sendCliMsg(const CliMsg& cliMsg) const {
+int ClientProtocol::sendClientMove(const MoveMsg& moveMsg) const {
     try {
+        uint8_t accelerate = moveMsg.getAccelerate();
+        uint8_t brake = moveMsg.getBrake();
+        int8_t steer = moveMsg.getSteer();
+        uint8_t nitro = moveMsg.getNitro();
+        Op type = moveMsg.type();
+
         std::vector<char> buf(sizeof(CliMsg));
         size_t offset = 0;
 
-        memcpy(buf.data() + offset, &cliMsg.event_type, sizeof(cliMsg.event_type));
-        offset += sizeof(cliMsg.event_type);
+        //type
+        memcpy(buf.data() + offset, &type, sizeof(type));
+        offset += sizeof(type);
 
-        //movement.accelerate
-        memcpy(buf.data() + offset, &cliMsg.movement.accelerate, sizeof(cliMsg.movement.accelerate));
-        offset += sizeof(cliMsg.movement.accelerate);
+        //accelerate
+        memcpy(buf.data() + offset, &accelerate, sizeof(accelerate));
+        offset += sizeof(accelerate);
 
-        //movement.brake
-        memcpy(buf.data() + offset, &cliMsg.movement.brake, sizeof(cliMsg.movement.brake));
-        offset += sizeof(cliMsg.movement.brake);
+        //brake
+        memcpy(buf.data() + offset, &brake, sizeof(brake));
+        offset += sizeof(brake);
 
-        //movement.steer
-        memcpy(buf.data() + offset, &cliMsg.movement.steer, sizeof(cliMsg.movement.steer));
-        offset += sizeof(cliMsg.movement.steer);
+        //steer
+        memcpy(buf.data() + offset, &steer, sizeof(steer));
+        offset += sizeof(steer);
 
-        //movement.nitro
-        memcpy(buf.data() + offset, &cliMsg.movement.nitro, sizeof(cliMsg.movement.nitro));
-        offset += sizeof(cliMsg.movement.nitro);
-
+        //nitro
+        memcpy(buf.data() + offset, &nitro, sizeof(nitro));
+        offset += sizeof(nitro);
 
         int n = peer.sendall(buf.data(), offset);
         return n;
@@ -40,18 +46,22 @@ int ClientProtocol::sendCliMsg(const CliMsg& cliMsg) const {
 }
 
 
-SrvMsg ClientProtocol::recvSrvMsg() {
+PlayerState ClientProtocol::recvSrvMsg() {
     try {
-        SrvMsg msg;
-        peer.recvall(&msg.type, sizeof(Opcode));
+        uint16_t player_id;
+        float    x;
+        float    y;
+        float    angleRad;
 
-        peer.recvall(&msg.posicion.player_id, sizeof(msg.posicion.player_id));
-        peer.recvall(&msg.posicion.x, sizeof(msg.posicion.x));
-        peer.recvall(&msg.posicion.y, sizeof(msg.posicion.y));
-        peer.recvall(&msg.posicion.angleRad, sizeof(msg.posicion.angleRad));
+        peer.recvall(&player_id, sizeof(player_id));
+        peer.recvall(&x, sizeof(x));
+        peer.recvall(&y, sizeof(y));
+        peer.recvall(&angleRad, sizeof(angleRad));
 
+        //endianess para los floats??
+        player_id = ntohs(player_id);
 
-        return msg;
+        return PlayerState(player_id, x, y, angleRad);
     } catch (const std::exception& e) {
         std::cerr << "client_main error: " << e.what() << "\n";
         throw RETURN_FAILURE;
@@ -60,7 +70,7 @@ SrvMsg ClientProtocol::recvSrvMsg() {
 
 Op ClientProtocol::readActionByte() const {
     try {
-        Op op = Opcode::ClientMSG;
+        Op op;
         peer.recvall(&op, sizeof(Op));
 
         return op;

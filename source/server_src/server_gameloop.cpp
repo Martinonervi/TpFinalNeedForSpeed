@@ -37,7 +37,7 @@ void GameLoop::run() {
 void GameLoop::processCmds() {
     std::list<Cmd> to_process = emptyQueue();
     for (Cmd& cmd: to_process) {
-        if (cmd.type == Opcode::Movement){
+        if (cmd.msg->type() == Opcode::Movement){
             std::cout << "aca en el gameloop movement\n";
             movementHandler(cmd);
         }
@@ -46,6 +46,7 @@ void GameLoop::processCmds() {
 
 void GameLoop::movementHandler(Cmd& cmd) {
     auto it = cars.find(cmd.client_id);
+    // creo auto si no existe -> PARA TESTEAR
     if (it == cars.end()) {
         // separo autos 3m en X para que no spawneen superpuestos
         b2Vec2 spawn = { 3.0f * static_cast<float>(cars.size()), 0.0f };
@@ -59,38 +60,28 @@ void GameLoop::movementHandler(Cmd& cmd) {
             return;
         }
     }
+    const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
+    it->second.applyControlsToBody(mv, timeStep);
 
-    it->second.applyControlsToBody(cmd.movimiento, timeStep);
-
-    //tendria q actualizar para todos los autos siempre, por un tema de por ej: que vayan frenando
-    // si no aceleran mas
-
-    //voy a dejar esto para testear q la info esta llegando bien por ahora
-    //msg.posicion.player_id = cmd.client_id;
-    //msg.type = Opcode::Movement;
-    //registry.sendTo(cmd.client_id, msg);
 }
-
 
 
 void GameLoop::broadcastCarSnapshots() {
     for (auto& [id, car] : cars) {
-        PlayerStateUpdate ps{};
-        ps.player_id = id;
-        car.snapshotState(ps);
-        SrvMsg msg{};
-        msg.type = Opcode::Movement;
-        msg.posicion = ps;
-        registry.sendTo(id, msg);
+        PlayerState ps = car.snapshotState();
+        auto base = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<PlayerState>(std::move(ps)));
+        registry.broadcast(base); // todos los jugadores quieren saber tu posicion
     }
 }
+
 
 std::list<Cmd> GameLoop::emptyQueue() {
     std::list<Cmd> cmd_list;
     Cmd cmd_aux;
 
     while (queue.try_pop(cmd_aux)) {
-        cmd_list.push_back(cmd_aux);
+        cmd_list.push_back(std::move(cmd_aux));
     }
 
     return cmd_list;
