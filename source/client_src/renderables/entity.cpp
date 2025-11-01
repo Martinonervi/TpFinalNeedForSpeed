@@ -18,6 +18,10 @@ void Entity::setPosition(const float newX, const float newY) {
     y = newY;
 }
 
+void Entity::draw() {
+    // Por defecto, no hace nada
+}
+
 void Entity::setLayer(const EntityLayer l) { layer = l; }
 EntityLayer Entity::getLayer() const { return layer; }
 

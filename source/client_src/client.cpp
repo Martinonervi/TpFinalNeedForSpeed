@@ -26,9 +26,10 @@ void Client::run() {
         auto type = static_cast<CarType>(num);
 
         InitPlayer ip("jugador", type);
-        senderQueue.push(ip);
+        CliMsgPtr msg = std::make_shared<InitPlayer>(ip);
+        senderQueue.push(msg);
+        break;
     }
-
 
 
     ClientWindow client_window(

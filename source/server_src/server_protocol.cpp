@@ -11,7 +11,7 @@ int ServerProtocol::sendPlayerInit(const SendPlayer sp) const {
     try {
 
         //endianess para los floats?? feli fijate
-        uint16_t player_id = htons(sp.getPlayerId());
+        uint16_t player_id = sp.getPlayerId()/*htons(sp.getPlayerId())*/;
         CarType carType = sp.getCarType();
         float x = sp.getX();
         float y = sp.getY();
