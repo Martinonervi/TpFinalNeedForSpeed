@@ -5,6 +5,8 @@
 #include <SDL2pp/Texture.hh>
 #include <SDL2pp/Window.hh>
 
+#include "../common_src/send_player.h"
+
 ClientWindow::ClientWindow(const int width, const int height, const std::string& title,
                            Queue<SrvMsgPtr>& receiverQueue, Queue<CliMsgPtr>& senderQueue):
         sdl(SDL_INIT_VIDEO),
@@ -78,13 +80,13 @@ void ClientWindow::handleServerMessage(const SrvMsgPtr& msg) {
                 sp.getY(), sp.getCarType(), sp.getAngleRad());
             break;
         }
-        case NEW_CAR: {
+        /*case NEW_CAR: {
             const auto snc = dynamic_cast<const SendNewCar&>(*msg);
             std::cout << "Se Unio Player:" << snc.getPlayerId() << std::endl;
             cars[snc.getPlayerId()] = std::make_unique<Car>(renderer, tm, snc.getX(),
                 snc.getY(), snc.getCarType(), snc.getAngleRad());
             break;
-        }
+        }*/
         case Movement: {
             const auto ps = dynamic_cast<const PlayerState&>(*msg);
             if (cars.count(ps.getPlayerId())) {

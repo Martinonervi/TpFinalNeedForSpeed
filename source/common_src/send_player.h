@@ -5,7 +5,7 @@
 #include <cstdint>
 #include "constants.h"
 
-class SendPlayer: public SrvMsg {
+class SendPlayer final: public SrvMsg {
 public:
     SendPlayer(ID id, CarType carType, float x, float y, float angleRad) noexcept
             : player_id(id), carType(carType), x(x), y(y), angleRad(angleRad) {}

@@ -5,7 +5,7 @@ ClientSender::ClientSender(Socket& peer_sock, Queue<CliMsgPtr>& senderQueue)
     :protocol(peer_sock), senderQueue(senderQueue){}
 
 void ClientSender::run(){
-    while(should_keep_running() and leerStdinYEncolar()) {
+    while(should_keep_running() /*and leerStdinYEncolar()*/) {
         try{
             CliMsgPtr cliMsg = senderQueue.pop();
             switch (cliMsg->type()) {

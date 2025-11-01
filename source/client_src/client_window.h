@@ -50,7 +50,7 @@ private:
 
     bool running;
     void handleEvents();
-    void handleServerMessage(SrvMsgPtr msg);
+    void handleServerMessage(const SrvMsgPtr& msg);
 };
 
 #endif // CLIENTWINDOW_H
