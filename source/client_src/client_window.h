@@ -8,6 +8,9 @@
 #include "renderables/car.h"
 #include "textures/texture_manager.h"
 
+#include "../common_src/move_Info.h"
+#include "../common_src/player_state.h"
+
 class ClientWindow {
 public:
     ClientWindow(

@@ -1,7 +1,16 @@
 #include "server_gameloop.h"
-
 #include <chrono>
 #include <thread>
+
+
+#include "../common_src/move_Info.h"
+#include "../common_src/player_state.h"
+
+#include "../common_src/init_player.h"
+#include "../common_src/send_player.h"
+
+
+
 
 GameLoop::GameLoop(gameLoopQueue& queue, ClientsRegistry& registry):
         queue(queue), registry(registry) {
@@ -37,11 +46,34 @@ void GameLoop::run() {
 void GameLoop::processCmds() {
     std::list<Cmd> to_process = emptyQueue();
     for (Cmd& cmd: to_process) {
-        if (cmd.msg->type() == Opcode::Movement){
-            std::cout << "aca en el gameloop movement\n";
-            movementHandler(cmd);
+        switch (cmd.msg->type()) {
+            case (Opcode::Movement): {
+                std::cout << "aca en el gameloop MOVEMENT\n";
+                movementHandler(cmd);
+                break;
+            }
+            case (Opcode::INIT_PLAYER): {
+                std::cout << "aca en el gameloop INIT_PLAYER\n";
+                initPlayerHandler(cmd);
+                break;
+            }
+            default: {
+                std::cout << "cmd desconocido: " << cmd.msg->type() << "\n";
+            }
         }
+
     }
+}
+
+
+
+void GameLoop::initPlayerHandler(Cmd& cmd){ //testeamos
+    //aca tendria q crear el auto
+    const InitPlayer ip = dynamic_cast<const InitPlayer&>(*cmd.msg);
+
+    auto base = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), 1, 2, 3));
+    registry.sendTo(cmd.client_id, base);
 }
 
 void GameLoop::movementHandler(Cmd& cmd) {

@@ -5,8 +5,7 @@
 
 using Op = std::uint8_t;
 enum Opcode : Op {
-    Movement = 0x01, ClientMSG = 0x04, ServerMSG = 0x10,
-    NitroON = 0x07, NitroOFF = 0x08, Nitro = 0x09
+    Movement = 0x01, INIT_PLAYER = 0x02,
 };
 
 

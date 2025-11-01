@@ -3,6 +3,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include "../common_src/send_player.h"
 
 Sender::Sender(Socket& peer_socket, SendQPtr queue):
         peer(peer_socket), msg_queue(std::move(queue)), protocol(peer) {}
@@ -25,6 +26,10 @@ void Sender::run() {
             switch (msg->type()) {
                 case Opcode::Movement: {
                     n = protocol.sendPlayerState(dynamic_cast<const PlayerState&>(*msg));
+                    break;
+                }
+                case Opcode::INIT_PLAYER: {
+                    n = protocol.sendPlayerInit(dynamic_cast<const SendPlayer&>(*msg));
                     break;
                 }
                 default: {

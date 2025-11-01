@@ -1,5 +1,4 @@
 #include "server_receiver.h"
-#include "../common_src/constants.h"
 #include <memory>
 #include <utility>
 
@@ -16,19 +15,24 @@ void Receiver::run() {
             peerClosed = true;
             break;
         }
-
+        std::cout << "server receiver: llegue a leer un opcode\n";
         switch (op) {
             case Opcode::Movement: {
                 MoveMsg mv = protocol.recvMoveInfo();  // lo recibe por valor
-                // Feli este comentario es para vos:
-                // Me parece bien que el protoclo me devuelva el mensaje por valor,
-                // y que yo me encargue aca de hacer el casteo, pero tmb podria ser logica
-                // del protocolo. Lo dejo a tu criterio.
                 CliMsgPtr base = std::static_pointer_cast<CliMsg>(
                         std::make_shared<MoveMsg>(std::move(mv)));
                 cmdQueue.push(Cmd{id, base});
                 break;
             }
+            case Opcode::INIT_PLAYER: {
+                std::cout << "entre a init player del server receiver\n";
+                InitPlayer ip = protocol.recvInitPlayer();
+                CliMsgPtr base = std::static_pointer_cast<CliMsg>(
+                        std::make_shared<InitPlayer>(std::move(ip)));
+                cmdQueue.push(Cmd{id, base});
+
+                break;
+                }
             default: {
                 std::cout << "cmd desconocido: " << op << "\n";
             }
