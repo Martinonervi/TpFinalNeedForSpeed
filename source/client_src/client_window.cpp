@@ -13,19 +13,32 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
                SDL_WINDOW_SHOWN),
         renderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-        carsTexture(renderer, "../assets/cars/cars.png"),
-        mapsTexture(renderer, "../assets/cities/LibertyCity.png"),
-        tm(carsTexture, mapsTexture),
         receiverQueue(receiverQueue),
         senderQueue(senderQueue),
         running(true),
-        camera(width, height, 4640, 4672), // Agregar consts
-        myCarId(-1)
-{}
+        camera(width, height, 4640, 4672),  // Agregar consts
+        myCarId(-1) {
+
+    SDL2pp::Surface carsSurface("../assets/cars/cars.png");
+    const Uint32 colorkey = SDL_MapRGB(carsSurface.Get()->format, 163, 163, 13);
+    carsSurface.SetColorKey(true, colorkey);
+
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer.Get(), carsSurface.Get());
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+
+    carsTexture.emplace(tex);
+
+    const SDL2pp::Surface mapSurface("../assets/cities/LibertyCity.png");
+    mapsTexture = SDL2pp::Texture(renderer, mapSurface);
+
+    // Guardar texturas en tu TextureManager
+    tm.emplace(*carsTexture, *mapsTexture);
+
+}
 
 // Hay que manejar FPS
 void ClientWindow::run() {
-    const Map map(renderer, tm);
+    const Map map(renderer, *tm);
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
@@ -76,7 +89,7 @@ void ClientWindow::handleServerMessage(const SrvMsgPtr& msg) {
             const auto sp = dynamic_cast<const SendPlayer&>(*msg);
             myCarId = sp.getPlayerId();
             std::cout << "Bienvenido Player:" << myCarId << std::endl;
-            cars[myCarId] = std::make_unique<Car>(renderer, tm, sp.getX(),
+            cars[myCarId] = std::make_unique<Car>(renderer, *tm, sp.getX(),
                 sp.getY(), sp.getCarType(), sp.getAngleRad());
             break;
         }
