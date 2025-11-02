@@ -11,7 +11,7 @@ Map::Map(
 {}
 
 
-void Map::draw(const Camera& camera) const {
+void Map::draw(const Camera& camera) {
     SDL2pp::Texture& texture(tm.getMapsTexture());
 
     SDL2pp::Rect srcRect(camera.getView());

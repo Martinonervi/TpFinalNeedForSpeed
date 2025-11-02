@@ -7,7 +7,7 @@
 class Map final: public Entity {
 public:
     Map(SDL2pp::Renderer& renderer, TextureManager& tm);
-    void draw(const Camera& camera) const;
+    void draw(const Camera& camera) override;
 private:
     //MapType mapType;
 

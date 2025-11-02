@@ -17,7 +17,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         receiverQueue(receiverQueue),
         senderQueue(senderQueue),
         running(true),
-        camera(width, height, 4640, 4672),  // Agregar consts
+        camera(width, height, 4640.0, 4672.0),  // Agregar consts
         myCarId(-1) {
 
     SDL2pp::Surface carsSurface("../assets/cars/cars.png");
@@ -37,9 +37,9 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
 
 }
 
-// Hay que manejar FPS
+// Hay que manejar FPS, hay que tener en cuenta los autos que no estan en camara
 void ClientWindow::run() {
-    const Map map(renderer, *tm);
+    Map map(renderer, *tm);
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
@@ -48,7 +48,7 @@ void ClientWindow::run() {
 
         handleEvents();
 
-        renderer.SetDrawColor(0, 0, 0, 0);
+        renderer.SetDrawColor(0, 0, 0, 255);
         renderer.Clear();
         map.draw(camera);
 
@@ -56,13 +56,12 @@ void ClientWindow::run() {
             if (id == myCarId) {
                 camera.follow(car->getX(), car->getY()); // Problemas float/ int
             }
-            car->draw();
+            // si estoy en el cuadro de la camara dibujame (en relacion a los pixeles)
+            car->draw(camera);
         }
 
         renderer.Present();
     }
-    SDL_QuitSubSystem(SDL_INIT_VIDEO);
-    SDL_Quit();
 }
 
 
@@ -97,10 +96,9 @@ void ClientWindow::handleServerMessage(const SrvMsgPtr& msg) {
         }
         case NEW_PLAYER: {
             const auto snc = dynamic_cast<const NewPlayer&>(*msg);
-            std::cout << "Se Unio Player:" << snc.getPlayerId() << std::endl;
-
             auto it = cars.find(snc.getPlayerId());
             if (it == cars.end()) {
+                std::cout << "Se Unio Player:" << snc.getPlayerId() << std::endl;
                 cars[snc.getPlayerId()] = std::make_unique<Car>(renderer, *tm, snc.getX(),
                                                                 snc.getY(), snc.getCarType(), snc.getAngleRad());
             }

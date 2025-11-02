@@ -14,7 +14,7 @@ public:
         );
 
     void update(float newX, float newY, float newAngle);
-    void draw() override;
+    void draw(const Camera& camera) override;
 
     void setAngle(float newAngle);
     void setCarType(CarType newCarType);

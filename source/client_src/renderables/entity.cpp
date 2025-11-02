@@ -18,7 +18,7 @@ void Entity::setPosition(const float newX, const float newY) {
     y = newY;
 }
 
-void Entity::draw() {
+void Entity::draw(const Camera& camera) {
     // Por defecto, no hace nada
 }
 
