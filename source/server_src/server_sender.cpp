@@ -28,8 +28,10 @@ void Sender::run() {
                     n = protocol.sendPlayerState(dynamic_cast<const PlayerState&>(*msg));
                     break;
                 }
-                case Opcode::INIT_PLAYER: {
-                    n = protocol.sendPlayerInit(dynamic_cast<const SendPlayer&>(*msg));
+                case Opcode::INIT_PLAYER:
+                case Opcode::NEW_PLAYER:
+                {
+                    n = protocol.sendPlayerInit(dynamic_cast<Player&>(*msg));
                     break;
                 }
                 default: {

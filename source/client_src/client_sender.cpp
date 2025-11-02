@@ -14,11 +14,10 @@ void ClientSender::run(){
                     break;
                 }
                 case(Opcode::INIT_PLAYER): {
-                    std::cout << "entre a init player del sender client\n";
                     int n = protocol.sendInitPlayer(dynamic_cast<const InitPlayer&>(*cliMsg));
-                    std::cout << "lei" << n << "\n";
                     break;
                 }
+
                 default: {
                     std::cout << "cmd desconocido: " << cliMsg->type() << "\n";
                 }

@@ -1,16 +1,14 @@
 #include "server_gameloop.h"
+
 #include <chrono>
 #include <thread>
 
-
 #include "../common_src/move_Info.h"
+#include "../common_src/player.h"
 #include "../common_src/player_state.h"
-
-#include "../common_src/init_player.h"
 #include "../common_src/send_player.h"
-
-
-
+#include "../common_src/init_player.h"
+#include "../common_src/new_player.h"
 
 GameLoop::GameLoop(gameLoopQueue& queue, ClientsRegistry& registry):
         queue(queue), registry(registry) {
@@ -71,27 +69,36 @@ void GameLoop::initPlayerHandler(Cmd& cmd){ //testeamos
     //aca tendria q crear el auto
     const InitPlayer ip = dynamic_cast<const InitPlayer&>(*cmd.msg);
 
+
+    // separo autos 3m en X para que no spawneen superpuestos
+    b2Vec2 spawn = { 3.0f * static_cast<float>(cars.size()), 0.0f };
+    float angle  = 0.0f;
+
+    // try_emplace construye el Car in-place
+    auto [insIt, inserted] =
+            cars.try_emplace(cmd.client_id, cmd.client_id, this->world, spawn, angle);
+    if (!inserted) {
+        return;
+    }
+
+
     auto base = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), 1, 2, 3));
     registry.sendTo(cmd.client_id, base);
+
+
+
+    for (auto [id, car]: cars) {
+        auto newPlayer = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<NewPlayer>(id, ip.getCarType(), 1, 2, 3));
+        registry.broadcast(newPlayer);
+        std::cout << "llego al boradcast?\n";
+    }
+
 }
 
 void GameLoop::movementHandler(Cmd& cmd) {
     auto it = cars.find(cmd.client_id);
-    // creo auto si no existe -> PARA TESTEAR
-    if (it == cars.end()) {
-        // separo autos 3m en X para que no spawneen superpuestos
-        b2Vec2 spawn = { 3.0f * static_cast<float>(cars.size()), 0.0f };
-        float angle  = 0.0f;
-
-        // try_emplace construye el Car in-place
-        auto [insIt, inserted] =
-                cars.try_emplace(cmd.client_id, cmd.client_id, this->world, spawn, angle);
-        it = insIt;
-        if (!inserted) {
-            return;
-        }
-    }
     const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
     it->second.applyControlsToBody(mv, timeStep);
 

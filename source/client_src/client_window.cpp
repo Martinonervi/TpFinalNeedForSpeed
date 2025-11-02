@@ -6,6 +6,7 @@
 #include <SDL2pp/Window.hh>
 
 #include "../common_src/send_player.h"
+#include "../common_src/new_player.h"
 
 ClientWindow::ClientWindow(const int width, const int height, const std::string& title,
                            Queue<SrvMsgPtr>& receiverQueue, Queue<CliMsgPtr>& senderQueue):
@@ -90,16 +91,22 @@ void ClientWindow::handleServerMessage(const SrvMsgPtr& msg) {
             myCarId = sp.getPlayerId();
             std::cout << "Bienvenido Player:" << myCarId << std::endl;
             cars[myCarId] = std::make_unique<Car>(renderer, *tm, sp.getX(),
-                sp.getY(), sp.getCarType(), sp.getAngleRad());
+                                                  sp.getY(), sp.getCarType(), sp.getAngleRad());
+
             break;
         }
-        /*case NEW_CAR: {
-            const auto snc = dynamic_cast<const SendNewCar&>(*msg);
+        case NEW_PLAYER: {
+            const auto snc = dynamic_cast<const NewPlayer&>(*msg);
             std::cout << "Se Unio Player:" << snc.getPlayerId() << std::endl;
-            cars[snc.getPlayerId()] = std::make_unique<Car>(renderer, tm, snc.getX(),
-                snc.getY(), snc.getCarType(), snc.getAngleRad());
+
+            auto it = cars.find(snc.getPlayerId());
+            if (it == cars.end()) {
+                cars[snc.getPlayerId()] = std::make_unique<Car>(renderer, *tm, snc.getX(),
+                                                                snc.getY(), snc.getCarType(), snc.getAngleRad());
+            }
+
             break;
-        }*/
+        }
         case Movement: {
             const auto ps = dynamic_cast<const PlayerState&>(*msg);
             if (cars.count(ps.getPlayerId())) {

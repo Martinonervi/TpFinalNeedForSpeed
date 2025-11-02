@@ -7,7 +7,7 @@
 ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 
 
-int ServerProtocol::sendPlayerInit(const SendPlayer sp) const {
+int ServerProtocol::sendPlayerInit(Player& sp) const {
     try {
 
         //endianess para los floats?? feli fijate
@@ -108,7 +108,6 @@ Opcode ServerProtocol::recvOpcode() {
 }
 
 InitPlayer ServerProtocol::recvInitPlayer() {
-    std::cout << "entre a recvInitiPlayer del server protocol\n";
     size_t n = 0;
 
     //std::string name;

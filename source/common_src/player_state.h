@@ -2,6 +2,7 @@
 #define TPFINALNEEDFORSPEED_PLAYER_STATE_H
 #include "server_msg.h"
 #include <cstdint>
+#include "constants.h"
 
 class PlayerState: public SrvMsg {
 public:

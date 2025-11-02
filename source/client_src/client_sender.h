@@ -1,9 +1,10 @@
 #pragma once
+#include "../common_src/constants.h"
+#include "../common_src/move_Info.h"
+#include "../common_src/init_player.h"
+
 #include "client_protocol.h"
 #include "client_types.h"
-#include "../common_src/constants.h"
-#include "../common_src/init_player.h"
-#include "../common_src/move_Info.h"
 
 class ClientSender: public Thread {
 public:

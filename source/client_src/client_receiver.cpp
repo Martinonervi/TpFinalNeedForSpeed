@@ -25,6 +25,14 @@ void ClientReceiver::run(){
                 receiverQueue.push(base);
 
                 break;
+            } case (Opcode::NEW_PLAYER): {
+                // fran: fijate que no sea el id del client, o q no sea un repetido
+                NewPlayer sp = protocol.recvNewPlayer();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<NewPlayer>(std::move(sp)));
+                std::cout << "[client Receiver] newPlayer, id:" << sp.getPlayerId() << "\n";
+                receiverQueue.push(base);
+                break;
             }
             default: {
                 std::cout << "cmd desconocido: " << op << "\n";
