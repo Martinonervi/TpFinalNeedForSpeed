@@ -17,6 +17,7 @@
 
 #define NITRO_ON_MSG "A car hit the nitro!"
 #define NITRO_OFF_MSG "A car is out of juice."
+#define ERR_GAME_FULL "La partida está llena"
 
 #define RETURN_SUCCESS  0
 #define RETURN_FAILURE  1

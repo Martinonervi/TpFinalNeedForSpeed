@@ -20,7 +20,7 @@ public:
     // alta: registra la cola de salida y devuelve un id único
 
     // ID AddQueue(SendQPtr q);
-    std::pair<ID, SendQPtr> AddClient();
+    ID AddClient(SendQPtr client_queue);
     // baja: remueve si existe
     void EraseQueue(ID id);
     // tamaño actual
