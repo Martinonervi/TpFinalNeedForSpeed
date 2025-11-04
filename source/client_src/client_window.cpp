@@ -101,7 +101,8 @@ void ClientWindow::handleServerMessage(const SrvMsgPtr& msg) {
                 std::cout << ps.getX() << std::endl;
                 std::cout << ps.getY() << std::endl;
                 std::cout << ps.getAngleRad() << std::endl;
-                cars[ps.getPlayerId()]->update(ps.getX()*50, ps.getY()*50,
+                cars[ps.getPlayerId()]->update(ps.getX()*PIXELS_PER_METER,
+                    ps.getY()*PIXELS_PER_METER,
                     ps.getAngleRad());
             }
             break;

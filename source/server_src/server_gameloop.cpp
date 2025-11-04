@@ -74,7 +74,7 @@ void GameLoop::processCmds() {
 
 void GameLoop::initPlayerHandler(Cmd& cmd){
     // spawn auto físico
-    b2Vec2 spawn = { 4.0f * static_cast<float>(cars.size()), 0.0f };
+    b2Vec2 spawn = { 4.0f, 4.0f };
     EntityId eid = worldManager.createCarBody(spawn, 0.f);
     b2BodyId body = worldManager.getBody(eid);
     //podria guardar el carType y el name (en el Car)
