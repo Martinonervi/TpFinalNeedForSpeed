@@ -24,13 +24,17 @@ public:
     GameManager(const GameManager&) = delete;
     GameManager& operator=(const GameManager&) = delete;
 
-    std::shared_ptr<gameLoopQueue> CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id);
+    std::pair<std::shared_ptr<gameLoopQueue>, ID> CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id);
     // baja: remueve si existe
     void EraseQueue(ID id);
     // tamaño actual
     int size() const;
 
+    void LeaveGame(ID client_id, ID game_id);
+
 private:
+    //void reap_dead(); // busca partidas inactivas para cerrar hilos y estructuras
+
     mutable std::mutex mx;
     ID last_id{0};
     std::unordered_map<ID, GameContext> games;  // server → gamecontext (gameloopqueue y registry)

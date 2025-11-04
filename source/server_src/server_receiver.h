@@ -34,6 +34,7 @@ private:
     ServerProtocol protocol;
     GameManager& game_manager;
     SendQPtr sender_queue;
+    ID joined_game_id;
 
     bool listening{true};
     bool peerClosed{false};

@@ -25,7 +25,7 @@ void Acceptor::run() {
             reap_dead();
         }
     } catch (const std::exception& e) {
-        //std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
+        std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
     }
 
     kill_all();
@@ -33,7 +33,6 @@ void Acceptor::run() {
 
 
 void Acceptor::reap_dead() {
-    return;
     for (auto it = handlers.begin(); it != handlers.end();) {
         if (!(*it)->is_alive()) {
             //registry.EraseQueue((*it)->getID());
@@ -45,7 +44,6 @@ void Acceptor::reap_dead() {
 }
 
 void Acceptor::kill_all() {
-    return;
     for (auto& h: handlers) {
         if (!h)
             continue;

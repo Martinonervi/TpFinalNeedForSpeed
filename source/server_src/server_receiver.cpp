@@ -25,7 +25,9 @@ void Receiver::run() {
             case Opcode::JOIN_GAME:{
                 try {
                     JoinGame game_info = protocol.getGameInfo();
-                    cmdQueue = game_manager.CreateJoinGame(game_info.getGameID(), sender_queue, id);
+                    auto [queue, game_id] = game_manager.CreateJoinGame(game_info.getGameID(), sender_queue, id);
+                    cmdQueue = queue;
+                    joined_game_id = game_id;
                 }catch (const char* msg) {
                     //aca atrapo el error si la partida estaba llena
                 }
@@ -59,6 +61,7 @@ void Receiver::run() {
 
 void Receiver::stop() {
     Thread::stop();
+    try { game_manager.LeaveGame(id, joined_game_id); } catch (...) {}
     try {
         peer.shutdown(0);
     } catch (...) {}

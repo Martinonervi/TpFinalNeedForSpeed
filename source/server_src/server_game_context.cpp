@@ -19,4 +19,5 @@ std::shared_ptr<gameLoopQueue> GameContext::getGameQueue() {
 }
 void GameContext::gameThreadStop() {
     game_thread->stop();
+    game_thread->join();
 }
