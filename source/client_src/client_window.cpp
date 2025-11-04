@@ -17,7 +17,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         receiverQueue(receiverQueue),
         senderQueue(senderQueue),
         running(true),
-        camera(width, height, 6960.0, 7008.0),  // Agregar consts
+        camera(width, height, 4640.0, 4672.0),  // Agregar consts
         myCarId(-1)
 {
     try {

@@ -21,6 +21,7 @@ void Car::draw(const Camera& camera) {
     SDL2pp::Rect srcRect(tm.getCars().getFrame(carType, angle));
     const int drawX = static_cast<int>(x - camera.getX() - srcRect.w / 2);
     const int drawY = static_cast<int>(y - camera.getY() - srcRect.h / 2);
+    std::cout << drawX << ", " << drawY << std::endl;
     SDL2pp::Rect dstRect(drawX, drawY, srcRect.w, srcRect.h);
 
     renderer.Copy(texture, srcRect,dstRect);
