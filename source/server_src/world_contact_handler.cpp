@@ -5,6 +5,12 @@ void WorldContactHandler::checkContactEvents() {
     b2ContactEvents contacts = b2World_GetContactEvents(this->world);
 
     //colisinoes
+    //std::cout << "aca en checkContactEvents chequeando colisiones\n";
+    /*
+    std::cout << "begin: " << contacts.beginCount
+              << " end: " << contacts.endCount
+              << " hit: " << contacts.hitCount << "\n";
+*/
     for (int i = 0; i < contacts.beginCount; ++i) {
         const b2ContactBeginTouchEvent& ev = contacts.beginEvents[i];
         handleBeginContact(ev);

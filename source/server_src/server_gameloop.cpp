@@ -73,9 +73,8 @@ void GameLoop::processCmds() {
 
 
 void GameLoop::initPlayerHandler(Cmd& cmd){
-    std::cout << "initPlayerHandler, id: " << cmd.client_id << "\n";
     // spawn auto físico
-    b2Vec2 spawn = { 2.0f * static_cast<float>(cars.size()), 0.0f };
+    b2Vec2 spawn = { 4.0f * static_cast<float>(cars.size()), 0.0f };
     EntityId eid = worldManager.createCarBody(spawn, 0.f);
     b2BodyId body = worldManager.getBody(eid);
     //podria guardar el carType y el name (en el Car)
@@ -88,16 +87,24 @@ void GameLoop::initPlayerHandler(Cmd& cmd){
             std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), spawn.x, spawn.y, 3));
     registry.sendTo(cmd.client_id, base); //le aviso al cliente q ya tiene su auto
 
-
+    // le aviso al nuevo cliente donde estan los otros autos
     for (auto [id, car]: cars) {
         auto newPlayer = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<NewPlayer>(id, ip.getCarType(), 1, 2, 3));
+        // deberian ser pos reales
         if (id == cmd.client_id) continue;
 
         //le aviso a los demas que hay un nuevo auto en la partida
-        registry.broadcast(newPlayer);
+        registry.sendTo(cmd.client_id, newPlayer);
 
-
+    }
+    // les aviso a todos del auto del nuevo cliente
+    for (auto& [otherId, _] : cars) {
+        if (otherId == cmd.client_id) continue;
+        auto npForOld = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<NewPlayer>(cmd.client_id, ip.getCarType(), spawn.x, spawn.y, 0.f)
+        );
+        registry.sendTo(otherId, npForOld);
     }
 
 }

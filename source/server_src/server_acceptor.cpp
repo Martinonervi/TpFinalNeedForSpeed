@@ -15,7 +15,6 @@ void Acceptor::run() {
             Socket peer = acceptor.accept();
 
             auto [id, sendq] = registry.AddClient();
-            std::cout << "[ACCEPT] nuevo cliente id=" << id << "\n";
 
             auto h = std::make_unique<ClientHandler>(std::move(peer), id, sendq, cmd_queue);
             h->start();
