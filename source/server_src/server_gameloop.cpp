@@ -10,8 +10,8 @@
 #include "../common_src/init_player.h"
 #include "../common_src/new_player.h"
 
-GameLoop::GameLoop(gameLoopQueue& queue, ClientsRegistry& registry):
-        queue(queue), registry(registry) {
+GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
+        queue(std::move(queue)), registry(std::move(registry)) {
 
     b2WorldDef worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){0.0f, 0.0f};   // sin gravedad
@@ -46,12 +46,10 @@ void GameLoop::processCmds() {
     for (Cmd& cmd: to_process) {
         switch (cmd.msg->type()) {
             case (Opcode::Movement): {
-                std::cout << "aca en el gameloop MOVEMENT\n";
                 movementHandler(cmd);
                 break;
             }
             case (Opcode::INIT_PLAYER): {
-                std::cout << "aca en el gameloop INIT_PLAYER\n";
                 initPlayerHandler(cmd);
                 break;
             }
@@ -84,15 +82,14 @@ void GameLoop::initPlayerHandler(Cmd& cmd){ //testeamos
 
     auto base = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), 1, 2, 3));
-    registry.sendTo(cmd.client_id, base);
+    registry->sendTo(cmd.client_id, base);
 
 
 
     for (auto [id, car]: cars) {
         auto newPlayer = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<NewPlayer>(id, ip.getCarType(), 1, 2, 3));
-        registry.broadcast(newPlayer);
-        std::cout << "llego al boradcast?\n";
+        registry->broadcast(newPlayer);
     }
 
 }
@@ -110,7 +107,7 @@ void GameLoop::broadcastCarSnapshots() {
         PlayerState ps = car.snapshotState();
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerState>(std::move(ps)));
-        registry.broadcast(base); // todos los jugadores quieren saber tu posicion
+        registry->broadcast(base); // todos los jugadores quieren saber tu posicion
     }
 }
 
@@ -119,7 +116,7 @@ std::list<Cmd> GameLoop::emptyQueue() {
     std::list<Cmd> cmd_list;
     Cmd cmd_aux;
 
-    while (queue.try_pop(cmd_aux)) {
+    while (queue->try_pop(cmd_aux)) {
         cmd_list.push_back(std::move(cmd_aux));
     }
 
@@ -129,7 +126,7 @@ std::list<Cmd> GameLoop::emptyQueue() {
 void GameLoop::stop() {
     Thread::stop();
     try {
-        queue.close();
+        queue->close();
     } catch (...) {}
 }
 

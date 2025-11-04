@@ -13,14 +13,14 @@ class ClientsRegistry {
 
 public:
 
-    ClientsRegistry();
+    ClientsRegistry() = default;
     ClientsRegistry(const ClientsRegistry&) = delete;
     ClientsRegistry& operator=(const ClientsRegistry&) = delete;
 
-    // alta: registra la cola de salida y devuelve un id único
+    // alta: registra la cola de salida para broadcast y mensajes
 
     // ID AddQueue(SendQPtr q);
-    ID AddClient(SendQPtr client_queue);
+    void AddClient(SendQPtr client_queue, ID client_id);
     // baja: remueve si existe
     void EraseQueue(ID id);
     // tamaño actual
@@ -32,6 +32,5 @@ public:
 
 private:
     mutable std::mutex mx;
-    ID last_id;
     std::map<ID, SendQPtr> clients;  // client_id → sendQueue del cliente (consumida por el sender)
 };

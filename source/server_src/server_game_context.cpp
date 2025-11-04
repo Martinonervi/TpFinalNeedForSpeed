@@ -4,17 +4,17 @@
 
 #include "server_game_context.h"
 
-GameContext::GameContext(ClientsRegistry& registry_ref, gameLoopQueue& game_queue,
+GameContext::GameContext(std::shared_ptr<ClientsRegistry> registry, std::shared_ptr<gameLoopQueue> game_queue,
                          std::unique_ptr<GameLoop> game_thread):
-        registry(registry_ref),
-        queue(game_queue),
+        registry(std::move(registry)),
+        queue(std::move(game_queue)),
         game_thread(std::move(game_thread)) {}
 
 
-ClientsRegistry& GameContext::getRegistry() {
+std::shared_ptr<ClientsRegistry> GameContext::getRegistry() {
     return registry;
 }
-gameLoopQueue& GameContext::getGameQueue() {
+std::shared_ptr<gameLoopQueue> GameContext::getGameQueue() {
     return queue;
 }
 void GameContext::gameThreadStop() {

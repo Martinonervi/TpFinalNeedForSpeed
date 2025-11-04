@@ -1,11 +1,13 @@
 #pragma once
 #include <cstring>
 
-#include "../common_src/move_Info.h"
-#include "../common_src/player_state.h"
 #include "../common_src/init_player.h"
-#include "../common_src/send_player.h"
+#include "../common_src/joingame.h"
+#include "../common_src/move_Info.h"
 #include "../common_src/new_player.h"
+#include "../common_src/player_state.h"
+#include "../common_src/requestgame.h"
+#include "../common_src/send_player.h"
 
 #include "client_types.h"
 
@@ -21,6 +23,7 @@ public:
     Op readActionByte() const;
     int sendClientMove(const MoveMsg& moveMsg) const;
     int sendInitPlayer(const InitPlayer& ip) const;
+    int sendRequestGame(RequestGame& join_game);
     SendPlayer recvSendPlayer();
     NewPlayer recvNewPlayer();
 

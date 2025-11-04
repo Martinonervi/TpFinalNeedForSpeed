@@ -1,12 +1,15 @@
 #include "client_protocol.h"
+
 #include <arpa/inet.h>
+
+#include "../common_src/requestgame.h"
 
 
 ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}
 
 int ClientProtocol::sendInitPlayer(const InitPlayer& ip) const {
     try {
-        Op type = ip.type();
+        Op type = INIT_PLAYER;
         //std::string name = ip.getName();
         CarType carType = ip.getCarType();
 
@@ -37,7 +40,7 @@ int ClientProtocol::sendClientMove(const MoveMsg& moveMsg) const {
         uint8_t brake = moveMsg.getBrake();
         int8_t steer = moveMsg.getSteer();
         uint8_t nitro = moveMsg.getNitro();
-        Op type = moveMsg.type();
+        Op type = Movement;
 
         std::vector<char> buf(sizeof(CliMsg));
         size_t offset = 0;
@@ -155,4 +158,26 @@ NewPlayer ClientProtocol::recvNewPlayer() {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
     return NewPlayer(player_id, carType, x, y, angleRad);
+}
+
+int ClientProtocol::sendRequestGame(RequestGame& request_game) {
+    try {
+        Op type = JOIN_GAME;
+        ID game_id = request_game.getGameID();
+
+        std::vector<char> buf(sizeof(JoinGame));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type , sizeof(Op));
+        offset += sizeof(type);
+
+        memcpy(buf.data() + offset, &game_id , sizeof(ID));
+        offset += sizeof(ID);
+
+        int n = peer.sendall(buf.data(), offset);
+        return n;
+    }  catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
 }

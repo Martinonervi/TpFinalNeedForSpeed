@@ -35,7 +35,7 @@ void ClientReceiver::run(){
                 break;
             }
             default: {
-                std::cout << "cmd desconocido: " << op << "\n";
+                std::cout << "comando desconocido: " << op << "\n";
             }
         }
     }

@@ -10,7 +10,7 @@
 class GameLoop: public Thread {
 
 public:
-    GameLoop(gameLoopQueue& queue, ClientsRegistry& registry);
+    GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry);
     void stop() override;
     virtual ~GameLoop();
 
@@ -29,8 +29,8 @@ private:
     b2WorldId world;
     std::map<ID, Car> cars;
 
-    gameLoopQueue& queue;
-    ClientsRegistry& registry;
+    std::shared_ptr<gameLoopQueue> queue;
+    std::shared_ptr<ClientsRegistry> registry;
     Printer printer;
 };
 

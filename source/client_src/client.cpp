@@ -1,4 +1,8 @@
 #include "client.h"
+
+#include "../common_src/joingame.h"
+#include "../common_src/requestgame.h"
+
 #include "client_window.h"
 
 
@@ -9,9 +13,18 @@ receiver(peer, receiverQueue), sender(peer, senderQueue)
 
 void Client::run() {
     sender.start();
-    receiver.start();
 
     std::string line;
+    std::getline(std::cin, line);
+
+    int game_id = std::stoi(line);
+    auto rq = std::make_shared<RequestGame>(static_cast<ID>(game_id));
+    CliMsgPtr base = rq;
+    std::cout << "[Client main] Mensaje de tipo: " << base->type() << "pusheado a la sender queue"<< std::endl;
+    senderQueue.push(base);
+
+    receiver.start();
+
     while (std::getline(std::cin, line)) {
         if (line.empty())
             continue;
@@ -30,7 +43,6 @@ void Client::run() {
         senderQueue.push(msg);
         break;
     }
-
 
     ClientWindow client_window(
         800,

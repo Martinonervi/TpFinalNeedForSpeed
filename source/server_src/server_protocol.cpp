@@ -61,7 +61,7 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         float x = ps.getX();
         float y = ps.getY();
         float angleRad = ps.getAngleRad();
-        Op type = ps.type();
+        Op type = Movement;
 
         std::vector<char> buf(sizeof(CliMsg));
         size_t offset = 0;
@@ -88,10 +88,6 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         throw("Error sending");
     }
 }
-
-
-
-
 
 Opcode ServerProtocol::recvOpcode() {
     Opcode op;
@@ -152,5 +148,16 @@ MoveMsg ServerProtocol::recvMoveInfo() {
     MoveMsg moveMsg(a,b,s,ni);
     return moveMsg;
 
+}
+
+JoinGame ServerProtocol::getGameInfo() {
+    try {
+        ID game_id;
+        peer.recvall(&game_id, sizeof(ID));
+        return JoinGame(game_id);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
 }
 

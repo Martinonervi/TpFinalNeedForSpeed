@@ -1,7 +1,7 @@
 //
 // Created by Felipe Fialayre on 03/11/2025.
 //
-
+#pragma once
 #ifndef GAMEMANAGER_H
 #define GAMEMANAGER_H
 
@@ -20,11 +20,11 @@
 class GameManager {
 public:
 
-    GameManager();
+    GameManager() = default;
     GameManager(const GameManager&) = delete;
     GameManager& operator=(const GameManager&) = delete;
 
-    std::pair<gameLoopQueue&, ID> CreateJoinGame(ID game_id, SendQPtr sender_queue);
+    std::shared_ptr<gameLoopQueue> CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id);
     // baja: remueve si existe
     void EraseQueue(ID id);
     // tamaño actual

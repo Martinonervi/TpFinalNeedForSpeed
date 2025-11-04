@@ -11,15 +11,15 @@
 
 class GameContext {
 public:
-    GameContext(ClientsRegistry& registry_ref, gameLoopQueue& game_queue, std::unique_ptr<GameLoop> game_thread);
+    GameContext(std::shared_ptr<ClientsRegistry> registry_ref, std::shared_ptr<gameLoopQueue> game_queue, std::unique_ptr<GameLoop> game_thread);
 
-    ClientsRegistry& getRegistry();
-    gameLoopQueue& getGameQueue();
+    std::shared_ptr<ClientsRegistry> getRegistry();
+    std::shared_ptr<gameLoopQueue> getGameQueue();
     void gameThreadStop();
 
 private:
-    ClientsRegistry& registry;
-    gameLoopQueue& queue;
+    std::shared_ptr<ClientsRegistry> registry;
+    std::shared_ptr<gameLoopQueue> queue;
     std::unique_ptr<GameLoop> game_thread;
 };
 
