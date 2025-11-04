@@ -4,10 +4,13 @@ WorldManager::WorldManager() {
     b2WorldDef worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){0.0f, 0.0f};  // sin gravedad
     this->world = b2CreateWorld(&worldDef);
+    worldContactHandler.init(world);
 }
 
 void WorldManager::step(float dt, int subSteps) {
     b2World_Step(this->world, dt, subSteps);
+
+    worldContactHandler.checkContactEvents();
 }
 
 EntityId WorldManager::createCarBody(b2Vec2 pos, float angleRad) {

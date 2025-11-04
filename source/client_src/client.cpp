@@ -9,7 +9,7 @@ receiver(peer, receiverQueue), sender(peer, senderQueue)
 
 void Client::run() {
     sender.start();
-    receiver.start();
+
 
     std::string line;
     while (std::getline(std::cin, line)) {
@@ -30,6 +30,7 @@ void Client::run() {
         senderQueue.push(msg);
         break;
     }
+    receiver.start();
 
 
     ClientWindow client_window(
