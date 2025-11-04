@@ -4,6 +4,7 @@ WorldManager::WorldManager() {
     b2WorldDef worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){0.0f, 0.0f};  // sin gravedad
     this->world = b2CreateWorld(&worldDef);
+    mapLimits();
     worldContactHandler.init(world);
 }
 
@@ -60,5 +61,63 @@ WorldManager::~WorldManager() {
         b2DestroyWorld(this->world);
         this->world = {0};
     }
+}
+
+void WorldManager::mapLimits() {
+        const float MAP_W = 696.0f;   // ancho
+        const float MAP_H = 700.8f;   // alto
+
+        const float T = 1.0f; // grosor de la pared
+
+        // user data ??
+
+        // pared de arriba
+        {
+            b2BodyDef bd = b2DefaultBodyDef();
+            bd.type = b2_staticBody;
+            // centro de la pared de arriba
+            bd.position = (b2Vec2){MAP_W * 0.5f, -T}; //centro , (mitad X, -1 Y)
+            b2BodyId body = b2CreateBody(this->world, &bd);
+
+            b2Polygon box = b2MakeBox(MAP_W * 0.5f, T); //2*MAP_W
+            b2ShapeDef sd = b2DefaultShapeDef();
+            b2CreatePolygonShape(body, &sd, &box);
+        }
+
+        // pared de abajo
+        {
+            b2BodyDef bd = b2DefaultBodyDef();
+            bd.type = b2_staticBody;
+            bd.position = (b2Vec2){MAP_W * 0.5f, MAP_H + T};
+            b2BodyId body = b2CreateBody(this->world, &bd);
+
+            b2Polygon box = b2MakeBox(MAP_W * 0.5f, T);
+            b2ShapeDef sd = b2DefaultShapeDef();
+            b2CreatePolygonShape(body, &sd, &box);
+        }
+
+        // pared izquierda
+        {
+            b2BodyDef bd = b2DefaultBodyDef();
+            bd.type = b2_staticBody;
+            bd.position = (b2Vec2){-T, MAP_H * 0.5f};
+            b2BodyId body = b2CreateBody(this->world, &bd);
+
+            b2Polygon box = b2MakeBox(T, MAP_H * 0.5f);
+            b2ShapeDef sd = b2DefaultShapeDef();
+            b2CreatePolygonShape(body, &sd, &box);
+        }
+
+        // pared derecha
+        {
+            b2BodyDef bd = b2DefaultBodyDef();
+            bd.type = b2_staticBody;
+            bd.position = (b2Vec2){MAP_W + T, MAP_H * 0.5f};
+            b2BodyId body = b2CreateBody(this->world, &bd);
+
+            b2Polygon box = b2MakeBox(T, MAP_H * 0.5f);
+            b2ShapeDef sd = b2DefaultShapeDef();
+            b2CreatePolygonShape(body, &sd, &box);
+        }
 }
 
