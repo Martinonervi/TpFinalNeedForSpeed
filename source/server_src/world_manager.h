@@ -37,6 +37,7 @@ public:
     b2BodyId getBody(EntityId id) const;
 
     void destroyEntity(EntityId id);
+    void mapLimits();
 
 
 private:
