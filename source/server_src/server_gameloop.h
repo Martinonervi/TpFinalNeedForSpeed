@@ -4,6 +4,7 @@
 #include "server_client_registry.h"
 #include "server_types.h"
 #include <box2d/box2d.h>
+#include "world_manager.h"
 
 class GameLoop: public Thread {
 
@@ -22,10 +23,13 @@ private:
 
     void movementHandler(Cmd& cmd);
     void initPlayerHandler(Cmd& cmd);
+    void disconnectHandler(ID id);
     void broadcastCarSnapshots();
 
-    b2WorldId world;
-    std::map<ID, Car> cars;
+    WorldManager worldManager;
+    std::unordered_map<ID, Car> cars;
+    std::unordered_map<ID, EntityId> clientToEntity;
+    std::unordered_map<ID, MoveMsg> lastInput;
 
     gameLoopQueue& queue;
     ClientsRegistry& registry;
