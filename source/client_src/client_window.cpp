@@ -18,28 +18,19 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         senderQueue(senderQueue),
         running(true),
         camera(width, height, 4640.0, 4672.0),  // Agregar consts
-        myCarId(-1) {
-
-    SDL2pp::Surface carsSurface("../assets/cars/cars.png");
-    const Uint32 colorkey = SDL_MapRGB(carsSurface.Get()->format, 163, 163, 13);
-    carsSurface.SetColorKey(true, colorkey);
-
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer.Get(), carsSurface.Get());
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-
-    carsTexture.emplace(tex);
-
-    const SDL2pp::Surface mapSurface("../assets/cities/LibertyCity.png");
-    mapsTexture = SDL2pp::Texture(renderer, mapSurface);
-
-    // Guardar texturas en tu TextureManager
-    tm.emplace(*carsTexture, *mapsTexture);
-
+        myCarId(-1)
+{
+    try {
+        tm = std::make_unique<TextureManager>(renderer);
+    } catch (const std::exception& e) {
+        std::cerr << "Error creando TextureManager: " << e.what() << std::endl;
+        std::exit(1);
+    }
 }
 
 // Hay que manejar FPS, hay que tener en cuenta los autos que no estan en camara
 void ClientWindow::run() {
-    Map map(renderer, *tm);
+    Map map(renderer, *tm, MAP_LIBERTY);
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
@@ -54,9 +45,8 @@ void ClientWindow::run() {
 
         for (auto& [id, car] : cars) {
             if (id == myCarId) {
-                camera.follow(car->getX(), car->getY()); // Problemas float/ int
+                camera.follow(car->getX(), car->getY());
             }
-            // si estoy en el cuadro de la camara dibujame (en relacion a los pixeles)
             car->draw(camera);
         }
 

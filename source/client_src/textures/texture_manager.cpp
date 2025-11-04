@@ -1,42 +1,35 @@
 #include "texture_manager.h"
-#include <cmath>
 
-TextureManager::TextureManager(SDL2pp::Texture& carsTexture, SDL2pp::Texture& mapsTexture)
-: carsTexture(carsTexture), mapsTexture(mapsTexture) {
-    carInfos[CAR_GREEN] = {0, SMALL_CAR, SMALL_CAR};
-    carInfos[CAR_RED] = {64, MEDIUM_CAR, MEDIUM_CAR};
-    carInfos[CAR_PORSCHE] = {144, MEDIUM_CAR, MEDIUM_CAR};
-    carInfos[CAR_LIGHT_BLUE] = {224, MEDIUM_CAR, MEDIUM_CAR};
-    carInfos[CAR_JEEP] = {304, MEDIUM_CAR, MEDIUM_CAR};
-    carInfos[CAR_PICKUP] = {384, MEDIUM_CAR, MEDIUM_CAR};
-    carInfos[CAR_LIMO] = {464, LARGE_CAR, LARGE_CAR};
+#include <SDL2pp/Renderer.hh>
+#include <SDL2pp/SDL.hh>
+#include <SDL_surface.h>
+
+#include "SDL2pp/Surface.hh"
+
+TextureManager::TextureManager(SDL2pp::Renderer& renderer) {
+    carsTexture.emplace(loadWithColorKey(renderer, CARS_PATH, 163, 163, 13));
+    carManager.emplace(*carsTexture);
+
+    peopleTexture.emplace(loadWithColorKey(renderer, PEOPLE_PATH, 163, 163, 13));
+    peopleManager.emplace(*peopleTexture);
+
+    cityLibertyTexture.emplace(renderer, SDL2pp::Surface(LIBERTY_CITY_PATH));
+    citySanAndreasTexture.emplace(renderer, SDL2pp::Surface(SAN_ANDREAS_PATH));
+    cityViceCityTexture.emplace(renderer, SDL2pp::Surface(VICE_CITY_PATH));
+    cityManager.emplace(*cityLibertyTexture, *citySanAndreasTexture, *cityViceCityTexture);
 }
 
-SDL2pp::Rect TextureManager::getCarFrame(const CarType type, const float angle) {
-    const auto& [yOffset, width, height] = carInfos[type];
-
-    const float adjusted = angle + M_PI / 2.0f;
-
-    float normalized = fmod(adjusted, 2.0f * M_PI);
-    if (normalized < 0)
-        normalized += 2.0f * M_PI;
-
-    const int frameIndex =
-        static_cast<int>(normalized / (2.0f * M_PI) * FRAMES_PER_CAR) % FRAMES_PER_CAR;
-
-    const int col = frameIndex % FRAMES_PER_DIRECTION;
-    const int row = frameIndex >= FRAMES_PER_DIRECTION ? 1 : 0;
-    const int x = col * width;
-    const int y = yOffset + row * height;
-
-    return {x, y, width, height};
+SDL2pp::Texture TextureManager::loadWithColorKey(SDL2pp::Renderer& renderer,
+                                                 const std::string& path,
+                                                 uint8_t r, uint8_t g, uint8_t b) {
+    SDL2pp::Surface surface(path);
+    const uint32_t key = SDL_MapRGB(surface.Get()->format, r, g, b);
+    surface.SetColorKey(true, key);
+    SDL2pp::Texture texture(renderer, surface);
+    texture.SetBlendMode(SDL_BLENDMODE_BLEND);
+    return texture;
 }
 
-
-SDL2pp::Texture& TextureManager::getCarsTexture() const {
-    return carsTexture;
-}
-
-SDL2pp::Texture& TextureManager::getMapsTexture() const {
-    return mapsTexture;
-}
+CarTexture& TextureManager::getCars() { return carManager.value(); }
+PeopleTexture& TextureManager::getPeople() { return peopleManager.value(); }
+CityTexture& TextureManager::getCities() { return cityManager.value(); }

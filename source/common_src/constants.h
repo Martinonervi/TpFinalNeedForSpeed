@@ -50,6 +50,12 @@ enum CarType {
     CAR_COUNT
 };
 
+enum MapType {
+    MAP_LIBERTY,
+    MAP_SAN_ANDREAS,
+    MAP_VICE
+};
+
 #define FRAMES_PER_CAR 16
 #define FRAMES_PER_DIRECTION 8
 
@@ -59,7 +65,11 @@ struct CarInfo {
     int height;
 };
 
-#define CARS_PATH  "../../assets/cars/cars.png"
+#define CARS_PATH  "../assets/cars/cars.png"
+#define PEOPLE_PATH  "../assets/cars/cars.png"
+#define SAN_ANDREAS_PATH  "../assets/cities/san_andreas.png"
+#define LIBERTY_CITY_PATH  "../assets/cities/liberty_city.png"
+#define VICE_CITY_PATH  "../assets/cities/vice_city.png"
 
 enum class EntityLayer {
     GROUND,

@@ -4,15 +4,15 @@
 
 Map::Map(
     SDL2pp::Renderer& renderer,
-    TextureManager& tm
-    //const MapType mapType Hay que implementarlo (path???)
+    TextureManager& tm,
+    const MapType mapType
     )
-    : Entity(renderer, tm, 0, 0) //, mapType(mapType)
+    : Entity(renderer, tm, 0, 0), mapType(mapType)
 {}
 
 
 void Map::draw(const Camera& camera) {
-    SDL2pp::Texture& texture(tm.getMapsTexture());
+    SDL2pp::Texture& texture(tm.getCities().getTexture(mapType));
 
     SDL2pp::Rect srcRect(camera.getView());
     SDL2pp::Rect dstRect( x, y, srcRect.w, srcRect.h );

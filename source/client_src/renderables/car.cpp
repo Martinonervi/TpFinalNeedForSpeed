@@ -16,9 +16,9 @@ void Car::update(const float newX, const float newY, const float newAngle) {
 }
 
 void Car::draw(const Camera& camera) {
-    SDL2pp::Texture& texture(tm.getCarsTexture());
+    SDL2pp::Texture& texture(tm.getCars().getTexture());
 
-    SDL2pp::Rect srcRect(tm.getCarFrame(carType, angle));
+    SDL2pp::Rect srcRect(tm.getCars().getFrame(carType, angle));
     SDL2pp::Rect dstRect(x - camera.getX(), y - camera.getY(), srcRect.w, srcRect.h);
 
     renderer.Copy(texture, srcRect,dstRect);
