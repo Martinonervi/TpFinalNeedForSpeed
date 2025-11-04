@@ -6,12 +6,15 @@
 
 class Car {
 public:
-    Car(ID id, b2BodyId body);
+    Car(ID id, b2BodyId body, CarType ct);
     void applyControlsToBody(const MoveMsg& in, float dt);
     PlayerState snapshotState();
+
+    CarType getCarType() const {return this->carType; }
 private:
     ID id;
     b2BodyId body;
+    CarType carType;
 
 };
 

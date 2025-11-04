@@ -3,8 +3,8 @@
 #include <cmath>
 #include "world_manager.h"
 
-Car::Car(ID id, b2BodyId body)
-        : id(id), body(body) {
+Car::Car(ID id, b2BodyId body, CarType ct)
+        : id(id), body(body), carType(ct) {
     auto* ud = new PhysicsUserData{
             PhysicsType::Car,
             id,
