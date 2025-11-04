@@ -3,7 +3,7 @@
 #include <cmath>
 #include "world_manager.h"
 
-Car::Car(ID id, b2BodyId body, CarType ct)
+Car::Car(const ID id, const b2BodyId body, const CarType ct)
         : id(id), body(body), carType(ct) {
     auto* ud = new PhysicsUserData{
             PhysicsType::Car,
@@ -33,10 +33,10 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     float v_lat  = v.x * right.x + v.y * right.y; //vector velocidad para la derecha
 
     // Fuerzas longitudinales (tuneables segun masa diria)
-    const float engineForce = 600.f;   // N
+    const float engineForce = 6000.f;   // N
     const float brakeForce  = 1200.f;  // N
     const float c_drag      = 12.f;    // N/(m/s) cuanto frena por el piso, frena solo
-    const float maxSpeed    = 8.0f;   // m/s  tope de velocidad
+    const float maxSpeed    = 200.0f;   // m/s  tope de velocidad
 
     b2Vec2 F = {0.f, 0.f}; // voy a ir sumando las fuerzas
 

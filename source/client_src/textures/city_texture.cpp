@@ -8,6 +8,6 @@ CityTexture::CityTexture(SDL2pp::Texture& liberty,
     cityTextures[MAP_VICE] = &vice;
 }
 
-SDL2pp::Texture& CityTexture::getTexture(MapType type) {
+SDL2pp::Texture& CityTexture::getTexture(const MapType type) const {
     return *cityTextures.at(type);
 }

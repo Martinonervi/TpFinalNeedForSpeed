@@ -17,7 +17,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         receiverQueue(receiverQueue),
         senderQueue(senderQueue),
         running(true),
-        camera(width, height, 4640.0, 4672.0),  // Agregar consts
+        camera(width, height, 6960.0, 7008.0),  // Agregar consts
         myCarId(-1)
 {
     try {
@@ -101,7 +101,8 @@ void ClientWindow::handleServerMessage(const SrvMsgPtr& msg) {
                 std::cout << ps.getX() << std::endl;
                 std::cout << ps.getY() << std::endl;
                 std::cout << ps.getAngleRad() << std::endl;
-                cars[ps.getPlayerId()]->update(ps.getX()*PIXELS_PER_METER,
+                cars[ps.getPlayerId()]->update(
+                    ps.getX()*PIXELS_PER_METER,
                     ps.getY()*PIXELS_PER_METER,
                     ps.getAngleRad());
             }

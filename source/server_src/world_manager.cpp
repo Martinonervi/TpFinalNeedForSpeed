@@ -43,13 +43,13 @@ EntityId WorldManager::createCarBody(b2Vec2 pos, float angleRad) {
     return eid;
 }
 
-b2BodyId WorldManager::getBody(EntityId id) const {
+b2BodyId WorldManager::getBody(const EntityId id) const {
     auto it = physics.find(id);
     if (it == physics.end()) return {0};
     return it->second.body;
 }
 
-void WorldManager::destroyEntity(EntityId id) {
+void WorldManager::destroyEntity(const EntityId id) {
     auto it = physics.find(id);
     if (it == physics.end()) return;
     b2DestroyBody(it->second.body);

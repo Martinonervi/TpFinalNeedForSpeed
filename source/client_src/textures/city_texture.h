@@ -8,7 +8,7 @@
 class CityTexture {
 public:
     CityTexture(SDL2pp::Texture& liberty, SDL2pp::Texture& sanAndreas, SDL2pp::Texture& vice);
-    SDL2pp::Texture& getTexture(MapType type);
+    SDL2pp::Texture& getTexture(MapType type) const;
 
 private:
     std::map<MapType, SDL2pp::Texture*> cityTextures;
