@@ -1,9 +1,19 @@
 #include "car.h"
 #include <algorithm>
 #include <cmath>
+#include "world_manager.h"
 
 Car::Car(ID id, b2BodyId body)
-        : id(id), body(body) {}
+        : id(id), body(body) {
+    auto* ud = new PhysicsUserData{
+            PhysicsType::Car,
+            id,
+            this
+    };
+    b2Body_SetUserData(this->body, ud);
+    b2Body_EnableContactEvents(this->body, true);
+    b2Body_EnableHitEvents(this->body, true);
+}
 
 static inline float clampf(float x, float a, float b){ return std::max(a, std::min(b, x)); }
 

@@ -17,6 +17,7 @@ void Receiver::run() {
             peerClosed = true;
             break;
         }
+        std::cout << "[server Receiver ] pushing cmd from client=" << this->id << "\n";
         switch (op) {
             case Opcode::Movement: {
                 MoveMsg mv = protocol.recvMoveInfo();  // lo recibe por valor

@@ -73,6 +73,7 @@ void GameLoop::processCmds() {
 
 
 void GameLoop::initPlayerHandler(Cmd& cmd){
+    std::cout << "initPlayerHandler, id: " << cmd.client_id << "\n";
     // spawn auto físico
     b2Vec2 spawn = { 2.0f * static_cast<float>(cars.size()), 0.0f };
     EntityId eid = worldManager.createCarBody(spawn, 0.f);

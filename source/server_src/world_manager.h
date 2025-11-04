@@ -6,6 +6,9 @@
 #include <cstdint>
 #include <string>
 #include <box2d/box2d.h>
+#include "world_contact_handler.h"
+#include "../common_src/constants.h"
+
 
 using EntityId = uint32_t;
 
@@ -14,7 +17,6 @@ struct PhysicsEntity {
     enum class Kind {
         Car,
         Building,
-        // ... después podés agregar Pickup, Obstacle, etc.
     } kind;
 };
 
@@ -41,10 +43,10 @@ private:
     b2WorldId world;
     EntityId nextId = 1;
 
-    // todos los que tienen body:
-    std::unordered_map<EntityId, PhysicsEntity> physics;
+    std::unordered_map<EntityId, PhysicsEntity> physics; // todos los que tienen body:
 
     //void createBuildingFromDesc(const BuildingDesc& d);
+    WorldContactHandler worldContactHandler;
 };
 
 
