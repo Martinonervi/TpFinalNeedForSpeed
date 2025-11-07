@@ -7,22 +7,47 @@
 
 
 Client::Client(const char* host, const char* service)
-    : peer(host, service),
-receiver(peer, receiverQueue), sender(peer, senderQueue)
+    : peer(host, service), protocol(peer),
+receiver(protocol, receiverQueue), sender(protocol, senderQueue)
 {}
 
-void Client::run() {
-    sender.start();
-
+void Client::lobbyState() {
     std::string line;
-    std::getline(std::cin, line);
+    while (!in_game && std::getline(std::cin, line)) {
+        int game_id = std::stoi(line);
+        sendRequest(game_id);
+        recvGame();
+    }
 
-    int game_id = std::stoi(line);
+}
+
+void Client::recvGame() {
+    Op op = protocol.readActionByte();
+    if (op != JOIN_GAME) {
+        throw("em...");
+    }
+    JoinGame game_info = protocol.recvGameInfo();
+    if (game_info.couldJoin()) {
+        in_game = true;
+    } else if (game_info.getExitStatus() == FULL_GAME) {
+        std::cout << "GAME FULL" << std::endl;
+    } else if (game_info.getExitStatus() == INEXISTENT_GAME) {
+        std::cout << "INEXISTENT GAME" << std::endl;
+    }
+}
+
+void Client::sendRequest(int game_id) {
     auto rq = std::make_shared<RequestGame>(static_cast<ID>(game_id));
     CliMsgPtr base = rq;
-    std::cout << "[Client main] Mensaje de tipo: " << base->type() << "pusheado a la sender queue"<< std::endl;
-    senderQueue.push(base);
+    protocol.sendRequestGame(*rq);
+}
 
+void Client::run() {
+
+    std::string line;
+    lobbyState();
+
+    sender.start();
     receiver.start();
 
     while (std::getline(std::cin, line)) {

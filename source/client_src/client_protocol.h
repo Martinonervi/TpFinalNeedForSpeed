@@ -26,6 +26,7 @@ public:
     int sendRequestGame(RequestGame& join_game);
     SendPlayer recvSendPlayer();
     NewPlayer recvNewPlayer();
+    JoinGame recvGameInfo();
 
 private:
     Socket& peer;

@@ -6,6 +6,7 @@
 #include "../common_src/move_Info.h"
 #include "../common_src/player.h"
 #include "../common_src/player_state.h"
+#include "../common_src/requestgame.h"
 #include "../common_src/send_player.h"
 
 #include "server_types.h"
@@ -26,7 +27,9 @@ public:
 
     int sendPlayerInit(Player& sp) const;
 
-    JoinGame getGameInfo();
+    RequestGame recvGameInfo();
+
+    int sendGameInfo(const JoinGame& game_info);
 
 private:
     Socket& peer;

@@ -4,15 +4,15 @@
 
 #include "../common_src/requestgame.h"
 
-ClientSender::ClientSender(Socket& peer_sock, Queue<CliMsgPtr>& senderQueue)
-    :protocol(peer_sock), senderQueue(senderQueue){}
+ClientSender::ClientSender(ClientProtocol& protocol, Queue<CliMsgPtr>& senderQueue)
+    :protocol(protocol), senderQueue(senderQueue){}
 
 void ClientSender::run(){
     while(should_keep_running() /*and leerStdinYEncolar()*/) {
         try{
             CliMsgPtr cliMsg = senderQueue.pop();
             switch (cliMsg->type()) {
-                case (Opcode::JOIN_GAME): {
+                case (Opcode::JOIN_GAME): { // sacar, ya moví la lógica de lugar
                     protocol.sendRequestGame(dynamic_cast<RequestGame&>(*cliMsg));
                     break;
                 }
@@ -26,7 +26,7 @@ void ClientSender::run(){
                 }
 
                 default: {
-                    std::cout << "comandito desconocido: " << cliMsg->type() << "\n";
+                    std::cout << "comando desconocido: " << cliMsg->type() << "\n";
                 }
             }
         } catch (const std::out_of_range& e) {

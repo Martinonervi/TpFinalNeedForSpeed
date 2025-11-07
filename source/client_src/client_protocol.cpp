@@ -97,15 +97,17 @@ PlayerState ClientProtocol::recvSrvMsg() {
 }
 
 Op ClientProtocol::readActionByte() const {
+    size_t n = 0;
+    Op op;
     try {
-        Op op;
-        peer.recvall(&op, sizeof(Op));
-
-        return op;
-    } catch (const std::exception& e) {
-        std::cerr << "client_main error: " << e.what() << "\n";
-        throw RETURN_FAILURE;
+        n = peer.recvall(&op, sizeof(Op));
+    }  catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
     }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return op;
 }
 
 SendPlayer ClientProtocol::recvSendPlayer() {
@@ -179,5 +181,20 @@ int ClientProtocol::sendRequestGame(RequestGame& request_game) {
     }  catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
         throw("Error sending");
+    }
+}
+
+JoinGame ClientProtocol::recvGameInfo() {
+    try {
+        bool joined;
+        err_code exit_code;
+
+        peer.recvall(&joined, sizeof(bool));
+        peer.recvall(&exit_code, sizeof(err_code));
+
+        return JoinGame(joined, exit_code);
+    } catch (const std::exception& e) {
+        std::cerr << "client_main error: " << e.what() << "\n";
+        throw RETURN_FAILURE;
     }
 }

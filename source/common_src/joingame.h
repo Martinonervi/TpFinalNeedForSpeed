@@ -8,13 +8,15 @@
 
 class JoinGame: public SrvMsg {
 public:
-    JoinGame(ID game_id): game_id(game_id){};
+    JoinGame(bool could_join, err_code code): joined(could_join), exit_status(code){};
 
-    ID const getGameID(){return game_id;}
+    err_code getExitStatus() const {return exit_status;}
+    bool couldJoin() const {return joined;}
     Op type() const override { return Opcode::JOIN_GAME; }
 
 private:
-    ID game_id;
+    bool joined;
+    err_code exit_status;
 };
 
 #endif //JOINGAME_H

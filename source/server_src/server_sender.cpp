@@ -24,6 +24,10 @@ void Sender::run() {
             int n;
 
             switch (msg->type()) {
+                case Opcode::JOIN_GAME:{
+                    n = protocol.sendGameInfo(dynamic_cast<const JoinGame&>(*msg));
+                    break;
+                }
                 case Opcode::Movement: {
                     n = protocol.sendPlayerState(dynamic_cast<const PlayerState&>(*msg));
                     break;

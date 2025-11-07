@@ -6,7 +6,7 @@ void ClientsRegistry::AddClient(SendQPtr client_queue, ID client_id) {
     std::lock_guard<std::mutex> lk(mx);
     const auto n = clients.size();
     if (n > 8) {
-        throw(ERR_GAME_FULL);
+        throw std::runtime_error(ERR_GAME_FULL);
     }
     clients.emplace(client_id, client_queue);
 }

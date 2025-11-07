@@ -1,5 +1,7 @@
 #include "server_game_manager.h"
 
+#include "../common_src/joingame.h"
+
 #include "server_gameloop.h"
 
 std::pair<std::shared_ptr<gameLoopQueue>, ID> GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
@@ -13,8 +15,17 @@ std::pair<std::shared_ptr<gameLoopQueue>, ID> GameManager::CreateJoinGame(ID gam
         auto new_clients_registry = std::make_shared<ClientsRegistry>();
         queue = std::make_shared<gameLoopQueue>();
         auto game_thread_ptr = std::make_unique<GameLoop>(queue, new_clients_registry);
+        try {
+            new_clients_registry->AddClient(sender_queue, client_id);
+        } catch (const std::exception& e) {
+            std::shared_ptr<JoinGame> msg = std::make_shared<JoinGame>(false, UNKNOWN_ERR);
+            sender_queue->push(msg);
+            throw(std::runtime_error("Error creando partida"));
+        }
 
-        new_clients_registry->AddClient(sender_queue, client_id);
+        std::shared_ptr<JoinGame> msg = std::make_shared<JoinGame>(true, SUCCES);
+        sender_queue->push(msg);
+
         game_thread_ptr->start();
         joined_game_id = ++last_id;
         games.emplace(joined_game_id, GameContext(new_clients_registry, queue, std::move(game_thread_ptr)));
@@ -25,10 +36,18 @@ std::pair<std::shared_ptr<gameLoopQueue>, ID> GameManager::CreateJoinGame(ID gam
     } else {
         auto it = games.find(game_id);
         if (it == games.end()) {
-            throw("Partida inexistente"); // en realidad esto no va a pasar porque se manejará desde QT
+            std::shared_ptr<JoinGame> msg = std::make_shared<JoinGame>(false, INEXISTENT_GAME);
+            sender_queue->push(msg);
+            throw(std::runtime_error("Partida inexistente"));
         }
         joined_game_id = game_id;
-        it->second.getRegistry()->AddClient(std::move(sender_queue), client_id);
+        try {
+            it->second.getRegistry()->AddClient(std::move(sender_queue), client_id);
+        }catch (const std::exception& e) {
+                std::shared_ptr<JoinGame> msg = std::make_shared<JoinGame>(false, FULL_GAME);
+                sender_queue->push(msg);
+                throw(std::runtime_error("Partida llena"));
+        }
         std::cout << "[GameManager] Player ID: " << client_id << " joined game: "<< game_id << std::endl;
         queue = it->second.getGameQueue();
     }
