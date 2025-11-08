@@ -4,11 +4,13 @@
 
 class Camera {
 public:
-    Camera(int screenWidth, int screenHeight, int worldWidth, int worldHeight);
+    Camera(float screenWidth, float screenHeight, float worldWidth, float worldHeight);
 
-    void follow(int targetX, int targetY);
+    void follow(float targetX, float targetY);
 
     SDL2pp::Rect getView() const;
+    int getX() const;
+    int getY() const;
 
 private:
     int x, y;

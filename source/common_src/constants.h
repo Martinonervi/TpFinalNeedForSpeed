@@ -22,6 +22,18 @@
 #define RETURN_SUCCESS  0
 #define RETURN_FAILURE  1
 
+#define FRAMES_PER_CAR 16
+#define FRAMES_PER_DIRECTION 8
+#define SMALL_CAR 32
+#define MEDIUM_CAR 40
+#define LARGE_CAR 48
+#define PIXELS_PER_METER 10
+#define CARS_PATH  "../assets/cars/cars.png"
+#define PEOPLE_PATH  "../assets/cars/cars.png"
+#define SAN_ANDREAS_PATH  "../assets/cities/san_andreas.png"
+#define LIBERTY_CITY_PATH  "../assets/cities/liberty_city.png"
+#define VICE_CITY_PATH  "../assets/cities/vice_city.png"
+
 using Cars_W_Nitro = std::uint16_t;
 
 using ID = std::uint32_t;
@@ -35,11 +47,6 @@ struct Cmd {
     std::shared_ptr<CliMsg> msg;
 };
 
-
-#define SMALL_CAR 32
-#define MEDIUM_CAR 40
-#define LARGE_CAR 48
-
 enum CarType {
     CAR_GREEN,
     CAR_RED,
@@ -51,16 +58,17 @@ enum CarType {
     CAR_COUNT
 };
 
-#define FRAMES_PER_CAR 16
-#define FRAMES_PER_DIRECTION 8
+enum MapType {
+    MAP_LIBERTY,
+    MAP_SAN_ANDREAS,
+    MAP_VICE
+};
 
 struct CarInfo {
     int yOffset;
     int width;
     int height;
 };
-
-#define CARS_PATH  "../../assets/cars/cars.png"
 
 enum class EntityLayer {
     GROUND,

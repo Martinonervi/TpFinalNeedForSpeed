@@ -74,10 +74,14 @@ void GameManager::LeaveGame(ID client_id, ID game_id) {
         if (it == games.end()) return;
         it->second.getRegistry()->EraseQueue(client_id);
         if (it->second.getRegistry()->size() == 0) {
-            to_stop = it->second.getGameThread();  // mover el loop
+            to_stop = it->second.takeGameThread();  // mover el loop
             games.erase(it);                       // borrar del mapa ahora que ya no hay hilos
         }
     }
-    if (to_stop) to_stop->stop();
-    std::cout << "[GameManager] Reaped empty game: " << game_id << std::endl;
+    if (to_stop) {
+        to_stop->stop();
+        to_stop->join();
+        std::cout << "[GameManager] Reaped empty game: " << game_id << std::endl;
+    }
+
 }

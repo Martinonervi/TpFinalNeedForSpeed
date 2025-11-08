@@ -48,7 +48,7 @@ void Client::run() {
     lobbyState();
 
     sender.start();
-    receiver.start();
+
 
     while (std::getline(std::cin, line)) {
         if (line.empty())
@@ -68,6 +68,7 @@ void Client::run() {
         senderQueue.push(msg);
         break;
     }
+    receiver.start();
 
     ClientWindow client_window(
         800,

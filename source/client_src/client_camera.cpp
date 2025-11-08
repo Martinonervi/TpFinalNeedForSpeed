@@ -1,12 +1,12 @@
 #include "client_camera.h"
 
-Camera::Camera(const int screenWidth, const int screenHeight, const int worldWidth,
-               const int worldHeight)
+Camera::Camera(const float screenWidth, const float screenHeight, const float worldWidth,
+               const float worldHeight)
         : x(0), y(0),
           screenWidth(screenWidth), screenHeight(screenHeight),
-          worldWidth(worldWidth), worldHeight(worldHeight) {}
+          worldWidth(worldWidth*1.5), worldHeight(worldHeight*1.5) {}
 
-void Camera::follow(const int targetX, const int targetY) {
+void Camera::follow(const float targetX, const float targetY) {
     x = targetX - screenWidth / 2;
     y = targetY - screenHeight / 2;
 
@@ -19,3 +19,6 @@ void Camera::follow(const int targetX, const int targetY) {
 SDL2pp::Rect Camera::getView() const {
     return {x, y, screenWidth, screenHeight};
 }
+
+int Camera::getX() const { return x; }
+int Camera::getY() const { return y; }

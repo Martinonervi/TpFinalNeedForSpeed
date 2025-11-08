@@ -31,14 +31,12 @@ private:
     SDL2pp::SDL sdl;
     SDL2pp::Window window;
     SDL2pp::Renderer renderer;
-    std::optional<SDL2pp::Texture> carsTexture;
-    std::optional<SDL2pp::Texture> mapsTexture;
-    std::optional<TextureManager> tm;
+    std::unique_ptr<TextureManager> tm;
     Queue<SrvMsgPtr>& receiverQueue;
     Queue<CliMsgPtr>& senderQueue;
-    std::unordered_map<int, std::unique_ptr<Car>> cars;
+    std::unordered_map<ID, std::unique_ptr<Car>> cars;
     Camera camera;
-    int myCarId;
+    ID myCarId;
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
         { SDLK_w, MoveMsg( 1, 0, 0, 0 ) },

@@ -18,7 +18,7 @@ std::shared_ptr<gameLoopQueue> GameContext::getGameQueue() {
     return queue;
 }
 
-std::unique_ptr<GameLoop> GameContext::getGameThread() {
+std::unique_ptr<GameLoop> GameContext::takeGameThread() {
     return std::move(game_thread);
 }
 void GameContext::gameThreadStop() {

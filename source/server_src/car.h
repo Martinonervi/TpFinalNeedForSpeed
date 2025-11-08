@@ -6,14 +6,15 @@
 
 class Car {
 public:
-    Car(ID id, b2WorldId world, b2Vec2 pos, float angleRad);
-    PlayerState snapshotState();
+    Car(ID id, b2BodyId body, CarType ct);
     void applyControlsToBody(const MoveMsg& in, float dt);
+    PlayerState snapshotState();
 
+    CarType getCarType() const {return this->carType; }
 private:
     ID id;
     b2BodyId body;
-    //float health{100.f};
+    CarType carType;
 
 };
 

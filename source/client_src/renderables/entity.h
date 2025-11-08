@@ -4,15 +4,16 @@
 #include <SDL2pp/Renderer.hh>
 #include <SDL2pp/Texture.hh>
 
-#include "../textures/texture_manager.h"
 #include "../../common_src/constants.h"
+#include "../client_camera.h"
+#include "../textures/texture_manager.h"
 
 class Entity {
 public:
     Entity(SDL2pp::Renderer& renderer, TextureManager& tm, float x, float y);
     virtual ~Entity() = default;
 
-    virtual void draw();
+    virtual void draw(const Camera& camera);
     void setPosition(float newX, float newY);
     void setLayer(EntityLayer l);
 

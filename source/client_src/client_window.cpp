@@ -17,29 +17,20 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         receiverQueue(receiverQueue),
         senderQueue(senderQueue),
         running(true),
-        camera(width, height, 4640, 4672),  // Agregar consts
-        myCarId(-1) {
-
-    SDL2pp::Surface carsSurface("../assets/cars/cars.png");
-    const Uint32 colorkey = SDL_MapRGB(carsSurface.Get()->format, 163, 163, 13);
-    carsSurface.SetColorKey(true, colorkey);
-
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer.Get(), carsSurface.Get());
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-
-    carsTexture.emplace(tex);
-
-    const SDL2pp::Surface mapSurface("../assets/cities/LibertyCity.png");
-    mapsTexture = SDL2pp::Texture(renderer, mapSurface);
-
-    // Guardar texturas en tu TextureManager
-    tm.emplace(*carsTexture, *mapsTexture);
-
+        camera(width, height, 4640.0, 4672.0),  // Agregar consts
+        myCarId(-1)
+{
+    try {
+        tm = std::make_unique<TextureManager>(renderer);
+    } catch (const std::exception& e) {
+        std::cerr << "Error creando TextureManager: " << e.what() << std::endl;
+        std::exit(1);
+    }
 }
 
-// Hay que manejar FPS
+// Hay que manejar FPS, hay que tener en cuenta los autos que no estan en camara
 void ClientWindow::run() {
-    const Map map(renderer, *tm);
+    Map map(renderer, *tm, MAP_LIBERTY);
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
@@ -48,21 +39,19 @@ void ClientWindow::run() {
 
         handleEvents();
 
-        renderer.SetDrawColor(0, 0, 0, 0);
+        renderer.SetDrawColor(0, 0, 0, 255);
         renderer.Clear();
         map.draw(camera);
 
         for (auto& [id, car] : cars) {
             if (id == myCarId) {
-                camera.follow(car->getX(), car->getY()); // Problemas float/ int
+                camera.follow(car->getX(), car->getY());
             }
-            car->draw();
+            car->draw(camera);
         }
 
         renderer.Present();
     }
-    SDL_QuitSubSystem(SDL_INIT_VIDEO);
-    SDL_Quit();
 }
 
 
@@ -97,10 +86,9 @@ void ClientWindow::handleServerMessage(const SrvMsgPtr& msg) {
         }
         case NEW_PLAYER: {
             const auto snc = dynamic_cast<const NewPlayer&>(*msg);
-            std::cout << "Se Unio Player:" << snc.getPlayerId() << std::endl;
-
             auto it = cars.find(snc.getPlayerId());
             if (it == cars.end()) {
+                std::cout << "Se Unio Player:" << snc.getPlayerId() << std::endl;
                 cars[snc.getPlayerId()] = std::make_unique<Car>(renderer, *tm, snc.getX(),
                                                                 snc.getY(), snc.getCarType(), snc.getAngleRad());
             }
@@ -113,7 +101,9 @@ void ClientWindow::handleServerMessage(const SrvMsgPtr& msg) {
                 std::cout << ps.getX() << std::endl;
                 std::cout << ps.getY() << std::endl;
                 std::cout << ps.getAngleRad() << std::endl;
-                cars[ps.getPlayerId()]->update(ps.getX()*100, ps.getY()*100,
+                cars[ps.getPlayerId()]->update(
+                    ps.getX()*PIXELS_PER_METER,
+                    ps.getY()*PIXELS_PER_METER,
                     ps.getAngleRad());
             }
             break;

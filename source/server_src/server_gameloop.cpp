@@ -10,24 +10,31 @@
 #include "../common_src/init_player.h"
 #include "../common_src/new_player.h"
 
+#define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
+#define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
+
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
-        queue(std::move(queue)), registry(std::move(registry)) {
-
-    b2WorldDef worldDef = b2DefaultWorldDef();
-    worldDef.gravity = (b2Vec2){0.0f, 0.0f};   // sin gravedad
-    this->world = b2CreateWorld(&worldDef);
-
+        worldManager(),queue(std::move(queue)), registry(std::move(registry)) {
+    //worldManager.loadMapFromYaml("map.yaml"); :)
 }
-const float timeStep = 1.0f / 60.0f; //cuánto tiempo avanza el mundo en esa llamada.
-const int subStepCount = 4; //por cada timeStep resuelve problemas 4 veces mas rapido o algo asi
-//sobre todo para hacer calculos de colisiones
 
 void GameLoop::run() {
     try {
         while (should_keep_running()) {
             processCmds();
 
-            b2World_Step(this->world, timeStep,  subStepCount);
+            // esto lo tengo q ver con fran, a ver si el me manda cada vez q mantienen apretado
+            for (auto& [id, car] : cars) {
+                auto it = lastInput.find(id);
+                if (it != lastInput.end()) {
+                    car.applyControlsToBody(it->second, TIME_STEP);
+                } else {
+                    MoveMsg mv(0, 0, 0, 0);
+                    car.applyControlsToBody(mv, TIME_STEP);
+                }
+            }
+
+            worldManager.step(TIME_STEP,  SUB_STEP_COUNT);
 
             broadcastCarSnapshots();
 
@@ -63,44 +70,64 @@ void GameLoop::processCmds() {
 
 
 
-void GameLoop::initPlayerHandler(Cmd& cmd){ //testeamos
-    //aca tendria q crear el auto
+void GameLoop::initPlayerHandler(Cmd& cmd){
     const InitPlayer ip = dynamic_cast<const InitPlayer&>(*cmd.msg);
 
-
-    // separo autos 3m en X para que no spawneen superpuestos
-    b2Vec2 spawn = { 3.0f * static_cast<float>(cars.size()), 0.0f };
-    float angle  = 0.0f;
-
-    // try_emplace construye el Car in-place
-    auto [insIt, inserted] =
-            cars.try_emplace(cmd.client_id, cmd.client_id, this->world, spawn, angle);
-    if (!inserted) {
-        return;
-    }
+    // spawn auto físico
+    b2Vec2 spawn = { 4.0f, 4.0f };
+    EntityId eid = worldManager.createCarBody(spawn, 0.f);
+    b2BodyId body = worldManager.getBody(eid);
+    //podria guardar el carType y el name (en el Car)
+    cars.emplace(cmd.client_id, Car(cmd.client_id, body, ip.getCarType()));
+    clientToEntity.emplace(cmd.client_id, eid);
 
 
     auto base = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), 1, 2, 3));
-    if (!registry) return;
-    registry->sendTo(cmd.client_id, base);
+            std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), spawn.x, spawn.y, 3));
+    registry->sendTo(cmd.client_id, base); //le aviso al cliente q ya tiene su auto
 
-
-
+    // le aviso al nuevo cliente donde estan los otros autos
     for (auto [id, car]: cars) {
         auto newPlayer = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<NewPlayer>(id, ip.getCarType(), 1, 2, 3));
-        if (!registry) return;
-        registry->broadcast(newPlayer);
+                std::make_shared<NewPlayer>(id, car.getCarType(), 1, 2, 3));
+        // deberian ser pos reales
+        if (id == cmd.client_id) continue;
+
+        //le aviso a los demas que hay un nuevo auto en la partida
+        registry->sendTo(cmd.client_id, newPlayer);
+
+    }
+    // les aviso a todos del auto del nuevo cliente
+    for (auto& [otherId, _] : cars) {
+        if (otherId == cmd.client_id) continue;
+        auto npForOld = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<NewPlayer>(cmd.client_id, ip.getCarType(), spawn.x, spawn.y, 0.f)
+        );
+        registry->sendTo(otherId, npForOld);
     }
 
 }
 
 void GameLoop::movementHandler(Cmd& cmd) {
     auto it = cars.find(cmd.client_id);
-    const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
-    it->second.applyControlsToBody(mv, timeStep);
+    if (it == cars.end()) return;
 
+    const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
+
+    lastInput[cmd.client_id] = mv;
+    //it->second.applyControlsToBody(mv, timeStep);
+
+}
+
+// la voy implementando aunque la logica del msj todavia no esta hecha
+void GameLoop::disconnectHandler(ID id) {
+    cars.erase(id);
+
+    auto it = clientToEntity.find(id);
+    if (it != clientToEntity.end()) {
+        worldManager.destroyEntity(it->second);
+        clientToEntity.erase(it);
+    }
 }
 
 
@@ -109,7 +136,6 @@ void GameLoop::broadcastCarSnapshots() {
         PlayerState ps = car.snapshotState();
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerState>(std::move(ps)));
-        if (!registry) return;
         registry->broadcast(base); // todos los jugadores quieren saber tu posicion
     }
 }
@@ -133,9 +159,4 @@ void GameLoop::stop() {
     } catch (...) {}
 }
 
-GameLoop::~GameLoop() {
-    if (world.index1) {
-        b2DestroyWorld(this->world);
-        this->world = {0};
-    }
-}
+GameLoop::~GameLoop() {}

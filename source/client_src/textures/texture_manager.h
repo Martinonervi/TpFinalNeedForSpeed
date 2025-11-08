@@ -1,22 +1,35 @@
 #ifndef TEXTURE_MANAGER_H
 #define TEXTURE_MANAGER_H
 
-#include <SDL2pp/Texture.hh>
 #include <SDL2pp/Renderer.hh>
-#include "../../common_src/constants.h"
+#include "car_texture.h"
+#include "people_texture.h"
+#include "city_texture.h"
 
 class TextureManager {
 public:
-    TextureManager(SDL2pp::Texture& carsTexture, SDL2pp::Texture& mapsTexture);
-    SDL2pp::Rect getCarFrame(CarType type, float angle);
+    explicit TextureManager(SDL2pp::Renderer& renderer);
 
-    SDL2pp::Texture& getCarsTexture() const;
-    SDL2pp::Texture& getMapsTexture() const;
+    CarTexture& getCars();
+    PeopleTexture& getPeople();
+    CityTexture& getCities();
 
 private:
-    SDL2pp::Texture& carsTexture;
-    SDL2pp::Texture& mapsTexture;
-    std::array<CarInfo, CAR_COUNT> carInfos{};
+    std::optional<SDL2pp::Texture> carsTexture;
+    std::optional<SDL2pp::Texture> peopleTexture;
+    std::optional<SDL2pp::Texture> cityLibertyTexture;
+    std::optional<SDL2pp::Texture> citySanAndreasTexture;
+    std::optional<SDL2pp::Texture> cityViceCityTexture;
+
+    std::optional<CarTexture> carManager;
+    std::optional<PeopleTexture> peopleManager;
+    std::optional<CityTexture> cityManager;
+
+    static SDL2pp::Texture loadWithColorKey(
+        SDL2pp::Renderer& renderer,
+        const std::string& path,
+        uint8_t r, uint8_t g, uint8_t b
+        );
 };
 
 
