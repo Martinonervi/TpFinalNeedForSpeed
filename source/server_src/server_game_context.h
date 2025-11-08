@@ -16,6 +16,7 @@ public:
     std::shared_ptr<ClientsRegistry> getRegistry();
     std::shared_ptr<gameLoopQueue> getGameQueue();
     void gameThreadStop();
+    std::unique_ptr<GameLoop> getGameThread();
 
 private:
     std::shared_ptr<ClientsRegistry> registry;

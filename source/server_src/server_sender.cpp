@@ -19,6 +19,7 @@ void Sender::stop() {
 void Sender::run() {
     try {
         while (should_keep_running()) {
+            if (!msg_queue) break;
             SrvMsgPtr msg = msg_queue->pop();
 
             int n;

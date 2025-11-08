@@ -82,6 +82,7 @@ void GameLoop::initPlayerHandler(Cmd& cmd){ //testeamos
 
     auto base = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), 1, 2, 3));
+    if (!registry) return;
     registry->sendTo(cmd.client_id, base);
 
 
@@ -89,6 +90,7 @@ void GameLoop::initPlayerHandler(Cmd& cmd){ //testeamos
     for (auto [id, car]: cars) {
         auto newPlayer = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<NewPlayer>(id, ip.getCarType(), 1, 2, 3));
+        if (!registry) return;
         registry->broadcast(newPlayer);
     }
 
@@ -107,6 +109,7 @@ void GameLoop::broadcastCarSnapshots() {
         PlayerState ps = car.snapshotState();
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerState>(std::move(ps)));
+        if (!registry) return;
         registry->broadcast(base); // todos los jugadores quieren saber tu posicion
     }
 }

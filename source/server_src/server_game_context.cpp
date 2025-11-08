@@ -17,6 +17,10 @@ std::shared_ptr<ClientsRegistry> GameContext::getRegistry() {
 std::shared_ptr<gameLoopQueue> GameContext::getGameQueue() {
     return queue;
 }
+
+std::unique_ptr<GameLoop> GameContext::getGameThread() {
+    return std::move(game_thread);
+}
 void GameContext::gameThreadStop() {
     game_thread->stop();
     game_thread->join();
