@@ -159,9 +159,4 @@ void GameLoop::stop() {
     } catch (...) {}
 }
 
-GameLoop::~GameLoop() {
-    if (world.index1) {
-        b2DestroyWorld(this->world);
-        this->world = {0};
-    }
-}
+GameLoop::~GameLoop() {}
