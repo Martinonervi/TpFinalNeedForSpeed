@@ -11,5 +11,3 @@
 using SendQ = Queue<SrvMsgPtr>;
 using SendQPtr = std::shared_ptr<SendQ>;
 using gameLoopQueue = Queue<Cmd>;
-
-

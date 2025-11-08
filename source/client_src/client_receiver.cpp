@@ -1,12 +1,18 @@
 #include "client_receiver.h"
 #include "../common_src/queue.h"
 
-ClientReceiver::ClientReceiver(Socket& peer_sock, Queue<SrvMsgPtr>& receiverQueue)
-    :protocol(peer_sock), receiverQueue(receiverQueue){}
+ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
+    :protocol(protocol), receiverQueue(receiverQueue){}
 
 void ClientReceiver::run(){
     while (should_keep_running()){
-        Op op = protocol.readActionByte();
+        Op op;
+        try {
+            op = protocol.readActionByte();
+        } catch (...) {
+            peerClosed = true;
+            break;
+        }
 
         switch (op) {
             case (Opcode::Movement): {
@@ -34,9 +40,12 @@ void ClientReceiver::run(){
                 break;
             }
             default: {
-                std::cout << "cmd desconocido: " << op << "\n";
+                std::cout << "comando desconocido: " << op << "\n";
             }
         }
     }
 }
+
+bool ClientReceiver::is_listening() const { return !peerClosed; }
+
 

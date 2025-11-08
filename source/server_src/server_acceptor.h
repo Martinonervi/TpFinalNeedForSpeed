@@ -4,13 +4,13 @@
 #include <memory>
 #include "../common_src/constants.h"
 #include "server_client_handler.h"
-#include "server_client_registry.h"
 #include "server_types.h"
+#include "server_game_manager.h"
 
 class Acceptor: public Thread {
 
 public:
-    Acceptor(Socket listen_sock, ClientsRegistry& registry, gameLoopQueue& cmd_queue);
+    Acceptor(Socket listen_sock, GameManager& game_manager_ref);
     void stop() override;
 
 protected:
@@ -22,9 +22,9 @@ private:
 
     // recursos compartidos (referencias)
     Socket acceptor;            // socket aceptador
-    ClientsRegistry& registry;  // monitor id -> sendQueue
-    gameLoopQueue& cmd_queue;   // cola global de comandos
+    GameManager& game_manager;  // monitor game_id -> game_context
 
     // lista de clientes
     std::list<std::unique_ptr<ClientHandler>> handlers;
+    ID last_id{0};
 };

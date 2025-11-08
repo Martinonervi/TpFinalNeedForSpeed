@@ -1,17 +1,56 @@
 #include "client.h"
+
+#include "../common_src/joingame.h"
+#include "../common_src/requestgame.h"
+
 #include "client_window.h"
 
 
 Client::Client(const char* host, const char* service)
-    : peer(host, service),
-receiver(peer, receiverQueue), sender(peer, senderQueue)
+    : peer(host, service), protocol(peer),
+receiver(protocol, receiverQueue), sender(protocol, senderQueue)
 {}
 
-void Client::run() {
-    sender.start();
+void Client::lobbyState() {
+    std::string line;
+    while (!in_game && std::getline(std::cin, line)) {
+        int game_id = std::stoi(line);
+        sendRequest(game_id);
+        recvGame();
+    }
 
+}
+
+void Client::recvGame() {
+    Op op = protocol.readActionByte();
+    if (op != JOIN_GAME) {
+        throw("em...");
+    }
+    JoinGame game_info = protocol.recvGameInfo();
+    if (game_info.couldJoin()) {
+        in_game = true;
+    } else if (game_info.getExitStatus() == FULL_GAME) {
+        std::cout << "GAME FULL" << std::endl;
+    } else if (game_info.getExitStatus() == INEXISTENT_GAME) {
+        std::cout << "INEXISTENT GAME" << std::endl;
+    }
+}
+
+void Client::sendRequest(int game_id) {
+    auto rq = std::make_shared<RequestGame>(static_cast<ID>(game_id));
+    CliMsgPtr base = rq;
+    protocol.sendRequestGame(*rq);
+}
+
+void Client::run() {
 
     std::string line;
+    lobbyState();
+
+    sender.start();
+    receiver.start();
+
+
     while (std::getline(std::cin, line)) {
         if (line.empty())
             continue;
@@ -31,7 +70,6 @@ void Client::run() {
         break;
     }
     receiver.start();
-
 
     ClientWindow client_window(
         800,

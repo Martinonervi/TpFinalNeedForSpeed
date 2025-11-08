@@ -2,14 +2,13 @@
 #include <algorithm>
 #include <utility>
 
-ClientsRegistry::ClientsRegistry(): last_id(0) {}
-
-std::pair<ID, SendQPtr> ClientsRegistry::AddClient() {
-    auto q = std::make_shared<SendQ>();
+void ClientsRegistry::AddClient(SendQPtr client_queue, ID client_id) {
     std::lock_guard<std::mutex> lk(mx);
-    const ID id = ++last_id;
-    clients.emplace(id, q);
-    return {id, std::move(q)};
+    const auto n = clients.size();
+    if (n >= 8) {
+        throw std::runtime_error(ERR_GAME_FULL);
+    }
+    clients.emplace(client_id, client_queue);
 }
 
 void ClientsRegistry::EraseQueue(ID id) {
@@ -17,9 +16,9 @@ void ClientsRegistry::EraseQueue(ID id) {
     clients.erase(id);
 }
 
-int ClientsRegistry::size() const {
+int ClientsRegistry::size() const { //borrar método, no sirve creo
     std::lock_guard<std::mutex> lk(mx);
-    return clients.size();
+    return static_cast<int>(clients.size());
 }
 
 void ClientsRegistry::broadcast(const SrvMsgPtr& msg) {
@@ -56,6 +55,7 @@ void ClientsRegistry::sendTo(ID client_id, const SrvMsgPtr& msg) {
     try {
         q->push(msg);
     } catch (const ClosedQueue&) {
-        // cliente cerrándose
+        // cliente cerrándose ,, borrarmos al cliente?
+        // EraseQueue(client_id);
     }
 }

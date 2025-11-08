@@ -13,13 +13,18 @@ public:
 private:
     void close();  // cierra el socket (por si hiciera falta cerrar más cosas)antes de irse
                    // ordenadamente
+    void lobbyState();
+    void sendRequest(int game_id);
+    void recvGame();
     void stop();
     void join();
 
     Socket peer;
     Queue<SrvMsgPtr> receiverQueue;
     Queue<CliMsgPtr> senderQueue;
+    ClientProtocol protocol;
     ClientReceiver receiver;
     ClientSender sender;
     Printer printer;
+    bool in_game{false};
 };

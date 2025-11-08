@@ -19,11 +19,16 @@ void Sender::stop() {
 void Sender::run() {
     try {
         while (should_keep_running()) {
+            if (!msg_queue) break;
             SrvMsgPtr msg = msg_queue->pop();
 
             int n;
 
             switch (msg->type()) {
+                case Opcode::JOIN_GAME:{
+                    n = protocol.sendGameInfo(dynamic_cast<const JoinGame&>(*msg));
+                    break;
+                }
                 case Opcode::Movement: {
                     n = protocol.sendPlayerState(dynamic_cast<const PlayerState&>(*msg));
                     break;

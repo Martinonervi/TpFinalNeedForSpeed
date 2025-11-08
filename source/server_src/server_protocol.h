@@ -1,11 +1,13 @@
 #pragma once
 #include <memory>
 
+#include "../common_src/init_player.h"
+#include "../common_src/joingame.h"
 #include "../common_src/move_Info.h"
 #include "../common_src/player.h"
 #include "../common_src/player_state.h"
+#include "../common_src/requestgame.h"
 #include "../common_src/send_player.h"
-#include "../common_src/init_player.h"
 
 #include "server_types.h"
 
@@ -22,7 +24,12 @@ public:
     MoveMsg recvMoveInfo();
 
     InitPlayer recvInitPlayer();
+
     int sendPlayerInit(Player& sp) const;
+
+    RequestGame recvGameInfo();
+
+    int sendGameInfo(const JoinGame& game_info);
 
 private:
     Socket& peer;

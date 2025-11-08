@@ -13,8 +13,8 @@
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
 
-GameLoop::GameLoop(gameLoopQueue& queue, ClientsRegistry& registry):
-        worldManager(), queue(queue), registry(registry) {
+GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
+        worldManager(),queue(std::move(queue)), registry(std::move(registry)) {
     //worldManager.loadMapFromYaml("map.yaml"); :)
 }
 
@@ -53,12 +53,10 @@ void GameLoop::processCmds() {
     for (Cmd& cmd: to_process) {
         switch (cmd.msg->type()) {
             case (Opcode::Movement): {
-                std::cout << "aca en el gameloop MOVEMENT\n";
                 movementHandler(cmd);
                 break;
             }
             case (Opcode::INIT_PLAYER): {
-                std::cout << "aca en el gameloop INIT_PLAYER\n";
                 initPlayerHandler(cmd);
                 break;
             }
@@ -86,7 +84,7 @@ void GameLoop::initPlayerHandler(Cmd& cmd){
 
     auto base = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), spawn.x, spawn.y, 3));
-    registry.sendTo(cmd.client_id, base); //le aviso al cliente q ya tiene su auto
+    registry->sendTo(cmd.client_id, base); //le aviso al cliente q ya tiene su auto
 
     // le aviso al nuevo cliente donde estan los otros autos
     for (auto [id, car]: cars) {
@@ -96,7 +94,7 @@ void GameLoop::initPlayerHandler(Cmd& cmd){
         if (id == cmd.client_id) continue;
 
         //le aviso a los demas que hay un nuevo auto en la partida
-        registry.sendTo(cmd.client_id, newPlayer);
+        registry->sendTo(cmd.client_id, newPlayer);
 
     }
     // les aviso a todos del auto del nuevo cliente
@@ -105,7 +103,7 @@ void GameLoop::initPlayerHandler(Cmd& cmd){
         auto npForOld = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<NewPlayer>(cmd.client_id, ip.getCarType(), spawn.x, spawn.y, 0.f)
         );
-        registry.sendTo(otherId, npForOld);
+        registry->sendTo(otherId, npForOld);
     }
 
 }
@@ -138,7 +136,7 @@ void GameLoop::broadcastCarSnapshots() {
         PlayerState ps = car.snapshotState();
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerState>(std::move(ps)));
-        registry.broadcast(base); // todos los jugadores quieren saber tu posicion
+        registry->broadcast(base); // todos los jugadores quieren saber tu posicion
     }
 }
 
@@ -147,7 +145,7 @@ std::list<Cmd> GameLoop::emptyQueue() {
     std::list<Cmd> cmd_list;
     Cmd cmd_aux;
 
-    while (queue.try_pop(cmd_aux)) {
+    while (queue->try_pop(cmd_aux)) {
         cmd_list.push_back(std::move(cmd_aux));
     }
 
@@ -157,8 +155,13 @@ std::list<Cmd> GameLoop::emptyQueue() {
 void GameLoop::stop() {
     Thread::stop();
     try {
-        queue.close();
+        queue->close();
     } catch (...) {}
 }
 
-GameLoop::~GameLoop() {}
+GameLoop::~GameLoop() {
+    if (world.index1) {
+        b2DestroyWorld(this->world);
+        this->world = {0};
+    }
+}

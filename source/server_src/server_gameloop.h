@@ -1,3 +1,5 @@
+#pragma once
+
 #include <list>
 #include <map>
 #include "car.h"
@@ -9,7 +11,7 @@
 class GameLoop: public Thread {
 
 public:
-    GameLoop(gameLoopQueue& queue, ClientsRegistry& registry);
+    GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry);
     void stop() override;
     virtual ~GameLoop();
 
@@ -31,8 +33,8 @@ private:
     std::unordered_map<ID, EntityId> clientToEntity;
     std::unordered_map<ID, MoveMsg> lastInput;
 
-    gameLoopQueue& queue;
-    ClientsRegistry& registry;
+    std::shared_ptr<gameLoopQueue> queue;
+    std::shared_ptr<ClientsRegistry> registry;
     Printer printer;
 };
 

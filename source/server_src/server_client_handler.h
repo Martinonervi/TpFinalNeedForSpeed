@@ -5,13 +5,14 @@
 #include "../common_src/constants.h"
 #include "../common_src/socket.h"
 
+#include "server_game_manager.h"
 #include "server_receiver.h"
 #include "server_sender.h"
 #include "server_types.h"
 
 class ClientHandler {
 public:
-    ClientHandler(Socket peer_sock, ID id, SendQPtr sendq, gameLoopQueue& cmd_queue);
+    ClientHandler(Socket peer_sock, ID id, SendQPtr sendq, GameManager& game_manager_ref);
 
     void start();
     void poll();      // Reacciona al flag de EOF del Receiver
@@ -32,6 +33,7 @@ public:
 
 private:
     ID id{0};
+    GameManager& game_manager;
     Socket peer;
     Sender sender;
     Receiver receiver;

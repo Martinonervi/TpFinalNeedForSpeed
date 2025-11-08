@@ -2,13 +2,15 @@
 
 #include <utility>
 
+#include <sys/socket.h>
 
-ClientHandler::ClientHandler(Socket peer_sock, const ID id, SendQPtr sendq,
-                             gameLoopQueue& cmd_queue):
+
+ClientHandler::ClientHandler(Socket peer_sock, const ID id, SendQPtr sendq, GameManager& game_manager_ref):
         id(id),
+        game_manager(game_manager_ref),
         peer(std::move(peer_sock)),
         sender(peer, sendq),
-        receiver(peer, cmd_queue, this->id) {}
+        receiver(peer, this->id, game_manager, sendq) {}
 
 void ClientHandler::start() {
     sender.start();

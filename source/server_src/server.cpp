@@ -5,15 +5,13 @@
 #include <utility>
 
 Server::Server(const char* service):
-        registry(),
-        cmd_queue(),
-        gameloop(cmd_queue, registry),
+        game_registry(),
         acc_sock(service),
-        acceptor(std::move(acc_sock), registry, cmd_queue) {}
+        acceptor(std::move(acc_sock),game_registry) {}
 
 int Server::run() {
     try {
-        gameloop.start();
+        //gameloop.start();
         acceptor.start();
 
         std::string line;
@@ -38,10 +36,10 @@ int Server::run() {
 }
 
 void Server::stop_workers() {
-    gameloop.stop();
+    //gameloop.stop();
     acceptor.stop();
 }
 void Server::join_workers() {
-    gameloop.join();
+    //gameloop.join();
     acceptor.join();
 }
