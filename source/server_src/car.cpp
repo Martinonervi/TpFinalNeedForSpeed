@@ -3,17 +3,31 @@
 #include <cmath>
 #include "world_manager.h"
 
-Car::Car(const ID id, const b2BodyId body, const CarType ct)
-        : id(id), body(body), carType(ct) {
+Car::Car(WorldManager& world,
+         ID clientId,
+         b2Vec2 pos,
+         float angleRad,
+         CarType carType)
+        : Entity(EntityType::Car, b2_nullBodyId, 0),
+          clientId(clientId),
+          carType(carType)
+{
+
+    ID physId = world.createCarBody(pos, angleRad);
+    this->setPhysicsId(physId);
+
+    b2BodyId body = world.getBody(physId);
+    this->setBody(body);
+
     auto* ud = new PhysicsUserData{
             PhysicsType::Car,
-            id,
             this
     };
     b2Body_SetUserData(this->body, ud);
     b2Body_EnableContactEvents(this->body, true);
     b2Body_EnableHitEvents(this->body, true);
 }
+
 
 static inline float clampf(float x, float a, float b){ return std::max(a, std::min(b, x)); }
 
@@ -122,5 +136,5 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
 
 PlayerState Car::snapshotState(){
     b2Transform xf = b2Body_GetTransform(body);
-    return PlayerState(id, xf.p.x, xf.p.y, b2Rot_GetAngle(xf.q));
+    return PlayerState(clientId, xf.p.x, xf.p.y, b2Rot_GetAngle(xf.q));
 }

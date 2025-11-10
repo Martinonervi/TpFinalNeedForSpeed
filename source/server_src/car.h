@@ -3,18 +3,29 @@
 #include "../common_src/constants.h"
 #include "../common_src/move_Info.h"
 #include "../common_src/player_state.h"
+#include "entity.h"
 
-class Car {
+
+class Car : public Entity {
 public:
-    Car(ID id, b2BodyId body, CarType ct);
+    Car(WorldManager& world,
+        ID clientId,
+        b2Vec2 pos,
+        float angleRad,
+        CarType carType);
+
     void applyControlsToBody(const MoveMsg& in, float dt);
     PlayerState snapshotState();
 
     CarType getCarType() const {return this->carType; }
+    ID getClientId() const {return this->clientId; };
+    void setCheckpoint(ID checkpoint) { this->actualCheckpoint = checkpoint; }
+
 private:
-    ID id;
-    b2BodyId body;
+    ID clientId;
     CarType carType;
+    float health;
+    ID actualCheckpoint = 0;
 
 };
 

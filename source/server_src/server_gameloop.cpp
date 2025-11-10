@@ -14,9 +14,39 @@
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
 
 GameLoop::GameLoop(gameLoopQueue& queue, ClientsRegistry& registry):
-        worldManager(), queue(queue), registry(registry) {
-    //worldManager.loadMapFromYaml("map.yaml"); :)
+        worldEvents(), worldManager(worldEvents), queue(queue), registry(registry) {
+    loadMapFromYaml("map.yaml");
 }
+
+
+void GameLoop::loadMapFromYaml(const std::string& path) {
+    MapParser parser;
+    MapData data = parser.load(path);
+
+    for (const auto& b : data.buildings) {
+        auto building = std::make_unique<Building>(
+                worldManager,
+                b.x, b.y,
+                b.w, b.h,
+                b.angle
+        );
+        buildings.push_back(std::move(building));
+    }
+
+    for (const auto& cpCfg : data.checkpoints) {
+        auto cp = std::make_unique<Checkpoint>(
+                worldManager,
+                cpCfg.id,
+                cpCfg.kind,
+                cpCfg.x1, cpCfg.y1,
+                cpCfg.x2, cpCfg.y2
+        );
+        checkpoints.push_back(std::move(cp));
+    }
+}
+
+
+
 
 void GameLoop::run() {
     try {
@@ -35,7 +65,7 @@ void GameLoop::run() {
             }
 
             worldManager.step(TIME_STEP,  SUB_STEP_COUNT);
-
+            processWorldEvents();
             broadcastCarSnapshots();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(TICK_MS));
@@ -47,6 +77,33 @@ void GameLoop::run() {
     }
 }
 
+// voy a necesitar nuevo struct CollisionEvent
+void GameLoop::processWorldEvents() {
+    while (!worldEvents.empty()) {
+        WorldEvent ev = worldEvents.front();
+        worldEvents.pop();
+
+        switch (ev.type) {
+            case WorldEventType::CarHitCheckpoint: {
+                auto it = cars.find(ev.carId);
+                if (it != cars.end()) {
+                    // tendria que chequear si no se salteo un checkpoint
+                    // actualizarle el checkpoint
+                }
+                break;
+            }
+            case WorldEventType::CarHitBuilding: {
+                // acá más adelante: sacar vida / frenar según ev.nx, ev.ny
+                break;
+            }
+            case WorldEventType::CarHitCar: {
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}
 
 void GameLoop::processCmds() {
     std::list<Cmd> to_process = emptyQueue();
@@ -75,13 +132,8 @@ void GameLoop::processCmds() {
 void GameLoop::initPlayerHandler(Cmd& cmd){
     const InitPlayer ip = dynamic_cast<const InitPlayer&>(*cmd.msg);
 
-    // spawn auto físico
     b2Vec2 spawn = { 4.0f, 4.0f };
-    EntityId eid = worldManager.createCarBody(spawn, 0.f);
-    b2BodyId body = worldManager.getBody(eid);
-    //podria guardar el carType y el name (en el Car)
-    cars.emplace(cmd.client_id, Car(cmd.client_id, body, ip.getCarType()));
-    clientToEntity.emplace(cmd.client_id, eid);
+    cars.emplace(cmd.client_id, Car(this->worldManager, cmd.client_id, spawn, 0, ip.getCarType()));
 
 
     auto base = std::static_pointer_cast<SrvMsg>(
@@ -123,15 +175,10 @@ void GameLoop::movementHandler(Cmd& cmd) {
 
 // la voy implementando aunque la logica del msj todavia no esta hecha
 void GameLoop::disconnectHandler(ID id) {
+    auto it = cars.find(id);
+    worldManager.destroyEntity(it->second.getPhysicsId());
     cars.erase(id);
-
-    auto it = clientToEntity.find(id);
-    if (it != clientToEntity.end()) {
-        worldManager.destroyEntity(it->second);
-        clientToEntity.erase(it);
-    }
 }
-
 
 void GameLoop::broadcastCarSnapshots() {
     for (auto& [id, car] : cars) {
@@ -142,15 +189,12 @@ void GameLoop::broadcastCarSnapshots() {
     }
 }
 
-
 std::list<Cmd> GameLoop::emptyQueue() {
     std::list<Cmd> cmd_list;
     Cmd cmd_aux;
-
     while (queue.try_pop(cmd_aux)) {
         cmd_list.push_back(std::move(cmd_aux));
     }
-
     return cmd_list;
 }
 
