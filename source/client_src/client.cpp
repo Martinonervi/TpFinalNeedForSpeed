@@ -4,7 +4,8 @@
 #include "../common_src/requestgame.h"
 
 #include "client_window.h"
-
+#include <QApplication>
+#include "lobby/lobbywindow.h"
 
 Client::Client(const char* host, const char* service)
     : peer(host, service), protocol(peer),
@@ -12,12 +13,23 @@ receiver(protocol, receiverQueue), sender(protocol, senderQueue)
 {}
 
 void Client::lobbyState() {
+    int argc = 0;
+    char** argv = nullptr;
+    QApplication app(argc, argv);
+
+    LobbyWindow window(protocol);
+
+    window.show();
+
+    app.exec();   // event loop de Qt
+    /*
     std::string line;
     while (!in_game && std::getline(std::cin, line)) {
         int game_id = std::stoi(line);
         sendRequest(game_id);
         recvGame();
     }
+    */
 
 }
 

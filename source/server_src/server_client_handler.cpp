@@ -33,6 +33,7 @@ void ClientHandler::join() {
     sender.join();
     receiver.join();
     close();  // ahora nadie usa el socket
+    std::cout << "[Client Handler <<" << id << "] Closed and joined" << std::endl;
 }
 
 void ClientHandler::close() {

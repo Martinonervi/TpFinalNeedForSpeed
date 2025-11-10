@@ -4,12 +4,24 @@ project(TpFinalNeedForSpeed LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Qt
-set(CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@5")
+# --- Qt ---
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+
+if (APPLE AND NOT CMAKE_PREFIX_PATH)
+    list(APPEND CMAKE_PREFIX_PATH
+            "/opt/homebrew/opt/qt"
+            "/opt/homebrew/opt/qt@5"
+            "/usr/local/opt/qt"
+            "/usr/local/opt/qt@5"
+    )
+endif()
+
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets)
+
 
 # SDL2 + SDL2pp
 include(FetchContent)
@@ -43,8 +55,12 @@ target_link_libraries(common PUBLIC SDL2pp::SDL2pp pthread box2d::box2d)
 file(GLOB_RECURSE CLIENT_SOURCES "client_src/*.cpp")
 list(APPEND CLIENT_SOURCES "client_main.cpp")
 add_executable(client ${CLIENT_SOURCES})
-target_link_libraries(client PRIVATE Qt5::Widgets Qt5::Core common)
-
+target_link_libraries(client
+        PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets
+        Qt${QT_VERSION_MAJOR}::Core
+        common
+)
 
 # --- Servidor ---
 file(GLOB SERVER_SOURCES "server_src/*.cpp")

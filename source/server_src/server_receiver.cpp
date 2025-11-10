@@ -69,7 +69,5 @@ void Receiver::run() {
 void Receiver::stop() {
     Thread::stop();
     try { game_manager.LeaveGame(id, joined_game_id); } catch (...) {}
-    try {
-        peer.shutdown(0);
-    } catch (...) {}
+    try { peer.shutdown(0); } catch (...) {}
 }
