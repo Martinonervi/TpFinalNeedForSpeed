@@ -5,7 +5,6 @@
 
 #include <SDL2pp/SDL2pp.hh>
 
-#include "../../../../../../../../opt/homebrew/Cellar/sdl2/2.32.10/include/SDL2/SDL_keycode.h"
 #include "../common_src/constants.h"
 #include "../common_src/move_Info.h"
 #include "../common_src/player_state.h"

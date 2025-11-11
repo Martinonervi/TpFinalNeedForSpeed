@@ -66,7 +66,14 @@ target_link_libraries(common PUBLIC SDL2pp::SDL2pp pthread box2d::box2d)
 
 file(GLOB_RECURSE CLIENT_SOURCES "client_src/*.cpp")
 list(APPEND CLIENT_SOURCES "client_main.cpp")
-add_executable(client ${CLIENT_SOURCES})
+set(CLIENT_RESOURCES
+        client_src/lobby/lobby_resources.qrc
+)
+
+add_executable(client
+        ${CLIENT_SOURCES}
+        ${CLIENT_RESOURCES}
+)
 target_link_libraries(client
         PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets

@@ -98,11 +98,15 @@ void Client::run() {
 void Client::stop(){
     sender.stop();
     receiver.stop();
+    senderQueue.close();
+    std::cout << "[Client] Sender y Receiver frenados" <<std::endl;
 }
 
 void Client::join(){
-    sender.join();
     receiver.join();
+    std::cout << "[Client] Receiver joineado" <<std::endl;
+    sender.join();
+    std::cout << "[Client] Sender y Receiver joineados" <<std::endl;
     close();
 }
 void Client::close() { peer.close(); }
