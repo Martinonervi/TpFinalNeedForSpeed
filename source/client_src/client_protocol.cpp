@@ -221,8 +221,7 @@ MetadataGames ClientProtocol::getMetadata() {
         uint32_t len_BE = 0;
         peer.recvall(&len_BE, sizeof(uint32_t));
         uint32_t len = ntohl(len_BE);
-        std::cout << len << std::endl;
-
+        
         std::vector<GameMetadata> games;
         games.reserve(len);
 
@@ -238,7 +237,6 @@ MetadataGames ClientProtocol::getMetadata() {
 }
 
 GameMetadata ClientProtocol::readOneGame() {
-    std::cout << "Leyendo partidas" << std::endl;
     GameMetadata out;
     ID game_id_BE;
     uint32_t players_BE;
