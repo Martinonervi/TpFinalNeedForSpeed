@@ -1,3 +1,6 @@
+#ifndef SERVER_GAMELOOP_H
+#define SERVER_GAMELOOP_H
+
 #include <list>
 #include <map>
 #include "car.h"
@@ -46,4 +49,4 @@ private:
     Printer printer;
 };
 
-
+#endif
