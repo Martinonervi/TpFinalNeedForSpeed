@@ -10,7 +10,6 @@ public:
     ID const getGameID(){return game_id;}
 private:
     ID game_id;
-
 };
 
 #endif //JOIN_GAME_H

@@ -229,7 +229,7 @@ MetadataGames ClientProtocol::getMetadata() {
         for (int i = 0; i < len; i++) {
             games.push_back(readOneGame());
         }
-        
+
         return MetadataGames(games);
     } catch (const std::exception& e) {
         std::cerr << "client_main error: " << e.what() << "\n";

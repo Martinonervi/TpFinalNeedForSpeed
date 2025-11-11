@@ -91,20 +91,68 @@
      </widget>
     </widget>
     <widget class="QWidget" name="LobbySelector">
+     <widget class="QTableWidget" name="gamesTable">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>20</y>
+        <width>401</width>
+        <height>211</height>
+       </rect>
+      </property>
+     </widget>
      <widget class="QWidget" name="verticalLayoutWidget_2">
       <property name="geometry">
        <rect>
-        <x>60</x>
-        <y>80</y>
-        <width>181</width>
+        <x>40</x>
+        <y>230</y>
+        <width>121</width>
         <height>51</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QLabel" name="label_2">
+        <widget class="QPushButton" name="createButton">
          <property name="text">
-          <string>hola</string>
+          <string>Crear Partida</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_3">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>230</y>
+        <width>111</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QPushButton" name="joinButton">
+         <property name="text">
+          <string>Unirse</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_4">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>230</y>
+        <width>111</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QPushButton" name="refreshButton">
+         <property name="text">
+          <string>Actualizar</string>
          </property>
         </widget>
        </item>
