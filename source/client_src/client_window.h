@@ -47,6 +47,7 @@ private:
     };
 
     bool running;
+    bool showMap = true;
     void handleEvents();
     void handleServerMessage(const SrvMsgPtr& msg);
 };

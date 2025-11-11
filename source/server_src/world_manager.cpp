@@ -1,6 +1,6 @@
 #include "world_manager.h"
 
-WorldManager::WorldManager() {
+WorldManager::WorldManager(std::queue<WorldEvent>& worldEvents): worldContactHandler(worldEvents) {
     b2WorldDef worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){0.0f, 0.0f};  // sin gravedad
     this->world = b2CreateWorld(&worldDef);
@@ -64,60 +64,117 @@ WorldManager::~WorldManager() {
 }
 
 void WorldManager::mapLimits() {
-        const float MAP_W = 696.0f;   // ancho
-        const float MAP_H = 700.8f;   // alto
+    const float MAP_W_PIXELES = 4640.0f;
+    const float MAP_H_PIXELES = 4672.0f;
+    constexpr float PIXEL_TO_METER = 1.0f / 10.0f;
 
-        const float T = 1.0f; // grosor de la pared
+    const float MAP_W = MAP_W_PIXELES * PIXEL_TO_METER;
+    const float MAP_H = MAP_H_PIXELES * PIXEL_TO_METER;
 
-        // user data ??
+    const float T = 1.0f; // grosor de la pared
 
-        // pared de arriba
-        {
-            b2BodyDef bd = b2DefaultBodyDef();
-            bd.type = b2_staticBody;
-            // centro de la pared de arriba
-            bd.position = (b2Vec2){MAP_W * 0.5f, -T}; //centro , (mitad X, -1 Y)
-            b2BodyId body = b2CreateBody(this->world, &bd);
 
-            b2Polygon box = b2MakeBox(MAP_W * 0.5f, T); //2*MAP_W
-            b2ShapeDef sd = b2DefaultShapeDef();
-            b2CreatePolygonShape(body, &sd, &box);
-        }
 
-        // pared de abajo
-        {
-            b2BodyDef bd = b2DefaultBodyDef();
-            bd.type = b2_staticBody;
-            bd.position = (b2Vec2){MAP_W * 0.5f, MAP_H + T};
-            b2BodyId body = b2CreateBody(this->world, &bd);
+    // pared de arriba
+    {
+        b2BodyDef bd = b2DefaultBodyDef();
+        bd.type = b2_staticBody;
+        // centro de la pared de arriba
+        bd.position = (b2Vec2){MAP_W * 0.5f, -T}; //centro , (mitad X, -1 Y)
+        b2BodyId body = b2CreateBody(this->world, &bd);
 
-            b2Polygon box = b2MakeBox(MAP_W * 0.5f, T);
-            b2ShapeDef sd = b2DefaultShapeDef();
-            b2CreatePolygonShape(body, &sd, &box);
-        }
+        b2Polygon box = b2MakeBox(MAP_W * 0.5f, T); //2*MAP_W
+        b2ShapeDef sd = b2DefaultShapeDef();
+        b2CreatePolygonShape(body, &sd, &box);
+    }
 
-        // pared izquierda
-        {
-            b2BodyDef bd = b2DefaultBodyDef();
-            bd.type = b2_staticBody;
-            bd.position = (b2Vec2){-T, MAP_H * 0.5f};
-            b2BodyId body = b2CreateBody(this->world, &bd);
+    // pared de abajo
+    {
+        b2BodyDef bd = b2DefaultBodyDef();
+        bd.type = b2_staticBody;
+        bd.position = (b2Vec2){MAP_W * 0.5f, MAP_H + T};
+        b2BodyId body = b2CreateBody(this->world, &bd);
 
-            b2Polygon box = b2MakeBox(T, MAP_H * 0.5f);
-            b2ShapeDef sd = b2DefaultShapeDef();
-            b2CreatePolygonShape(body, &sd, &box);
-        }
+        b2Polygon box = b2MakeBox(MAP_W * 0.5f, T);
+        b2ShapeDef sd = b2DefaultShapeDef();
+        b2CreatePolygonShape(body, &sd, &box);
+    }
 
-        // pared derecha
-        {
-            b2BodyDef bd = b2DefaultBodyDef();
-            bd.type = b2_staticBody;
-            bd.position = (b2Vec2){MAP_W + T, MAP_H * 0.5f};
-            b2BodyId body = b2CreateBody(this->world, &bd);
+    // pared izquierda
+    {
+        b2BodyDef bd = b2DefaultBodyDef();
+        bd.type = b2_staticBody;
+        bd.position = (b2Vec2){-T, MAP_H * 0.5f};
+        b2BodyId body = b2CreateBody(this->world, &bd);
 
-            b2Polygon box = b2MakeBox(T, MAP_H * 0.5f);
-            b2ShapeDef sd = b2DefaultShapeDef();
-            b2CreatePolygonShape(body, &sd, &box);
-        }
+        b2Polygon box = b2MakeBox(T, MAP_H * 0.5f);
+        b2ShapeDef sd = b2DefaultShapeDef();
+        b2CreatePolygonShape(body, &sd, &box);
+    }
+
+    // pared derecha
+    {
+        b2BodyDef bd = b2DefaultBodyDef();
+        bd.type = b2_staticBody;
+        bd.position = (b2Vec2){MAP_W + T, MAP_H * 0.5f};
+        b2BodyId body = b2CreateBody(this->world, &bd);
+
+        b2Polygon box = b2MakeBox(T, MAP_H * 0.5f);
+        b2ShapeDef sd = b2DefaultShapeDef();
+        b2CreatePolygonShape(body, &sd, &box);
+    }
 }
 
+
+EntityId WorldManager::createCheckpointSensor(float x1, float y1,
+                                              float x2, float y2) {
+    float mx = (x1 + x2) * 0.5f;
+    float my = (y1 + y2) * 0.5f;
+
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+    float length = std::sqrt(dx*dx + dy*dy);
+    float angle  = std::atan2(dy, dx);
+
+    b2BodyDef bd = b2DefaultBodyDef();
+    bd.type = b2_staticBody;
+    bd.position = (b2Vec2){ mx, my };
+    bd.rotation = b2MakeRot(angle);
+    b2BodyId body = b2CreateBody(world, &bd);
+
+    float halfLen = length * 0.5f;
+    float halfThickness = 1.0f;
+    b2Polygon box = b2MakeBox(halfLen, halfThickness);
+
+    b2ShapeDef sd = b2DefaultShapeDef();
+    sd.isSensor = true; //no genera resp fisica en colision
+    b2CreatePolygonShape(body, &sd, &box);
+
+    EntityId eid = nextId++;
+    physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Checkpoint };
+    return eid;
+}
+
+
+EntityId WorldManager::createBuilding(float x, float y,
+                                      float w, float h,
+                                      float angleRad)
+{
+    b2BodyDef bd = b2DefaultBodyDef();
+    bd.type = b2_staticBody;
+    bd.position = (b2Vec2){ x, y }; // centro del edificio
+    bd.rotation = b2MakeRot(angleRad);
+
+    b2BodyId body = b2CreateBody(this->world, &bd);
+
+    // media base y media altura
+    b2Polygon box = b2MakeBox(w * 0.5f, h * 0.5f);
+
+    b2ShapeDef sd = b2DefaultShapeDef();
+    b2CreatePolygonShape(body, &sd, &box);
+
+    EntityId eid = nextId++;
+    physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Building };
+    return eid;
+
+}

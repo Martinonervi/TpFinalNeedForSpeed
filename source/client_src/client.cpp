@@ -83,8 +83,8 @@ void Client::run() {
     }
 
     ClientWindow client_window(
+        1200,
         800,
-        600,
         "Need For Speed",
         receiverQueue,
         senderQueue

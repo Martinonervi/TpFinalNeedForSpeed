@@ -43,6 +43,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(box2d)
 
+
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+# yaml-cpp
+FetchContent_Declare(
+        yaml-cpp
+        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+        GIT_TAG 0.8.0
+)
+FetchContent_MakeAvailable(yaml-cpp)
+
+
 # --- Librería common ---
 file(GLOB COMMON_SOURCES "common_src/*.cpp")
 add_library(common STATIC ${COMMON_SOURCES}
@@ -66,9 +77,5 @@ target_link_libraries(client
 # --- Servidor ---
 file(GLOB SERVER_SOURCES "server_src/*.cpp")
 list(APPEND SERVER_SOURCES "server_main.cpp")
-add_executable(server ${SERVER_SOURCES}
-        server_src/server_game_manager.cpp
-        server_src/server_game_manager.h
-        server_src/server_game_context.cpp
-        server_src/server_game_context.h)
-target_link_libraries(server PRIVATE common pthread)
+add_executable(server ${SERVER_SOURCES})
+target_link_libraries(server PRIVATE common pthread yaml-cpp)

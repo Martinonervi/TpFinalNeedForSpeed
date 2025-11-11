@@ -17,36 +17,32 @@ struct PhysicsEntity {
     enum class Kind {
         Car,
         Building,
+        Checkpoint,
     } kind;
 };
 
-struct BuildingDesc {
-    float x, y;
-    float w, h;
-    float angle;
-};
 
-class WorldManager { //se encarga del manejo del world y de crear los cuerpos
+class WorldManager {
 public:
-    WorldManager();
+    WorldManager(std::queue<WorldEvent>& worldEvents);
     ~WorldManager();
-    //void loadMapFromYaml(const std::string& path); // carga todo lo estático del mapa
     void step(float dt, int subSteps);
 
+    void mapLimits();
+    EntityId createBuilding(float x, float y, float w, float h, float angleRad);
+    EntityId createCheckpointSensor(float x1, float y1, float x2, float y2);
     EntityId createCarBody(b2Vec2 pos, float angleRad); // crea un auto dinámico y devuelve el id
     b2BodyId getBody(EntityId id) const;
 
     void destroyEntity(EntityId id);
-    void mapLimits();
+
 
 
 private:
     b2WorldId world;
     EntityId nextId = 1;
 
-    std::unordered_map<EntityId, PhysicsEntity> physics; // todos los que tienen body:
-
-    //void createBuildingFromDesc(const BuildingDesc& d);
+    std::unordered_map<EntityId, PhysicsEntity> physics;
     WorldContactHandler worldContactHandler;
 };
 

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SERVER_GAMELOOP_H
+#define SERVER_GAMELOOP_H
 
 #include <list>
 #include <map>
@@ -7,6 +8,9 @@
 #include "server_types.h"
 #include <box2d/box2d.h>
 #include "world_manager.h"
+#include "map_parser.h"
+#include "checkpoint.h"
+#include "building.h"
 
 class GameLoop: public Thread {
 
@@ -19,6 +23,7 @@ protected:
     void run() override;
 
 private:
+    void loadMapFromYaml(const std::string& path);
     void processCmds();
 
     std::list<Cmd> emptyQueue();
@@ -28,14 +33,19 @@ private:
     void disconnectHandler(ID id);
     void broadcastCarSnapshots();
 
+    // box2D
     WorldManager worldManager;
     std::unordered_map<ID, Car> cars;
-    std::unordered_map<ID, EntityId> clientToEntity;
-    std::unordered_map<ID, MoveMsg> lastInput;
+    std::vector<std::unique_ptr<Checkpoint>> checkpoints;
+    std::vector<std::unique_ptr<Building>> buildings;
 
     std::shared_ptr<gameLoopQueue> queue;
     std::shared_ptr<ClientsRegistry> registry;
+    std::queue<WorldEvent> worldEvents;
+    void processWorldEvents();
+
+    // loop
     Printer printer;
 };
 
-
+#endif
