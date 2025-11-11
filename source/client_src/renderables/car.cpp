@@ -36,3 +36,5 @@ void Car::setCarType(const CarType newCarType) {
 }
 
 float Car::getAngle() const { return angle; }
+
+float Car::getHealthPercentage() const { return 70.0f; }
