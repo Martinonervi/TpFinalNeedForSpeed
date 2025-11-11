@@ -55,13 +55,13 @@ void GameLoop::run() {
             processCmds();
 
             // les aplico esto para q los frene el piso por ej
-            for (auto& [id, car] : cars) {
-                MoveMsg mv(0, 0, 0, 0);
-                car.applyControlsToBody(mv, TIME_STEP);
-            }
+            //for (auto& [id, car] : cars) {
+              //  MoveMsg mv(0, 0, 0, 0);
+                //car.applyControlsToBody(mv, TIME_STEP);
+            //}
 
             worldManager.step(TIME_STEP,  SUB_STEP_COUNT);
-            processWorldEvents();
+            //processWorldEvents();
             broadcastCarSnapshots();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(TICK_MS));
@@ -292,7 +292,7 @@ void GameLoop::movementHandler(Cmd& cmd) {
 
     const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
 
-    //it->second.applyControlsToBody(mv, timeStep);
+    it->second.applyControlsToBody(mv, TIME_STEP);
 
 }
 

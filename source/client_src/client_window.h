@@ -5,14 +5,14 @@
 
 #include <SDL2pp/SDL2pp.hh>
 
+#include "../../../../../../../../opt/homebrew/Cellar/sdl2/2.32.10/include/SDL2/SDL_keycode.h"
 #include "../common_src/constants.h"
+#include "../common_src/move_Info.h"
+#include "../common_src/player_state.h"
 #include "../common_src/queue.h"
 #include "renderables/car.h"
 #include "renderables/map.h"
 #include "textures/texture_manager.h"
-
-#include "../common_src/move_Info.h"
-#include "../common_src/player_state.h"
 
 #include "client_camera.h"
 
@@ -40,10 +40,11 @@ private:
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
         { SDLK_w, MoveMsg( 1, 0, 0, 0 ) },
-        { SDLK_s, MoveMsg( 0, 1, 0, 0 ) },
+        { SDLK_s, MoveMsg( 2, 0, 0, 0 ) },
         { SDLK_a, MoveMsg( 0, 0, -1, 0 ) },
         { SDLK_d, MoveMsg( 0, 0,  1, 0 ) },
         { SDLK_n, MoveMsg( 0, 0,  0, 1 ) },
+        { SDLK_SPACE, MoveMsg( 0, 1, 0, 0 ) },
     };
 
     bool running;
