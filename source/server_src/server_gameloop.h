@@ -35,7 +35,6 @@ private:
     std::unordered_map<ID, Car> cars;
     std::vector<std::unique_ptr<Checkpoint>> checkpoints;
     std::vector<std::unique_ptr<Building>> buildings;
-    std::unordered_map<ID, MoveMsg> lastInput;
 
     std::shared_ptr<gameLoopQueue> queue;
     std::shared_ptr<ClientsRegistry> registry;

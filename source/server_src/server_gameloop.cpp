@@ -54,15 +54,10 @@ void GameLoop::run() {
         while (should_keep_running()) {
             processCmds();
 
-            // esto lo tengo q ver con fran, a ver si el me manda cada vez q mantienen apretado
+            // les aplico esto para q los frene el piso por ej
             for (auto& [id, car] : cars) {
-                auto it = lastInput.find(id);
-                if (it != lastInput.end()) {
-                    car.applyControlsToBody(it->second, TIME_STEP);
-                } else {
-                    MoveMsg mv(0, 0, 0, 0);
-                    car.applyControlsToBody(mv, TIME_STEP);
-                }
+                MoveMsg mv(0, 0, 0, 0);
+                car.applyControlsToBody(mv, TIME_STEP);
             }
 
             worldManager.step(TIME_STEP,  SUB_STEP_COUNT);
@@ -297,7 +292,6 @@ void GameLoop::movementHandler(Cmd& cmd) {
 
     const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
 
-    lastInput[cmd.client_id] = mv;
     //it->second.applyControlsToBody(mv, timeStep);
 
 }
