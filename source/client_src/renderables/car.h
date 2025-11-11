@@ -15,6 +15,7 @@ public:
 
     void update(float newX, float newY, float newAngle);
     void draw(const Camera& camera) override;
+    void explode();
 
     void setAngle(float newAngle);
     void setCarType(CarType newCarType);
@@ -24,6 +25,7 @@ public:
 private:
     float angle;
     CarType carType;
+    int explodedFrame = 0;
 };
 
 #endif //CAR_H

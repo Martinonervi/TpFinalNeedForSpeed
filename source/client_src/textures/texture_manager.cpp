@@ -17,6 +17,9 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer) {
     citySanAndreasTexture.emplace(renderer, SDL2pp::Surface(SAN_ANDREAS_PATH));
     cityViceCityTexture.emplace(renderer, SDL2pp::Surface(VICE_CITY_PATH));
     cityManager.emplace(*cityLibertyTexture, *citySanAndreasTexture, *cityViceCityTexture);
+
+    explosionTextures.emplace(renderer, SDL2pp::Surface(EXPLOSION_PATH));
+    effectsManager.emplace(*explosionTextures);
 }
 
 SDL2pp::Texture TextureManager::loadWithColorKey(SDL2pp::Renderer& renderer,
@@ -33,3 +36,4 @@ SDL2pp::Texture TextureManager::loadWithColorKey(SDL2pp::Renderer& renderer,
 CarTexture& TextureManager::getCars() { return carManager.value(); }
 PeopleTexture& TextureManager::getPeople() { return peopleManager.value(); }
 CityTexture& TextureManager::getCities() { return cityManager.value(); }
+EffectsTexture& TextureManager::getEffects() { return effectsManager.value(); }
