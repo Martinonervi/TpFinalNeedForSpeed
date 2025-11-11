@@ -31,6 +31,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(box2d)
 
+
+# yaml-cpp
+FetchContent_Declare(
+        yaml-cpp
+        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+        GIT_TAG yaml-cpp-0.7.0
+)
+FetchContent_MakeAvailable(yaml-cpp)
+
+
 # --- Librería common ---
 file(GLOB COMMON_SOURCES "common_src/*.cpp")
 add_library(common STATIC ${COMMON_SOURCES})
@@ -48,4 +58,5 @@ target_link_libraries(client PRIVATE Qt5::Widgets Qt5::Core common)
 file(GLOB SERVER_SOURCES "server_src/*.cpp")
 list(APPEND SERVER_SOURCES "server_main.cpp")
 add_executable(server ${SERVER_SOURCES})
-target_link_libraries(server PRIVATE common pthread)
+#target_link_libraries(server PRIVATE common pthread)
+target_link_libraries(server PRIVATE common pthread yaml-cpp)

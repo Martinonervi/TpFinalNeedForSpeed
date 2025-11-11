@@ -64,12 +64,15 @@ WorldManager::~WorldManager() {
 }
 
 void WorldManager::mapLimits() {
-        const float MAP_W = 696.0f;   // ancho
-        const float MAP_H = 700.8f;   // alto
+        //const float MAP_W = 696.0f;   // ancho
+        //const float MAP_H = 700.8f;   // alto
+
+        const float MAP_W = 464.0f;
+        const float MAP_H = 467.2f;
 
         const float T = 1.0f; // grosor de la pared
 
-        // user data ??
+
 
         // pared de arriba
         {
@@ -139,7 +142,7 @@ EntityId WorldManager::createCheckpointSensor(float x1, float y1,
     b2BodyId body = b2CreateBody(world, &bd);
 
     float halfLen = length * 0.5f;
-    float halfThickness = 0.25f;
+    float halfThickness = 1.0f;
     b2Polygon box = b2MakeBox(halfLen, halfThickness);
 
     b2ShapeDef sd = b2DefaultShapeDef();

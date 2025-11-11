@@ -14,6 +14,7 @@ enum class WorldEventType {
 struct WorldEvent {
     WorldEventType type;
     ID carId;
+    ID otherCarId;
     ID checkpointId;
     float nx;
     float ny;

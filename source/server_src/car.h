@@ -15,11 +15,16 @@ public:
         CarType carType);
 
     void applyControlsToBody(const MoveMsg& in, float dt);
+    void applyControlsToBodyy(const MoveMsg& in, float dt);
     PlayerState snapshotState();
 
     CarType getCarType() const {return this->carType; }
     ID getClientId() const {return this->clientId; };
+    ID getActualCheckpoint() const {return this->actualCheckpoint; };
     void setCheckpoint(ID checkpoint) { this->actualCheckpoint = checkpoint; }
+
+    void applyDamage(const float damage);
+    bool isCarDestroy();
 
 private:
     ID clientId;

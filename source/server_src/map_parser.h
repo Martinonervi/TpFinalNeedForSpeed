@@ -30,6 +30,7 @@ struct MapData {
 class MapParser {
 public:
     MapData load(const std::string& path);
+    MapData loadd(const std::string& path);
 };
 
 #endif

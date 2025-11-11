@@ -1,0 +1,18 @@
+city: Liberty City
+
+buildings:
+  - x: 222.5
+    y: 311.5
+    w: 175
+    h: 335
+    angle: 0
+
+
+route:
+  checkpoints:
+    - id: 0
+      kind: start
+      x1: 5
+      y1: 5
+      x2: 7
+      y2: 5
