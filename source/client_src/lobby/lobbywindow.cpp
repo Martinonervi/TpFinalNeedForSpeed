@@ -22,6 +22,10 @@ LobbyWindow::LobbyWindow(ClientProtocol& protocol, QWidget *parent)
     ui->gamesTable->setHorizontalHeaderLabels(headers);
     ui->gamesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->gamesTable->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    this->setFixedSize(this->size());
+    setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
+
 }
 
 LobbyWindow::~LobbyWindow() {
