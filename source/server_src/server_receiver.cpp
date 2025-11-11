@@ -38,6 +38,7 @@ void Receiver::run() {
                     MoveMsg mv = protocol.recvMoveInfo();  // lo recibe por valor
                     CliMsgPtr base = std::static_pointer_cast<CliMsg>(
                             std::make_shared<MoveMsg>(std::move(mv)));
+
                     cmdQueue->push(Cmd{id, base});
                     break;
                 }
