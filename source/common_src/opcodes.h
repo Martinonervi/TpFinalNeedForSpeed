@@ -11,7 +11,10 @@ enum Opcode : Op {
     INIT_PLAYER = 0x02,
     NEW_PLAYER =0x03,
     JOIN_GAME = 0x04,
-    REQUEST_GAMES
+    REQUEST_GAMES = 0X05,
+    COLLISION = 0X06,
+    CHECKPOINT_DEF = 0X07,
+    CHECKPOINT_HIT = 0X08
 };
 
 enum err_code : Op {
