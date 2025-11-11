@@ -74,7 +74,6 @@ void WorldManager::mapLimits() {
     const float T = 1.0f; // grosor de la pared
 
 
-
     // pared de arriba
     {
         b2BodyDef bd = b2DefaultBodyDef();

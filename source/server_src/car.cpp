@@ -32,7 +32,10 @@ Car::Car(WorldManager& world,
 static inline float clampf(float x, float a, float b){ return std::max(a, std::min(b, x)); }
 
 void Car::applyControlsToBody(const MoveMsg& in, float dt) {
-    const float throttle = clampf(in.getAccelerate(), 0.f, 1.f);
+    float throttle = in.getAccelerate();
+    if (throttle == 2) {
+        throttle = -1.0f;
+    }
     const float brake    = clampf(in.getBrake(),      0.f, 1.f);
     const float steer    = clampf(in.getSteer(),     -1.f, 1.f);
 
@@ -54,7 +57,7 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
 
     b2Vec2 F = {0.f, 0.f};
 
-    if (throttle > 0.f && std::fabs(v_long) < maxSpeed * 1.01f) {
+    if (throttle != 0.f && std::fabs(v_long) < maxSpeed * 1.01f) {
         float scale = 1.f - clampf(std::fabs(v_long) / maxSpeed, 0.f, 1.f);
         F += engineForce * throttle * scale * fwd;
     }
