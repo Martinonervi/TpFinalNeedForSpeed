@@ -10,6 +10,7 @@
 #include "../common_src/init_player.h"
 #include "../common_src/new_player.h"
 #include <unordered_set>
+#include "../common_src/constant_rate_loop.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
@@ -51,17 +52,33 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
 
 void GameLoop::run() {
     try {
+        ConstantRateLoop loop(60.0);
+
+        while (should_keep_running()) {
+            processCmds();
+            worldManager.step(TIME_STEP, SUB_STEP_COUNT);
+            broadcastCarSnapshots();
+
+            loop.sleep_until_next_frame();
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << "[GameLoop] fatal: " << e.what() << "\n";
+    } catch (...) {
+        std::cerr << "[GameLoop] fatal: unknown\n";
+    }
+}
+
+
+
+
+/*
+void GameLoop::run() {
+    try {
         while (should_keep_running()) {
             processCmds();
 
-            // les aplico esto para q los frene el piso por ej
-            //for (auto& [id, car] : cars) {
-              //  MoveMsg mv(0, 0, 0, 0);
-                //car.applyControlsToBody(mv, TIME_STEP);
-            //}
-
             worldManager.step(TIME_STEP,  SUB_STEP_COUNT);
-            //processWorldEvents();
             broadcastCarSnapshots();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(TICK_MS));
@@ -73,7 +90,7 @@ void GameLoop::run() {
     }
 }
 
-
+*/
 
 void GameLoop::processWorldEvents() {
     // para no procesar 50 veces el mismo auto pegado al edificio en este frame
