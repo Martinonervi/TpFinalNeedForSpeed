@@ -234,12 +234,10 @@ void GameLoop::processCmds() {
     for (Cmd& cmd: to_process) {
         switch (cmd.msg->type()) {
             case (Opcode::Movement): {
-                std::cout << "aca en el gameloop MOVEMENT\n";
                 movementHandler(cmd);
                 break;
             }
             case (Opcode::INIT_PLAYER): {
-                std::cout << "aca en el gameloop INIT_PLAYER\n";
                 initPlayerHandler(cmd);
                 break;
             }
