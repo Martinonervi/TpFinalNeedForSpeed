@@ -7,13 +7,14 @@
 #include "../common_src/thread.h"
 
 #include "server_client_registry.h"
+#include "server_game_manager.h"
 #include "server_protocol.h"
 #include "server_types.h"
 
 class Receiver: public Thread {
 
 public:
-    Receiver(Socket& peerSocket, gameLoopQueue& queue, ID clientId);
+    Receiver(Socket& peerSocket, ID clientId, GameManager& game_manager_ref, SendQPtr sendq);
     void stop() override;
 
     // señal: sender desconectado
@@ -21,14 +22,19 @@ public:
     // señal: cliente desconectado (señal disparadora)
     bool is_peer_closed() const { return peerClosed; }
 
+    void setCmdQueue(std::shared_ptr<gameLoopQueue>);
+
 protected:
     void run() override;  // bucle de lectura
 
 private:
     Socket& peer;
-    gameLoopQueue& cmdQueue;
+    std::shared_ptr<gameLoopQueue> cmdQueue;
     ID id{0};
     ServerProtocol protocol;
+    GameManager& game_manager;
+    SendQPtr sender_queue;
+    ID joined_game_id;
 
     bool listening{true};
     bool peerClosed{false};

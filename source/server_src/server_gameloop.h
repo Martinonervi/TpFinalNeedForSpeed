@@ -12,7 +12,7 @@
 class GameLoop: public Thread {
 
 public:
-    GameLoop(gameLoopQueue& queue, ClientsRegistry& registry);
+    GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry);
     void stop() override;
     virtual ~GameLoop();
 
@@ -37,12 +37,12 @@ private:
     std::vector<std::unique_ptr<Building>> buildings;
     std::unordered_map<ID, MoveMsg> lastInput;
 
+    std::shared_ptr<gameLoopQueue> queue;
+    std::shared_ptr<ClientsRegistry> registry;
     std::queue<WorldEvent> worldEvents;
     void processWorldEvents();
 
     // loop
-    gameLoopQueue& queue;
-    ClientsRegistry& registry;
     Printer printer;
 };
 

@@ -43,7 +43,9 @@ FetchContent_MakeAvailable(yaml-cpp)
 
 # --- Librería common ---
 file(GLOB COMMON_SOURCES "common_src/*.cpp")
-add_library(common STATIC ${COMMON_SOURCES})
+add_library(common STATIC ${COMMON_SOURCES}
+        common_src/requestgame.h
+        common_src/joingame.h)
 target_include_directories(common PUBLIC ${libSDL2pp_SOURCE_DIR}/include)
 target_link_libraries(common PUBLIC SDL2pp::SDL2pp pthread box2d::box2d)
 
@@ -58,5 +60,4 @@ target_link_libraries(client PRIVATE Qt5::Widgets Qt5::Core common)
 file(GLOB SERVER_SOURCES "server_src/*.cpp")
 list(APPEND SERVER_SOURCES "server_main.cpp")
 add_executable(server ${SERVER_SOURCES})
-#target_link_libraries(server PRIVATE common pthread)
-target_link_libraries(server PRIVATE common pthread yaml-cpp)
+target_link_libraries(server PRIVATE common pthread)

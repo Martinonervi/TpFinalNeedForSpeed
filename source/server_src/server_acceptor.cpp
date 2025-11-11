@@ -3,9 +3,8 @@
 #include "server_types.h"
 
 
-Acceptor::Acceptor(Socket listen_sock, ClientsRegistry& registry_ref,
-                   gameLoopQueue& cmd_queue_ref):
-        acceptor(std::move(listen_sock)), registry(registry_ref), cmd_queue(cmd_queue_ref) {}
+Acceptor::Acceptor(Socket listen_sock, GameManager& game_manager_ref):
+        acceptor(std::move(listen_sock)), game_manager(game_manager_ref) {}
 
 
 void Acceptor::run() {
@@ -14,9 +13,8 @@ void Acceptor::run() {
 
             Socket peer = acceptor.accept();
 
-            auto [id, sendq] = registry.AddClient();
-
-            auto h = std::make_unique<ClientHandler>(std::move(peer), id, sendq, cmd_queue);
+            SendQPtr client_queue = std::make_shared<SendQ>();
+            auto h = std::make_unique<ClientHandler>(std::move(peer),++last_id, client_queue, game_manager);
             h->start();
             handlers.push_back(std::move(h));
 
@@ -27,16 +25,17 @@ void Acceptor::run() {
             reap_dead();
         }
     } catch (const std::exception& e) {
-        //std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
+        std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
     }
 
     kill_all();
 }
 
+
 void Acceptor::reap_dead() {
     for (auto it = handlers.begin(); it != handlers.end();) {
         if (!(*it)->is_alive()) {
-            registry.EraseQueue((*it)->getID());
+            //registry.EraseQueue((*it)->getID());
             it = handlers.erase(it);
         } else {
             ++it;
@@ -50,10 +49,11 @@ void Acceptor::kill_all() {
             continue;
         h->stop();
         h->join();
-        registry.EraseQueue(h->getID());
+        //registry.EraseQueue(h->getID());
     }
     handlers.clear();
 }
+
 
 void Acceptor::stop() {
     Thread::stop();

@@ -4,7 +4,7 @@ Camera::Camera(const float screenWidth, const float screenHeight, const float wo
                const float worldHeight)
         : x(0), y(0),
           screenWidth(screenWidth), screenHeight(screenHeight),
-          worldWidth(worldWidth*1.5), worldHeight(worldHeight*1.5) {}
+          worldWidth(worldWidth), worldHeight(worldHeight) {}
 
 void Camera::follow(const float targetX, const float targetY) {
     x = targetX - screenWidth / 2;

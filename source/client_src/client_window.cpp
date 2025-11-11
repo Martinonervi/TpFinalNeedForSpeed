@@ -5,8 +5,9 @@
 #include <SDL2pp/Texture.hh>
 #include <SDL2pp/Window.hh>
 
-#include "../common_src/send_player.h"
 #include "../common_src/new_player.h"
+#include "../common_src/send_player.h"
+#include "renderables/hud.h"
 
 ClientWindow::ClientWindow(const int width, const int height, const std::string& title,
                            Queue<SrvMsgPtr>& receiverQueue, Queue<CliMsgPtr>& senderQueue):
@@ -30,6 +31,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
 
 // Hay que manejar FPS, hay que tener en cuenta los autos que no estan en camara
 void ClientWindow::run() {
+    Hud hud(renderer, *tm, MAP_LIBERTY);
     Map map(renderer, *tm, MAP_LIBERTY);
     while (running) {
         SrvMsgPtr srvMsg;
@@ -49,7 +51,7 @@ void ClientWindow::run() {
             }
             car->draw(camera);
         }
-
+        if (showMap) hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId); // Por ahora asi
         renderer.Present();
     }
 }
@@ -67,7 +69,7 @@ void ClientWindow::handleEvents() {
                 auto msg = std::make_shared<MoveMsg>(it->second);
                 CliMsgPtr clientMsg = msg;
                 senderQueue.push(clientMsg);
-            }
+            } else if (event.key.keysym.sym == SDLK_m) showMap = !showMap;
         }
     }
 }

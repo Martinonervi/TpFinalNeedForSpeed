@@ -19,6 +19,7 @@ public:
     void setAngle(float newAngle);
     void setCarType(CarType newCarType);
     float getAngle() const;
+    float getHealthPercentage() const;
 
 private:
     float angle;

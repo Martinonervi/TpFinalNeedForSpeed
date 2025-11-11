@@ -1,8 +1,12 @@
 #include "server_protocol.h"
+
 #include <cstring>
 #include <stdexcept>
 #include <vector>
+
 #include <arpa/inet.h>
+
+#include "../common_src/requestgame.h"
 
 ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 
@@ -61,7 +65,7 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         float x = ps.getX();
         float y = ps.getY();
         float angleRad = ps.getAngleRad();
-        Op type = ps.type();
+        Op type = Movement;
 
         std::vector<char> buf(sizeof(CliMsg));
         size_t offset = 0;
@@ -88,10 +92,6 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         throw("Error sending");
     }
 }
-
-
-
-
 
 Opcode ServerProtocol::recvOpcode() {
     Opcode op;
@@ -152,5 +152,42 @@ MoveMsg ServerProtocol::recvMoveInfo() {
     MoveMsg moveMsg(a,b,s,ni);
     return moveMsg;
 
+}
+
+RequestGame ServerProtocol::recvGameInfo() {
+    try {
+        ID game_id;
+        peer.recvall(&game_id, sizeof(ID));
+        return RequestGame(game_id);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+int ServerProtocol::sendGameInfo(const JoinGame& game_info) {
+    try {
+        Op type = JOIN_GAME;
+        bool joined = game_info.couldJoin();
+        err_code code = game_info.getExitStatus();
+
+        std::vector<char> buf(sizeof(Op) + sizeof(bool) + sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &joined, sizeof(joined));
+        offset += sizeof(bool);
+
+        memcpy(buf.data() + offset, &code, sizeof(err_code));
+        offset += sizeof(err_code);
+
+        int n = peer.sendall(buf.data(), offset);
+        return n;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
 }
 
