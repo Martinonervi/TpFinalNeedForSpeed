@@ -8,6 +8,7 @@
 #include "../common_src/player_state.h"
 #include "../common_src/requestgame.h"
 #include "../common_src/send_player.h"
+#include "../common_src/metadatagames.h"
 
 #include "client_types.h"
 
@@ -27,7 +28,9 @@ public:
     SendPlayer recvSendPlayer();
     NewPlayer recvNewPlayer();
     JoinGame recvGameInfo();
-
+    void requestGames();
+    MetadataGames getMetadata();
+    GameMetadata readOneGame();
 private:
     Socket& peer;
 };

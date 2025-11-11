@@ -70,6 +70,12 @@ struct CarInfo {
     int height;
 };
 
+struct GameMetadata {
+    ID game_id;
+    int players;
+    bool started;
+};
+
 enum class EntityLayer {
     GROUND,
     BRIDGE

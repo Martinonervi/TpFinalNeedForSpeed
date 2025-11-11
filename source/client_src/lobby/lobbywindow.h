@@ -23,4 +23,5 @@ private slots:
 private:
     Ui::LobbyWindow *ui;
     ClientProtocol& protocol;
+    void printGames(const std::vector<GameMetadata>& v);
 };

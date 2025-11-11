@@ -8,6 +8,7 @@
 #include "../common_src/player_state.h"
 #include "../common_src/requestgame.h"
 #include "../common_src/send_player.h"
+#include "../common_src/metadatagames.h"
 
 #include "server_types.h"
 
@@ -30,6 +31,12 @@ public:
     RequestGame recvGameInfo();
 
     int sendGameInfo(const JoinGame& game_info);
+
+    int sendGames(const MetadataGames& games);
+
+    void append(std::vector<char>& buf, const void* p, std::size_t n);
+
+    void writeGameAppend(std::vector<char>& buf, const GameMetadata& metadata);
 
 private:
     Socket& peer;

@@ -13,6 +13,7 @@ receiver(protocol, receiverQueue), sender(protocol, senderQueue)
 {}
 
 void Client::lobbyState() {
+
     int argc = 0;
     char** argv = nullptr;
     QApplication app(argc, argv);
@@ -60,6 +61,7 @@ void Client::run() {
     lobbyState();
 
     sender.start();
+    receiver.start();
 
 
     while (std::getline(std::cin, line)) {
@@ -80,7 +82,6 @@ void Client::run() {
         senderQueue.push(msg);
         break;
     }
-    receiver.start();
 
     ClientWindow client_window(
         800,

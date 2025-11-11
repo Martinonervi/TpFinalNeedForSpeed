@@ -10,7 +10,8 @@ enum Opcode : Op {
     Movement = 0x01,
     INIT_PLAYER = 0x02,
     NEW_PLAYER =0x03,
-    JOIN_GAME = 0x04
+    JOIN_GAME = 0x04,
+    REQUEST_GAMES
 };
 
 enum err_code : Op {

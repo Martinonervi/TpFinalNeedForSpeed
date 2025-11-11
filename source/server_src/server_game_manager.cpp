@@ -1,6 +1,7 @@
 #include "server_game_manager.h"
 
 #include "../common_src/joingame.h"
+#include "../common_src/metadatagames.h"
 
 #include "server_gameloop.h"
 
@@ -84,4 +85,21 @@ void GameManager::LeaveGame(ID client_id, ID game_id) {
         std::cout << "[GameManager] Reaped empty game: " << game_id << std::endl;
     }
 
+}
+
+MetadataGames GameManager::getGames() {
+    std::vector<GameMetadata> out;
+    {
+        std::lock_guard<std::mutex> lk(mx);
+        out.reserve(games.size());
+        for (auto& kv : games) {
+            ID gid = kv.first;
+            GameContext& ctx = kv.second;
+            int players = ctx.getRegistry() ? ctx.getRegistry()->size() : 0;
+            bool started = false; //por ahora hardcodeado pero desp tino decime de donde lo saco
+
+            out.push_back(GameMetadata{gid, players, started});
+        }
+    }
+    return {out};
 }

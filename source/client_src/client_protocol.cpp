@@ -2,6 +2,7 @@
 
 #include <arpa/inet.h>
 
+#include "../common_src/metadatagames.h"
 #include "../common_src/requestgame.h"
 
 
@@ -197,4 +198,59 @@ JoinGame ClientProtocol::recvGameInfo() {
         std::cerr << "client_main error: " << e.what() << "\n";
         throw RETURN_FAILURE;
     }
+}
+
+void ClientProtocol::requestGames() {
+    try {
+        Op type = REQUEST_GAMES;
+        std::vector<char> buf(sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type , sizeof(Op));
+        offset += sizeof(type);
+
+        peer.sendall(buf.data(), offset);
+    }  catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+MetadataGames ClientProtocol::getMetadata() {
+    try {
+        uint32_t len_BE = 0;
+        peer.recvall(&len_BE, sizeof(uint32_t));
+        uint32_t len = ntohl(len_BE);
+        std::cout << len << std::endl;
+
+        std::vector<GameMetadata> games;
+        games.reserve(len);
+
+        for (int i = 0; i < len; i++) {
+            games.push_back(readOneGame());
+        }
+        
+        return MetadataGames(games);
+    } catch (const std::exception& e) {
+        std::cerr << "client_main error: " << e.what() << "\n";
+        throw RETURN_FAILURE;
+    }
+}
+
+GameMetadata ClientProtocol::readOneGame() {
+    std::cout << "Leyendo partidas" << std::endl;
+    GameMetadata out;
+    ID game_id_BE;
+    uint32_t players_BE;
+    bool started;
+
+    peer.recvall(&game_id_BE, sizeof(ID));
+    peer.recvall(&players_BE, sizeof(uint32_t));
+    peer.recvall(&started, sizeof(bool));
+
+
+    out.game_id = ntohl(game_id_BE);
+    out.players = ntohl(players_BE);
+    out.started = started;
+    return out;
 }

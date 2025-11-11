@@ -191,3 +191,40 @@ int ServerProtocol::sendGameInfo(const JoinGame& game_info) {
     }
 }
 
+int ServerProtocol::sendGames(const MetadataGames& games) {
+    try {
+        Op type = games.type();
+        std::vector<char> buf;
+
+        append(buf, &type, sizeof(Op));
+        uint32_t size_BE = htonl(static_cast<uint32_t>(games.size()));
+        append(buf, &size_BE, sizeof(uint32_t));
+
+        for (const auto& game: games.getMetadata()) {
+            writeGameAppend(buf, game);
+        }
+
+        int n = peer.sendall(buf.data(), buf.size());
+        std::cout << "[Server Protocol] Games sent" << std::endl;
+        return n;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+void ServerProtocol::append(std::vector<char>& buf, const void* p, std::size_t n) {
+    const std::size_t old = buf.size();
+    buf.resize(old + n);                  // agranda
+    std::memcpy(buf.data() + old, p, n);  // copia al final
+}
+
+void ServerProtocol::writeGameAppend(std::vector<char>& buf, const GameMetadata& metadata) {
+    const ID game_id_BE  = htonl(metadata.game_id);
+    const int players_BE = htonl(metadata.players);
+    const bool started = metadata.started;
+
+    append(buf, &game_id_BE, sizeof(ID));
+    append(buf, &players_BE, sizeof(int));
+    append(buf, &started, sizeof(bool));
+}

@@ -15,6 +15,7 @@
 #include "../common_src/queue.h"
 #include "server_client_registry.h"
 #include "server_game_context.h"
+#include "../common_src/metadatagames.h"
 
 
 class GameManager {
@@ -31,6 +32,7 @@ public:
     int size() const;
 
     void LeaveGame(ID client_id, ID game_id);
+    MetadataGames getGames();
 
 private:
     //void reap_dead(); // busca partidas inactivas para cerrar hilos y estructuras

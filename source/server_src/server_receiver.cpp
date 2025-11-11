@@ -23,6 +23,11 @@ void Receiver::run() {
                 break;
             }
             switch (op) {
+                case Opcode::REQUEST_GAMES: {
+                    MetadataGames games = game_manager.getGames();
+                    protocol.sendGames(games);
+                    break;
+                }
                 case Opcode::JOIN_GAME:{
                     try {
                         RequestGame game_info = protocol.recvGameInfo();
