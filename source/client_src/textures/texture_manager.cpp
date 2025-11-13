@@ -7,8 +7,9 @@
 #include "SDL2pp/Surface.hh"
 
 TextureManager::TextureManager(SDL2pp::Renderer& renderer) {
+    speedometerTexture.emplace(loadWithColorKey(renderer, SPEEDOMETER_PATH, 221, 221, 56));
     carsTexture.emplace(loadWithColorKey(renderer, CARS_PATH, 163, 163, 13));
-    carManager.emplace(*carsTexture);
+    carManager.emplace(*carsTexture, *speedometerTexture);
 
     peopleTexture.emplace(loadWithColorKey(renderer, PEOPLE_PATH, 163, 163, 13));
     peopleManager.emplace(*peopleTexture);

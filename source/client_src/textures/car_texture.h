@@ -9,14 +9,17 @@
 
 class CarTexture {
 public:
-    explicit CarTexture(SDL2pp::Texture& carsTexture);
+    CarTexture(SDL2pp::Texture& carsTexture, SDL2pp::Texture& speedometerTexture);
     SDL2pp::Rect getFrame(CarType type, float angle) const;
     SDL2pp::Texture& getTexture() const;
+    SDL2pp::Texture& getSpeedometer() const;
+    SDL2pp::Rect getNeedleFrame(float speed) const;
+    SDL2pp::Rect getDialFrame() const;
 
 private:
     SDL2pp::Texture& carsTexture;
+    SDL2pp::Texture& speedometerTexture;
     std::map<CarType, CarInfo> carInfo;
-
 };
 
 

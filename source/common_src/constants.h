@@ -34,6 +34,8 @@
 #define LIBERTY_CITY_PATH  "../assets/cities/liberty_city.png"
 #define VICE_CITY_PATH  "../assets/cities/vice_city.png"
 #define EXPLOSION_PATH "../assets/effects/explosion.png"
+#define SPEEDOMETER_PATH "../assets/cars/speedometer.png"
+
 
 using Cars_W_Nitro = std::uint16_t;
 

@@ -7,8 +7,8 @@ maptype(maptype), renderer(renderer), tm(tm) {}
 void Minimap::draw(const int windowWidth, const int windowHeight, std::unordered_map<ID, std::unique_ptr<Car>>& cars) const {
     SDL2pp::Texture& texture = tm.getCities().getTexture(MAP_LIBERTY);
 
-    int miniWidth = 350;
-    int miniHeight = 350;
+    int miniWidth = 250;
+    int miniHeight = 250;
 
     int x = windowWidth - miniWidth - 10;
     int y = windowHeight;
@@ -37,6 +37,6 @@ void Minimap::draw(const int windowWidth, const int windowHeight, std::unordered
         int miniY = y + static_cast<int>(carMapY * scaleY);
 
         renderer.SetDrawColor((id * 70) % 255, (id * 130) % 255, (id * 200) % 255, 255);
-        renderer.FillRect(SDL_Rect{miniX - 3, miniY - 3, 6, 6});
+        renderer.FillRect(SDL_Rect{miniX - 3, miniY - 3, 8, 8});
     }
 }
