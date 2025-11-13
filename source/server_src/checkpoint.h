@@ -14,7 +14,7 @@ enum class CheckpointKind {
 class Checkpoint : public Entity {
 public:
     Checkpoint(WorldManager& world,
-                           int checkpointId, CheckpointKind kind,
+                           ID checkpointId, CheckpointKind kind,
                            float x1, float y1,
                            float x2, float y2);
 

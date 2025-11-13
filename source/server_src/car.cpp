@@ -10,7 +10,9 @@ Car::Car(WorldManager& world,
          CarType carType)
         : Entity(EntityType::Car, b2_nullBodyId, 0),
           clientId(clientId),
-          carType(carType)
+          carType(carType),
+          health(100.0f),
+          actualCheckpoint(0)
 {
 
     ID physId = world.createCarBody(pos, angleRad);
@@ -21,7 +23,7 @@ Car::Car(WorldManager& world,
 
     auto* ud = new PhysicsUserData{
             PhysicsType::Car,
-            this
+            clientId
     };
     b2Body_SetUserData(this->body, ud);
     b2Body_EnableContactEvents(this->body, true);

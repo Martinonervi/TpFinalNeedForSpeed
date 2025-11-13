@@ -228,3 +228,31 @@ void ServerProtocol::writeGameAppend(std::vector<char>& buf, const GameMetadata&
     append(buf, &players_BE, sizeof(int));
     append(buf, &started, sizeof(bool));
 }
+
+//endianess
+int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
+    try {
+        Op type = COLLISION;
+        ID player_id = msg.getPlayerId();
+        float health = msg.getCarHealth();
+
+
+        std::vector<char> buf(sizeof(Op) + sizeof(player_id) + sizeof(health));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &player_id, sizeof(player_id));
+        offset += sizeof(player_id);
+
+        memcpy(buf.data() + offset, &health, sizeof(health));
+        offset += sizeof(health);
+
+        int n = peer.sendall(buf.data(), offset);
+        return n;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}

@@ -252,3 +252,21 @@ GameMetadata ClientProtocol::readOneGame() {
     out.started = started;
     return out;
 }
+
+SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
+    size_t n = 0;
+    ID player_id;
+    float health;
+
+    try {
+        n = peer.recvall(&player_id, sizeof(player_id));
+        n += peer.recvall(&health, sizeof(health));
+
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return SrvCarHitMsg(player_id, health);
+}

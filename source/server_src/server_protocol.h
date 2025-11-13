@@ -11,6 +11,7 @@
 #include "../common_src/metadatagames.h"
 
 #include "server_types.h"
+#include "../common_src/srv_car_hit_msg.h"
 
 class ServerProtocol {
 public:
@@ -33,6 +34,8 @@ public:
     int sendGameInfo(const JoinGame& game_info);
 
     int sendGames(const MetadataGames& games);
+
+    int sendCollisionEvent(SrvCarHitMsg& msg);
 
     void append(std::vector<char>& buf, const void* p, std::size_t n);
 

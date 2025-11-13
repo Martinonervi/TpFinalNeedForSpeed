@@ -1,5 +1,6 @@
 #include "client_receiver.h"
 #include "../common_src/queue.h"
+#include "../common_src/srv_car_hit_msg.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -19,7 +20,7 @@ void ClientReceiver::run(){
                 PlayerState ps = protocol.recvSrvMsg();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<PlayerState>(std::move(ps)));
-                std::cout << "[client Receiver] movement, id:" << ps.getPlayerId() << "\n";
+                //std::cout << "[client Receiver] movement, id:" << ps.getPlayerId() << "\n";
                 receiverQueue.push(base);
                 break;
             }
@@ -38,6 +39,15 @@ void ClientReceiver::run(){
                 std::cout << "[client Receiver] newPlayer, id:" << sp.getPlayerId() << "\n";
                 receiverQueue.push(base);
                 break;
+            }
+            case (Opcode::COLLISION): {
+                SrvCarHitMsg msg = protocol.recvCollisionEvent();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<SrvCarHitMsg>(std::move(msg)));
+                std::cout << "[client Receiver] collision, id:" << msg.getPlayerId() << "\n";
+                std::cout << "[client Receiver] auto con vida: " << msg.getCarHealth() << "\n";
+                receiverQueue.push(base);
+
             }
             default: {
                 std::cout << "comando desconocido: " << op << "\n";

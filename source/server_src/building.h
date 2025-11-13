@@ -25,7 +25,7 @@ public:
 
         auto* ud = new PhysicsUserData{
                 .type = PhysicsType::Building,
-                .owner = this
+                .id = 0
         };
         b2Body_SetUserData(this->body, ud);
 

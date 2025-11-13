@@ -9,8 +9,9 @@
 #include "../common_src/send_player.h"
 #include "../common_src/init_player.h"
 #include "../common_src/new_player.h"
-#include <unordered_set>
 #include "../common_src/constant_rate_loop.h"
+
+#include "../common_src/srv_car_hit_msg.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
@@ -58,7 +59,7 @@ void GameLoop::run() {
             processCmds();
             worldManager.step(TIME_STEP, SUB_STEP_COUNT);
             broadcastCarSnapshots();
-
+            processWorldEvents();
             loop.sleep_until_next_frame();
         }
 
@@ -70,27 +71,144 @@ void GameLoop::run() {
 }
 
 
-
-
-/*
-void GameLoop::run() {
-    try {
-        while (should_keep_running()) {
-            processCmds();
-
-            worldManager.step(TIME_STEP,  SUB_STEP_COUNT);
-            broadcastCarSnapshots();
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(TICK_MS));
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "[GameLoop] fatal: " << e.what() << "\n";
-    } catch (...) {
-        std::cerr << "[GameLoop] fatal: unknown\n";
+void GameLoop::CarHitCheckpointHandler(WorldEvent ev){
+    auto it = cars.find(ev.carId);
+    if (it == cars.end()) return;
+    auto actualCheckpoint = it -> second.getActualCheckpoint();
+    if (actualCheckpoint  + 1 == ev.checkpointId) {
+        it->second.setCheckpoint(actualCheckpoint);
+        //le aviso a la interfaz calculo
     }
 }
 
-*/
+void GameLoop::CarHitBuildingHandler(WorldEvent ev,
+                                     std::unordered_set<ID>& alreadyHitBuildingThisFrame){
+    if (alreadyHitBuildingThisFrame.count(ev.carId)) return;
+    alreadyHitBuildingThisFrame.insert(ev.carId);
+
+    auto it = cars.find(ev.carId);
+    if (it == cars.end()) return;
+    Car& car = it->second;
+    b2BodyId body = car.getBody();
+
+    b2Vec2 vel = b2Body_GetLinearVelocity(body); //vel auto
+
+    // velocidad en la dirección del choque
+    // producto interno
+    // n unitario
+    float impactSpeed = std::fabs(vel.x * ev.nx + vel.y * ev.ny);
+
+    // si es muy lento pase pase
+    //const float MIN_IMPACT = 1.5f;
+    //if (impactSpeed < MIN_IMPACT) {
+    //  break;
+    //}
+
+    // opcional: ver si fue frontal
+    b2Rot rot = b2Body_GetRotation(body);
+    b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
+    // fwd es unitario
+    float frontal = fwd.x * ev.nx + fwd.y * ev.ny;
+    //fwd*n = ||fwd||*||n||*cos(ø)
+    //como ambos son unitarios
+    //fwd*n = cos(ø)
+
+
+    // daño base
+    float damage = impactSpeed * 0.5f;
+    if (frontal > 0.7f) { // casi de frente
+        damage *= 2.0f;
+    }
+
+    car.applyDamage(damage);
+    if (car.isCarDestroy()) {
+        //le aviso a la interfaz
+    }
+
+    // frenar un poco empujando contra la normal
+    b2Vec2 newVel = {
+            vel.x - ev.nx * impactSpeed * 0.5f,
+            vel.y - ev.ny * impactSpeed * 0.5f
+    };
+    b2Body_SetLinearVelocity(body, newVel);
+
+    auto baseCarA = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<SrvCarHitMsg>(car.getClientId(), car.getHealth()));
+    registry->sendTo(car.getClientId(), baseCarA);
+}
+void GameLoop::CarHitCarHandler(WorldEvent ev,
+                                std::unordered_set<ID>& alreadyHitCarPairThisFrame){
+    // normalizamos la pareja (a,b) para que a < b y así no duplicamos
+    int idA = ev.carId;
+    int idB = ev.otherCarId;
+    if (idA > idB) std::swap(idA, idB);
+
+    //chequear esto
+    ID key = (static_cast<long long>(idA) << 32) | static_cast<unsigned int>(idB);
+    if (alreadyHitCarPairThisFrame.count(key)) return;
+    alreadyHitCarPairThisFrame.insert(key);
+
+    auto itA = cars.find(ev.carId);
+    auto itB = cars.find(ev.otherCarId);
+    if (itA == cars.end() || itB == cars.end()) return;
+
+    Car& carA = itA->second;
+    Car& carB = itB->second;
+
+    b2BodyId bodyA = carA.getBody();
+    b2BodyId bodyB = carB.getBody();
+
+    b2Vec2 vA = b2Body_GetLinearVelocity(bodyA);
+    b2Vec2 vB = b2Body_GetLinearVelocity(bodyB);
+
+
+    float aAlongN = vA.x * ev.nx + vA.y * ev.ny;
+    float bAlongN = vB.x * ev.nx + vB.y * ev.ny;
+
+    float aImpact = std::fabs(aAlongN);
+    float bImpact = std::fabs(bAlongN);
+
+    const float MIN_IMPACT = 1.0f;
+    if (aImpact < MIN_IMPACT && bImpact < MIN_IMPACT) return;
+
+    // daño cruzado: cada uno sufre por la velocidad del otro
+    float damageA = bImpact * 0.4f;
+    float damageB = aImpact * 0.4f;
+
+
+    carA.applyDamage(damageA);
+    carB.applyDamage(damageB);
+
+    if (carA.isCarDestroy()) {
+        //le aviso a la interfaz
+    }
+    if (carB.isCarDestroy()) {
+        //le aviso a la interfaz
+    }
+
+    // frenar un poco
+    b2Vec2 newVA = {
+            vA.x - ev.nx * aAlongN * 0.4f,
+            vA.y - ev.ny * aAlongN * 0.4f
+    };
+    b2Vec2 newVB = {
+            vB.x + ev.nx * bAlongN * 0.4f,
+            vB.y + ev.ny * bAlongN * 0.4f
+    };
+
+    b2Body_SetLinearVelocity(bodyA, newVA);
+    b2Body_SetLinearVelocity(bodyB, newVB);
+
+
+    auto baseCarA = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<SrvCarHitMsg>(idA, carA.getHealth()));
+    registry->sendTo(idA, baseCarA);
+
+    auto baseCarB = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<SrvCarHitMsg>(idB, carB.getHealth()));
+    registry->sendTo(idB, baseCarB);
+    std::cout << "carHitCar mandanod mensaje al Server Sender\n";
+}
 
 void GameLoop::processWorldEvents() {
     // para no procesar 50 veces el mismo auto pegado al edificio en este frame
@@ -99,146 +217,23 @@ void GameLoop::processWorldEvents() {
     std::unordered_set<ID> alreadyHitCarPairThisFrame;
 
     while (!worldEvents.empty()) {
+        std::cout << "entre al while de processWorldEvents \n";
         WorldEvent ev = worldEvents.front();
         worldEvents.pop();
-
+        
         switch (ev.type) {
-
             case WorldEventType::CarHitCheckpoint: {
-                auto it = cars.find(ev.carId);
-                if (it == cars.end()) break;
-                auto actualCheckpoint = it -> second.getActualCheckpoint();
-                if (actualCheckpoint  + 1 == ev.checkpointId) { //no se salteo ninguno
-                    it->second.setCheckpoint(actualCheckpoint);
-                    //le aviso a la interfaz calculo
-                }
+                CarHitCheckpointHandler(ev);
                 break;
             }
-
             case WorldEventType::CarHitBuilding: {
-                if (alreadyHitBuildingThisFrame.count(ev.carId)) {
-                    break;
-                }
-                alreadyHitBuildingThisFrame.insert(ev.carId);
-
-                auto it = cars.find(ev.carId);
-                if (it == cars.end()) break;
-                Car& car = it->second;
-                b2BodyId body = car.getBody();
-
-                b2Vec2 vel = b2Body_GetLinearVelocity(body); //vel auto
-
-                // velocidad en la dirección del choque
-                // producto interno
-                // n unitario
-                float impactSpeed = std::fabs(vel.x * ev.nx + vel.y * ev.ny);
-
-                // si es muy lento pase pase
-                const float MIN_IMPACT = 1.5f;
-                if (impactSpeed < MIN_IMPACT) {
-                    break;
-                }
-
-                // opcional: ver si fue frontal
-                b2Rot rot = b2Body_GetRotation(body);
-                b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
-                // fwd es unitario
-                float frontal = fwd.x * ev.nx + fwd.y * ev.ny;
-                //fwd*n = ||fwd||*||n||*cos(ø)
-                //como ambos son unitarios
-                //fwd*n = cos(ø)
-
-
-                // daño base
-                float damage = impactSpeed * 0.5f;
-                if (frontal > 0.7f) { // casi de frente
-                    damage *= 2.0f;
-                }
-
-                car.applyDamage(damage);
-                if (car.isCarDestroy()) {
-                    //le aviso a la interfaz
-                }
-
-                // frenar un poco empujando contra la normal
-                b2Vec2 newVel = {
-                        vel.x - ev.nx * impactSpeed * 0.5f,
-                        vel.y - ev.ny * impactSpeed * 0.5f
-                };
-                b2Body_SetLinearVelocity(body, newVel);
-
+                CarHitBuildingHandler(ev, alreadyHitBuildingThisFrame);
                 break;
             }
-
             case WorldEventType::CarHitCar: {
-                // normalizamos la pareja (a,b) para que a < b y así no duplicamos
-                int a = ev.carId;
-                int b = ev.otherCarId;
-                if (a > b) std::swap(a, b);
-
-                //chequear esto
-                ID key = (static_cast<long long>(a) << 32) | static_cast<unsigned int>(b);
-                if (alreadyHitCarPairThisFrame.count(key)) {
-                    break;
-                }
-                alreadyHitCarPairThisFrame.insert(key);
-
-                auto itA = cars.find(ev.carId);
-                auto itB = cars.find(ev.otherCarId);
-                if (itA == cars.end() || itB == cars.end()) break;
-
-                Car& carA = itA->second;
-                Car& carB = itB->second;
-
-                b2BodyId bodyA = carA.getBody();
-                b2BodyId bodyB = carB.getBody();
-
-                b2Vec2 vA = b2Body_GetLinearVelocity(bodyA);
-                b2Vec2 vB = b2Body_GetLinearVelocity(bodyB);
-
-
-                float aAlongN = vA.x * ev.nx + vA.y * ev.ny;
-                float bAlongN = vB.x * ev.nx + vB.y * ev.ny;
-
-                float aImpact = std::fabs(aAlongN);
-                float bImpact = std::fabs(bAlongN);
-
-                const float MIN_IMPACT = 1.0f;
-                if (aImpact < MIN_IMPACT && bImpact < MIN_IMPACT) {
-                    break;
-                }
-
-                // daño cruzado: cada uno sufre por la velocidad del otro
-                float damageA = bImpact * 0.4f;
-                float damageB = aImpact * 0.4f;
-
-
-                carA.applyDamage(damageA);
-                carB.applyDamage(damageB);
-
-                if (carA.isCarDestroy()) {
-                    //le aviso a la interfaz
-                }
-                if (carB.isCarDestroy()) {
-                    //le aviso a la interfaz
-                }
-
-                // frenar un poco
-                b2Vec2 newVA = {
-                        vA.x - ev.nx * aAlongN * 0.4f,
-                        vA.y - ev.ny * aAlongN * 0.4f
-                };
-                b2Vec2 newVB = {
-                        vB.x + ev.nx * bAlongN * 0.4f,
-                        vB.y + ev.ny * bAlongN * 0.4f
-                };
-
-                b2Body_SetLinearVelocity(bodyA, newVA);
-                b2Body_SetLinearVelocity(bodyB, newVB);
-
+                CarHitCarHandler(ev, alreadyHitCarPairThisFrame);
                 break;
             }
-
             default:
                 break;
         }

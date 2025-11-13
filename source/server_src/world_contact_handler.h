@@ -29,7 +29,7 @@ enum class PhysicsType {
 
 struct PhysicsUserData {
     PhysicsType type;
-    void* owner;
+    ID id;
 };
 
 class WorldContactHandler {

@@ -11,6 +11,7 @@
 #include "map_parser.h"
 #include "checkpoint.h"
 #include "building.h"
+#include <unordered_set>
 
 class GameLoop: public Thread {
 
@@ -32,6 +33,11 @@ private:
     void initPlayerHandler(Cmd& cmd);
     void disconnectHandler(ID id);
     void broadcastCarSnapshots();
+
+    void CarHitCheckpointHandler(WorldEvent ev);
+    void CarHitBuildingHandler(WorldEvent ev, std::unordered_set<ID>& alreadyHitBuildingThisFrame);
+    void CarHitCarHandler(WorldEvent ev, std::unordered_set<ID>& alreadyHitCarPairThisFrame);
+
 
     // box2D
     WorldManager worldManager;

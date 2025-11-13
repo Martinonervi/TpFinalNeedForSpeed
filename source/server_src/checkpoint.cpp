@@ -1,7 +1,7 @@
 #include "checkpoint.h"
 #include "world_manager.h"
 
-Checkpoint::Checkpoint(WorldManager& world, int checkpointId, CheckpointKind kind,
+Checkpoint::Checkpoint(WorldManager& world, ID checkpointId, CheckpointKind kind,
                        float x1, float y1, float x2, float y2)
         : Entity(EntityType::Checkpoint, b2_nullBodyId, 0)
           , checkpointId(checkpointId)
@@ -18,7 +18,7 @@ Checkpoint::Checkpoint(WorldManager& world, int checkpointId, CheckpointKind kin
 
     auto* ud = new PhysicsUserData{
             .type = PhysicsType::Checkpoint,
-            .owner = this
+            .id = checkpointId
     };
     b2Body_SetUserData(this->body, ud);
 

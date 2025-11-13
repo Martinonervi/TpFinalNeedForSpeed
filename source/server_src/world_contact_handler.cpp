@@ -30,23 +30,21 @@ void WorldContactHandler::handleBeginContact(const b2ContactBeginTouchEvent& ev)
     b2BodyId bodyA = b2Shape_GetBody(ev.shapeIdA);
     b2BodyId bodyB = b2Shape_GetBody(ev.shapeIdB);
 
-    auto* udA = static_cast<PhysicsUserData*>(b2Body_GetUserData(bodyA));
-    auto* udB = static_cast<PhysicsUserData*>(b2Body_GetUserData(bodyB));
+    PhysicsUserData* udA = static_cast<PhysicsUserData*>(b2Body_GetUserData(bodyA));
+    PhysicsUserData* udB = static_cast<PhysicsUserData*>(b2Body_GetUserData(bodyB));
     if (!udA || !udB) return;
 
-    Car* car = nullptr;
-    Checkpoint* cp = nullptr;
+    PhysicsUserData* car = nullptr;
+    PhysicsUserData* cp = nullptr;
 
     if (udA->type == PhysicsType::Car && udB->type == PhysicsType::Checkpoint) {
-        car = static_cast<Car*>(udA->owner);
-        cp  = static_cast<Checkpoint*>(udB->owner);
-        if (!car || !cp) return;
+        car = udA;
+        cp = udB;
         std::cout << "auto pasando por checkpoint\n";
 
     } else if (udB->type == PhysicsType::Car && udA->type == PhysicsType::Checkpoint) {
-        car = static_cast<Car*>(udB->owner);
-        cp  = static_cast<Checkpoint*>(udA->owner);
-        if (!car || !cp) return;
+        car = udB;
+        cp = udA;
         std::cout << "auto pasando por checkpoint\n";
     } else {
         return;
@@ -54,8 +52,8 @@ void WorldContactHandler::handleBeginContact(const b2ContactBeginTouchEvent& ev)
 
     WorldEvent event{
             .type = WorldEventType::CarHitCheckpoint,
-            .carId = car->getClientId(),
-            .checkpointId = cp->getId(),
+            .carId = car->id,
+            .checkpointId = cp->id,
     };
     worldEvents.push(event);
 }
@@ -65,6 +63,7 @@ void WorldContactHandler::handleBeginContact(const b2ContactBeginTouchEvent& ev)
 void WorldContactHandler::handleEndContact(b2ContactEndTouchEvent ev){}
 
 void WorldContactHandler::handleHitContact(b2ContactHitEvent ev) {
+    std::cout << "entre a handler hit contact\n";
     b2BodyId bodyA = b2Shape_GetBody(ev.shapeIdA);
     b2BodyId bodyB = b2Shape_GetBody(ev.shapeIdB);
 
@@ -72,52 +71,45 @@ void WorldContactHandler::handleHitContact(b2ContactHitEvent ev) {
     auto* udB = static_cast<PhysicsUserData*>(b2Body_GetUserData(bodyB));
     if (!udA || !udB) return;
 
-    if (udA->type == PhysicsType::Car && udB->type == PhysicsType::Building) {
-        auto* car = static_cast<Car*>(udA->owner);
-        if (!car) return;
-
-        WorldEvent evOut{
-                .type = WorldEventType::CarHitBuilding,
-                .carId = car->getClientId(),
-                .checkpointId = 0,
-                .nx = ev.normal.x,
-                .ny = ev.normal.y,
-        };
-        worldEvents.push(evOut);
-        return;
-    }
-
-    if (udB->type == PhysicsType::Car && udA->type == PhysicsType::Building) {
-        auto* car = static_cast<Car*>(udB->owner);
-        if (!car) return;
-
-        WorldEvent evOut{
-                .type = WorldEventType::CarHitBuilding,
-                .carId = car->getClientId(),
-                .checkpointId = 0,
-                .nx = ev.normal.x,
-                .ny = ev.normal.y,
-        };
-        worldEvents.push(evOut);
-        return;
-    }
-
     if (udA->type == PhysicsType::Car && udB->type == PhysicsType::Car) {
-        auto* carA = static_cast<Car*>(udA->owner);
-        auto* carB = static_cast<Car*>(udB->owner);
-        if (!carA || !carB) return;
-
         WorldEvent evOut{
                 .type = WorldEventType::CarHitCar,
-                .carId = carA->getClientId(),
-                .otherCarId = carB->getClientId(),
+                .carId = udA->id,
+                .otherCarId = udB->id,
                 .checkpointId = 0,
                 .nx = ev.normal.x,
                 .ny = ev.normal.y,
         };
         worldEvents.push(evOut);
+        std::cout << "auto choco con auto \n";
         return;
     }
+
+    PhysicsUserData* car = nullptr;
+    PhysicsUserData* building = nullptr;
+
+    if (udA->type == PhysicsType::Car && udB->type == PhysicsType::Building) {
+        car = udA;
+        //building = udB;
+    } else if (udB->type == PhysicsType::Car && udA->type == PhysicsType::Building) {
+        car = udB;
+        //building = udA;
+    } else {
+        return;
+    }
+
+    WorldEvent evOut{
+            .type = WorldEventType::CarHitBuilding,
+            .carId = car->id,
+            .checkpointId = 0,
+            .nx = ev.normal.x,
+            .ny = ev.normal.y,
+    };
+    worldEvents.push(evOut);
+    std::cout << "auto choco con edificio\n";
+    return;
+
+
 
 }
 

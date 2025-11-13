@@ -18,8 +18,9 @@ public:
     void applyControlsToBodyy(const MoveMsg& in, float dt);
     PlayerState snapshotState();
 
-    CarType getCarType() const {return this->carType; }
     ID getClientId() const {return this->clientId; };
+    CarType getCarType() const {return this->carType; }
+    float getHealth() const {return this->health; }
     ID getActualCheckpoint() const {return this->actualCheckpoint; };
     void setCheckpoint(ID checkpoint) { this->actualCheckpoint = checkpoint; }
 
