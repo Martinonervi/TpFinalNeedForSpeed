@@ -25,6 +25,7 @@ public:
     void EraseQueue(ID id);
     // tamaño actual
     int size() const;
+    bool contains(ID id) const;
 
     // broadcast
     void broadcast(const SrvMsgPtr& msg);

@@ -21,6 +21,7 @@ public:
     virtual ~GameLoop();
     bool isRaceStarted() const;
 
+
 protected:
     void run() override;
 
@@ -53,6 +54,7 @@ private:
 
     void checkPlayersStatus();
     void waitingForPlayers();
+    bool isConnected(ID id) const;
 
     //tiempo de la carrera
     float raceTimeSeconds = 0.0f;

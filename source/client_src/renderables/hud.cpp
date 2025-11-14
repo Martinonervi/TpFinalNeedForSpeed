@@ -5,6 +5,7 @@ Hud::Hud(SDL2pp::Renderer& renderer, TextureManager& tm, MapType maptype): map(m
 void Hud::drawOverlay(int mapX, int mapY, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId) const {
     map.draw(mapX, 10, cars);
     auto it = cars.find(playerId);
+    if (it == cars.end() || !it->second) return;
     const Car& playerCar = *(it->second);
     float healthPercent = playerCar.getHealthPercentage();
     drawHealthBar(renderer, mapY, healthPercent);

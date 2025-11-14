@@ -71,7 +71,7 @@ void GameLoop::checkPlayersStatus() {
     }
     std::vector<ID> toDisconnect = registry->checkClients(ids);
     for (auto idToDisconnect : toDisconnect) {
-        cars.erase(idToDisconnect);
+        disconnectHandler(idToDisconnect);
         std::cout << "auto con id: " << idToDisconnect << " borrado" << "\n";
     }
 
@@ -81,7 +81,7 @@ using Clock = std::chrono::steady_clock;
 void GameLoop::waitingForPlayers() {
     ConstantRateLoop loop(5.0);
     const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 5.0;
+    const double LOBBY_TIMEOUT_SEC = 35.0;
 
     const auto deadline = Clock::now() + std::chrono::duration<double>(LOBBY_TIMEOUT_SEC);
     while (true) {
@@ -95,6 +95,11 @@ void GameLoop::waitingForPlayers() {
 bool GameLoop::isRaceStarted() const {
     return this->raceStarted;
 }
+
+bool GameLoop::isConnected(ID id) const {
+    return registry->contains(id);
+}
+
 
 
 void GameLoop::run() {
@@ -314,6 +319,10 @@ void GameLoop::processWorldEvents() {
 void GameLoop::processCmds() {
     std::list<Cmd> to_process = emptyQueue();
     for (Cmd& cmd: to_process) {
+        if (!isConnected(cmd.client_id)) {
+            continue;
+        }
+
         switch (cmd.msg->type()) {
             case (Opcode::Movement): {
                 movementHandler(cmd);
@@ -379,9 +388,11 @@ void GameLoop::movementHandler(Cmd& cmd) {
 // la voy implementando aunque la logica del msj todavia no esta hecha
 void GameLoop::disconnectHandler(ID id) {
     auto it = cars.find(id);
+    if (it == cars.end()) return;
     worldManager.destroyEntity(it->second.getPhysicsId());
     cars.erase(id);
 }
+
 
 void GameLoop::broadcastCarSnapshots() {
     for (auto& [id, car] : cars) {

@@ -21,6 +21,11 @@ int ClientsRegistry::size() const { //borrar método, no sirve creo
     return static_cast<int>(clients.size());
 }
 
+bool ClientsRegistry::contains(ID id) const {
+    std::lock_guard<std::mutex> lk(mx);
+    return clients.find(id) != clients.end();
+}
+
 void ClientsRegistry::broadcast(const SrvMsgPtr& msg) {
     std::vector<SendQPtr> qs;
     {
