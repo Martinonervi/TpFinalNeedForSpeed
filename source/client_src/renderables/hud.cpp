@@ -1,21 +1,21 @@
 #include "hud.h"
+#include <iostream>
+#include <cmath>
+#include <algorithm>
 
-Hud::Hud(SDL2pp::Renderer& renderer, TextureManager& tm, MapType maptype): map(maptype, renderer, tm), renderer(renderer), tm(tm) {
-    font = TTF_OpenFont("../assets/fonts/pixel_font.ttf", 24);
-    if (!font) {
-        std::cerr << "Error cargando fuente: " << TTF_GetError() << std::endl;
-    }
+Hud::Hud(SDL2pp::Renderer& renderer, TextureManager& tm, MapType maptype)
+    : map(maptype, renderer, tm), renderer(renderer), tm(tm)
+{
+    loadFont();
 }
 
-void Hud::drawOverlay(int mapX, int mapY, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId) {
-    map.draw(mapX, 10, cars);
-    auto it = cars.find(playerId);
-    const Car& playerCar = *(it->second);
+void Hud::drawOverlay(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId) {
+    map.draw(x, 10, cars, playerId);
+    const auto it = cars.find(playerId);
+    const Car& playerCar = *it->second;
 
-    float healthPercent = playerCar.getHealthPercentage();
-    drawHealthBar(renderer, mapY, healthPercent);
-    float speed = 150.0f;
-    drawSpeed(renderer, speed, mapY, mapX);
+    drawHealthBar(renderer, y, playerCar.getHealthPercentage());
+    drawSpeed(renderer, 150.0f, x, y);
 }
 
 void Hud::drawHealthBar(SDL2pp::Renderer& renderer, int windowHeight, float healthPercent) const {
@@ -36,38 +36,54 @@ void Hud::drawHealthBar(SDL2pp::Renderer& renderer, int windowHeight, float heal
     renderer.SetDrawColor(200, 0, 0, 255);
     renderer.FillRect(SDL_Rect{x, y, filledWidth, barHeight});
 }
-void Hud::drawSpeed(SDL2pp::Renderer& renderer, float speed, int windowHeight, int windowWidth) {
+
+void Hud::loadFont() {
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
+    }
+
+    if (TTF_Init() == -1) {
+        std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
+    }
+
+    font = TTF_OpenFont("../assets/fonts/pixel_font.ttf", 24);
+    if (!font) {
+        std::cerr << "Error cargando fuente: " << TTF_GetError() << std::endl;
+    } else {
+        std::cout << "Fuente cargada correctamente." << std::endl;
+    }
+}
+
+
+void Hud::drawSpeed(SDL2pp::Renderer& renderer, float speed, const int windowWidth,
+                    const int windowHeight) const {
     float speedKmh = speed;
 
     SDL2pp::Texture& tex = tm.getCars().getSpeedometer();
     SDL2pp::Rect dialRect = tm.getCars().getDialFrame();
 
-    SDL2pp::Rect dstRectDial(windowWidth - 170, windowHeight - 170, 150, 150);
+    SDL2pp::Rect dstRectDial(windowWidth - 190, windowHeight - 190, 150, 150);
     renderer.Copy(tex, dialRect, dstRectDial);
 
-    float centerX = dstRectDial.x + dstRectDial.w / 2.0f;
-    float centerY = dstRectDial.y + dstRectDial.h / 2.0f;
+   const float centerX = dstRectDial.x + dstRectDial.w / 2.0f;
+    const float centerY = dstRectDial.y + dstRectDial.h / 2.0f;
 
-    float minSpeed = 0.0f;
-    float maxSpeed = 200.0f;
-    float minAngle = -225.0f;
-    float maxAngle = 45.0f;
+    constexpr float minSpeed = 0.0f;
+    constexpr float maxSpeed = 200.0f;
+    constexpr float minAngle = -225.0f;
+    constexpr float maxAngle = 45.0f;
 
-    float clampedSpeed = std::clamp(speedKmh, minSpeed, maxSpeed);
-    float angle = minAngle + (clampedSpeed - minSpeed) * (maxAngle - minAngle) / (maxSpeed - minSpeed);
+    const float clampedSpeed = std::clamp(speedKmh, minSpeed, maxSpeed);
+    const float angle = minAngle + (clampedSpeed - minSpeed) * (maxAngle - minAngle) / (maxSpeed - minSpeed);
 
-    float needleLength = dstRectDial.w * 0.4f;
-    float rad = angle * M_PI / 180.0f;
-    float endX = centerX + needleLength * cos(rad);
-    float endY = centerY + needleLength * sin(rad);
+    const float needleLength = dstRectDial.w * 0.4f;
+    const float rad = angle * M_PI / 180.0f;
+    const float endX = centerX + needleLength * cos(rad);
+    const float endY = centerY + needleLength * sin(rad);
 
     renderer.SetDrawColor(255, 0, 0, 255);
-    renderer.DrawLine(
-        static_cast<int>(centerX),
-        static_cast<int>(centerY),
-        static_cast<int>(endX),
-        static_cast<int>(endY)
-    );
+    renderer.DrawLine(static_cast<int>(centerX), static_cast<int>(centerY),
+                      static_cast<int>(endX), static_cast<int>(endY));
 
     renderer.SetDrawColor(0, 0, 0, 255);
     int radius = 4;
@@ -80,11 +96,27 @@ void Hud::drawSpeed(SDL2pp::Renderer& renderer, float speed, int windowHeight, i
             }
         }
     }
-    std::string speedText = std::to_string(static_cast<int>(clampedSpeed)) + " km/h";
-    SDL_Color white = {255, 255, 255, 255};
+
+    const std::string speedText = std::to_string(static_cast<int>(clampedSpeed)) + " km/h";
+    constexpr SDL_Color white = {255, 255, 255, 255};
     SDL_Surface* textSurface = TTF_RenderText_Blended(font, speedText.c_str(), white);
+    if (!textSurface) {
+        return;
+    }
+
     SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer.Get(), textSurface);
-    SDL_Rect textRect = {static_cast<int>(centerX - 40), dstRectDial.y - 30, 80, 30};
+    if (!textTexture) {
+        SDL_FreeSurface(textSurface);
+        return;
+    }
+
+    const SDL_Rect textRect = {
+        static_cast<int>(centerX - 40),
+        dstRectDial.y + dstRectDial.h,
+        80,
+        30
+    };
+
     SDL_FreeSurface(textSurface);
 
     SDL_RenderCopy(renderer.Get(), textTexture, nullptr, &textRect);

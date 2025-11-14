@@ -16,6 +16,8 @@ public:
     PeopleTexture& getPeople();
     CityTexture& getCities();
     EffectsTexture& getEffects();
+    SDL2pp::Texture& getTexture();
+    SDL2pp::Rect getCheckpointFrame(int frame) const;
 
 private:
     std::optional<SDL2pp::Texture> carsTexture;
@@ -25,6 +27,7 @@ private:
     std::optional<SDL2pp::Texture> citySanAndreasTexture;
     std::optional<SDL2pp::Texture> cityViceCityTexture;
     std::optional<SDL2pp::Texture> explosionTextures;
+    SDL2pp::Texture flagTexture;
 
     std::optional<CarTexture> carManager;
     std::optional<PeopleTexture> peopleManager;
