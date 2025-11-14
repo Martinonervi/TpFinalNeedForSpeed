@@ -13,83 +13,65 @@ ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 
 int ServerProtocol::sendPlayerInit(Player& sp) const {
     try {
+        // OJO: definir un wire-format claro. Acá empaquetamos:
+        // Op (1? 4? según tu enum) + uint16_t id + CarType + float x + float y + float angle
+        const Op type      = sp.type();
+        const uint16_t pid = /*htons*/(sp.getPlayerId());  // decidir si querés network order
+        const CarType car  = sp.getCarType();
+        const float x      = sp.getX();
+        const float y      = sp.getY();
+        const float angle  = sp.getAngleRad();
 
-        //endianess para los floats?? feli fijate
-        uint16_t player_id = sp.getPlayerId()/*htons(sp.getPlayerId())*/;
-        CarType carType = sp.getCarType();
-        float x = sp.getX();
-        float y = sp.getY();
-        float angleRad = sp.getAngleRad();
-        Op type = sp.type();
+        std::vector<char> buf;
+        buf.reserve(sizeof(type) + sizeof(pid) + sizeof(car) + sizeof(x) + sizeof(y) + sizeof(angle));
 
-        std::vector<char> buf(sizeof(CliMsg));
-        size_t offset = 0;
+        auto append = [&buf](const void* p, std::size_t n) {
+            const std::size_t old = buf.size();
+            buf.resize(old + n);
+            std::memcpy(buf.data() + old, p, n);
+        };
 
-        // type
-        memcpy(buf.data() + offset, &type, sizeof(type));
-        offset += sizeof(type);
+        append(&type,  sizeof(type));
+        append(&pid,   sizeof(pid));
+        append(&car,   sizeof(car));
+        append(&x,     sizeof(x));
+        append(&y,     sizeof(y));
+        append(&angle, sizeof(angle));
 
-        // player_id
-        memcpy(buf.data() + offset, &player_id, sizeof(player_id));
-        offset += sizeof(player_id);
-
-        // carType
-        memcpy(buf.data() + offset, &carType, sizeof(carType));
-        offset += sizeof(carType);
-
-        // x
-        memcpy(buf.data() + offset, &x, sizeof(x));
-        offset += sizeof(x);
-
-        // y
-        memcpy(buf.data() + offset, &y, sizeof(y));
-        offset += sizeof(y);
-
-        // angleRad
-        memcpy(buf.data() + offset, &angleRad, sizeof(angleRad));
-        offset += sizeof(angleRad);
-
-        int n = peer.sendall(buf.data(), offset);
-        return n;
+        return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
-        throw("Error sending");
+        throw std::runtime_error("Error sending");
     }
 }
 
 int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
     try {
+        const Op type      = Movement;
+        const uint16_t pid = htons(ps.getPlayerId());
+        const float x      = ps.getX();
+        const float y      = ps.getY();
+        const float angle  = ps.getAngleRad();
 
-        //endianess para los floats?? feli fijate
-        uint16_t player_id = htons(ps.getPlayerId());
-        float x = ps.getX();
-        float y = ps.getY();
-        float angleRad = ps.getAngleRad();
-        Op type = Movement;
+        std::vector<char> buf;
+        buf.reserve(sizeof(type) + sizeof(pid) + sizeof(x) + sizeof(y) + sizeof(angle));
 
-        std::vector<char> buf(sizeof(CliMsg));
-        size_t offset = 0;
+        auto append = [&buf](const void* p, std::size_t n) {
+            const std::size_t old = buf.size();
+            buf.resize(old + n);
+            std::memcpy(buf.data() + old, p, n);
+        };
 
-        memcpy(buf.data() + offset, &type, sizeof(type));
-        offset += sizeof(type);
+        append(&type,  sizeof(type));
+        append(&pid,   sizeof(pid));
+        append(&x,     sizeof(x));
+        append(&y,     sizeof(y));
+        append(&angle, sizeof(angle));
 
-        memcpy(buf.data() + offset, &player_id, sizeof(player_id));
-        offset += sizeof(player_id);
-
-        memcpy(buf.data() + offset, &x, sizeof(x));
-        offset += sizeof(x);
-
-        memcpy(buf.data() + offset, &y, sizeof(y));
-        offset += sizeof(y);
-
-        memcpy(buf.data() + offset, &angleRad, sizeof(angleRad));
-        offset += sizeof(angleRad);
-
-        int n = peer.sendall(buf.data(), offset);
-        return n;
+        return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
-        throw("Error sending");
+        throw std::runtime_error("Error sending");
     }
 }
 

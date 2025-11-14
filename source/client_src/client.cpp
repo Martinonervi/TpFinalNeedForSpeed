@@ -13,7 +13,6 @@ receiver(protocol, receiverQueue), sender(protocol, senderQueue)
 {}
 
 void Client::lobbyState() {
-
     int argc = 0;
     char** argv = nullptr;
     QApplication app(argc, argv);
