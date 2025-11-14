@@ -19,6 +19,7 @@ public:
     GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry);
     void stop() override;
     virtual ~GameLoop();
+    bool isRaceStarted() const;
 
 protected:
     void run() override;
@@ -49,6 +50,9 @@ private:
     std::shared_ptr<ClientsRegistry> registry;
     std::queue<WorldEvent> worldEvents;
     void processWorldEvents();
+
+    void checkPlayersStatus();
+    void waitingForPlayers();
 
     //tiempo de la carrera
     float raceTimeSeconds = 0.0f;

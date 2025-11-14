@@ -63,15 +63,51 @@ struct SrvWorldInit {
 
 
 
+
+void GameLoop::checkPlayersStatus() {
+    std::vector<ID> ids;
+    for (auto& car: cars) {
+        ids.push_back(car.first);
+    }
+    std::vector<ID> toDisconnect = registry->checkClients(ids);
+    for (auto idToDisconnect : toDisconnect) {
+        cars.erase(idToDisconnect);
+        std::cout << "auto con id: " << idToDisconnect << " borrado" << "\n";
+    }
+
+}
+
+using Clock = std::chrono::steady_clock;
+void GameLoop::waitingForPlayers() {
+    ConstantRateLoop loop(5.0);
+    const int MAX_PLAYERS = 8;
+    const double LOBBY_TIMEOUT_SEC = 5.0;
+
+    const auto deadline = Clock::now() + std::chrono::duration<double>(LOBBY_TIMEOUT_SEC);
+    while (true) {
+        if (registry->size() >= MAX_PLAYERS) break;
+        if (Clock::now() >= deadline) break;
+        loop.sleep_until_next_frame();
+    }
+    this->raceStarted = true;
+}
+
+bool GameLoop::isRaceStarted() const {
+    return this->raceStarted;
+}
+
+
 void GameLoop::run() {
+    waitingForPlayers();
     try {
         ConstantRateLoop loop(60.0);
 
         while (should_keep_running()) {
+            checkPlayersStatus();
             processCmds();
             worldManager.step(TIME_STEP, SUB_STEP_COUNT);
 
-            if (raceStarted && !raceEnded) {
+            if (!raceEnded) {
                 raceTimeSeconds += TIME_STEP;
             }
 

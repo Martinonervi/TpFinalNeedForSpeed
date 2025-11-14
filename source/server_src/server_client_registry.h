@@ -30,6 +30,8 @@ public:
     void broadcast(const SrvMsgPtr& msg);
     void sendTo(ID client_id, const SrvMsgPtr& msg);
 
+    std::vector<ID> checkClients(std::vector<ID>& ids);
+
 private:
     mutable std::mutex mx;
     std::map<ID, SendQPtr> clients;  // client_id → sendQueue del cliente (consumida por el sender)
