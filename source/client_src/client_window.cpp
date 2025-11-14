@@ -4,6 +4,7 @@
 #include <SDL2pp/SDL.hh>
 #include <SDL2pp/Texture.hh>
 #include <SDL2pp/Window.hh>
+#include <unistd.h>
 
 #include "../common_src/new_player.h"
 #include "../common_src/send_player.h"
@@ -69,7 +70,11 @@ void ClientWindow::handleEvents() {
                 auto msg = std::make_shared<MoveMsg>(it->second);
                 CliMsgPtr clientMsg = msg;
                 senderQueue.push(clientMsg);
-            } else if (event.key.keysym.sym == SDLK_m) showMap = !showMap;
+            } else if (event.key.keysym.sym == SDLK_m) {
+                showMap = !showMap;
+            } else if (event.key.keysym.sym == SDLK_y) {
+                cars[myCarId]->explode();
+            }
         }
     }
 }

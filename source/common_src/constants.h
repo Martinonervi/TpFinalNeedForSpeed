@@ -33,6 +33,7 @@
 #define SAN_ANDREAS_PATH  "../assets/cities/san_andreas.png"
 #define LIBERTY_CITY_PATH  "../assets/cities/liberty_city.png"
 #define VICE_CITY_PATH  "../assets/cities/vice_city.png"
+#define EXPLOSION_PATH "../assets/effects/explosion.png"
 
 using Cars_W_Nitro = std::uint16_t;
 
@@ -62,6 +63,11 @@ enum MapType {
     MAP_LIBERTY,
     MAP_SAN_ANDREAS,
     MAP_VICE
+};
+
+enum EffectType {
+    EXPLOSION,
+    LOW_HEALTH
 };
 
 struct CarInfo {
