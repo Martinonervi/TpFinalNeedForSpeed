@@ -201,7 +201,7 @@ QPushButton#quitButton:pressed {
         <property name="geometry">
          <rect>
           <x>0</x>
-          <y>60</y>
+          <y>420</y>
           <width>421</width>
           <height>271</height>
          </rect>
