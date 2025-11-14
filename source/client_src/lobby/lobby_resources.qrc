@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/images">
         <file>menu_bg_clean.png</file>
+        <file>lobby_bg.png</file>
     </qresource>
 </RCC>
