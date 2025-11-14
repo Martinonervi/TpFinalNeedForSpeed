@@ -51,7 +51,7 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     float v_lat  = vel.x * right.x + vel.y * right.y;
 
 
-    const float engineForce = 6000.f;
+    const float engineForce = 2000.f;
     const float brakeForce  = 1200.f;
     const float c_drag      = 12.f;
     const float maxSpeed    = 200.f;
@@ -83,8 +83,8 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
 
     // cuánto queremos girar este frame
     const float PI = 3.14159265f;
-    const float turnSpeed = PI / 2.0f;        // rad/s
-    float turn = steer * turnSpeed * dt;         // lo que giro en este frame
+    const float turnSpeed = PI / 8.0f;        // rad/s
+    float turn = steer * turnSpeed;         // lo que giro en este frame
 
     float newAngle = angle + turn;
 

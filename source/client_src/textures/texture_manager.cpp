@@ -6,9 +6,12 @@
 
 #include "SDL2pp/Surface.hh"
 
-TextureManager::TextureManager(SDL2pp::Renderer& renderer) {
+TextureManager::TextureManager(SDL2pp::Renderer& renderer) :
+    flagTexture(renderer, CHECKPOINT_FLAG)
+{
+    speedometerTexture.emplace(loadWithColorKey(renderer, SPEEDOMETER_PATH, 221, 221, 56));
     carsTexture.emplace(loadWithColorKey(renderer, CARS_PATH, 163, 163, 13));
-    carManager.emplace(*carsTexture);
+    carManager.emplace(*carsTexture, *speedometerTexture);
 
     peopleTexture.emplace(loadWithColorKey(renderer, PEOPLE_PATH, 163, 163, 13));
     peopleManager.emplace(*peopleTexture);
@@ -37,3 +40,19 @@ CarTexture& TextureManager::getCars() { return carManager.value(); }
 PeopleTexture& TextureManager::getPeople() { return peopleManager.value(); }
 CityTexture& TextureManager::getCities() { return cityManager.value(); }
 EffectsTexture& TextureManager::getEffects() { return effectsManager.value(); }
+
+// NUEVO ARCHIVO
+SDL2pp::Texture& TextureManager::getTexture() {
+    return flagTexture;
+}
+
+SDL2pp::Rect TextureManager::getCheckpointFrame(const int frame) const {
+    const int FRAME_WIDTH = 60;
+    const int FRAME_HEIGHT = 60;
+
+
+    int x = static_cast<int>(frame/10) * FRAME_WIDTH;
+    int y = 0;
+
+    return SDL2pp::Rect(x, y, FRAME_WIDTH, FRAME_HEIGHT);
+}
