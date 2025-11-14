@@ -49,14 +49,36 @@ b2BodyId WorldManager::getBody(const EntityId id) const {
     return it->second.body;
 }
 
+static inline void destroyBodyAndUserData(b2BodyId body) {
+    if (!body.index1) return;
+    void* raw = b2Body_GetUserData(body);
+    if (raw) {
+        b2Body_SetUserData(body, nullptr);   // por seguridad para Box2D
+        auto* ud = static_cast<PhysicsUserData*>(raw);
+        delete ud;                            // ← este era el leak (16 bytes c/u)
+    }
+    b2DestroyBody(body);
+}
+/*
 void WorldManager::destroyEntity(const EntityId id) {
     auto it = physics.find(id);
     if (it == physics.end()) return;
     b2DestroyBody(it->second.body);
     physics.erase(it);
 }
+*/
+void WorldManager::destroyEntity(const EntityId id) {
+    auto it = physics.find(id);
+    if (it == physics.end()) return;
+    destroyBodyAndUserData(it->second.body);
+    physics.erase(it);
+}
 
 WorldManager::~WorldManager() {
+    for (auto& [eid, pe] : physics) {
+        destroyBodyAndUserData(pe.body);
+    }
+    physics.clear();
     if (world.index1) {
         b2DestroyWorld(this->world);
         this->world = {0};

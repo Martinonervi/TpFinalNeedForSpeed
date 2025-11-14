@@ -13,7 +13,7 @@ receiver(protocol, receiverQueue), sender(protocol, senderQueue)
 {}
 
 void Client::lobbyState() {
-
+    /*
     int argc = 0;
     char** argv = nullptr;
     QApplication app(argc, argv);
@@ -23,14 +23,14 @@ void Client::lobbyState() {
     window.show();
 
     app.exec();   // event loop de Qt
-    /*
+    */
     std::string line;
     while (!in_game && std::getline(std::cin, line)) {
         int game_id = std::stoi(line);
         sendRequest(game_id);
         recvGame();
     }
-    */
+
 
 }
 
