@@ -23,6 +23,7 @@ GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<Clients
 }
 
 
+
 void GameLoop::loadMapFromYaml(const std::string& path) {
     MapParser parser;
     MapData data = parser.load(path);
@@ -38,17 +39,27 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
     }
 
     for (const auto& cpCfg : data.checkpoints) {
-        auto cp = std::make_unique<Checkpoint>(
-                worldManager,
+        checkpoints.emplace(
                 cpCfg.id,
-                cpCfg.kind,
-                cpCfg.x1, cpCfg.y1,
-                cpCfg.x2, cpCfg.y2
+                Checkpoint(
+                        worldManager,
+                        cpCfg.id,
+                        cpCfg.kind,
+                        cpCfg.x1, cpCfg.y1,
+                        cpCfg.x2, cpCfg.y2
+                        )
         );
-        checkpoints.push_back(std::move(cp));
     }
+    // -> ACA
 }
 
+//la idea es q lo mande al principio
+struct SrvWorldInit {
+    uint16_t checkpointCount;
+    //vector CheckpointDef
+    uint16_t hintCount;
+    //vector HintDef
+};
 
 
 
@@ -59,6 +70,11 @@ void GameLoop::run() {
         while (should_keep_running()) {
             processCmds();
             worldManager.step(TIME_STEP, SUB_STEP_COUNT);
+
+            if (raceStarted && !raceEnded) {
+                raceTimeSeconds += TIME_STEP;
+            }
+
             broadcastCarSnapshots();
             processWorldEvents();
             loop.sleep_until_next_frame();
@@ -72,15 +88,32 @@ void GameLoop::run() {
 }
 
 void GameLoop::CarHitCheckpointHandler(WorldEvent ev){
-    auto it = cars.find(ev.carId);
-    if (it == cars.end()) return;
-    auto actualCheckpoint = it -> second.getActualCheckpoint();
-    if (actualCheckpoint  + 1 == ev.checkpointId) {
-        it->second.setCheckpoint(ev.checkpointId);
-        auto msg = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<SrvCheckpointHitMsg>(ev.carId, ev.checkpointId));
-        registry->sendTo(ev.carId, msg);
+    auto itCar = cars.find(ev.carId);
+    if (itCar == cars.end()) return;
+    auto& car = itCar->second;
+
+    auto actualCheckpoint = car.getActualCheckpoint();
+    if (actualCheckpoint  + 1 != ev.checkpointId) return;
+
+    car.setCheckpoint(ev.checkpointId);
+
+    auto itCheck = checkpoints.find(ev.checkpointId);
+    if (itCheck == checkpoints.end()) return;
+    auto& cp = itCheck->second;
+
+    if (cp.getKind() == CheckpointKind::Finish and !car.isFinished()) {
+        car.markFinished(raceTimeSeconds);
+        finishedCarsCount++;
+        if (finishedCarsCount == totalCars) {
+            this->raceEnded = true;
+        }
+
     }
+    // flag ultimo checkpoint
+    auto msg = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<SrvCheckpointHitMsg>(ev.carId, ev.checkpointId));
+    registry->sendTo(ev.carId, msg);
+
 }
 
 void GameLoop::CarHitBuildingHandler(WorldEvent ev,
@@ -269,7 +302,7 @@ void GameLoop::initPlayerHandler(Cmd& cmd){
 
     b2Vec2 spawn = { 7.0f, 15.0f };
     cars.emplace(cmd.client_id, Car(this->worldManager, cmd.client_id, spawn, 0, ip.getCarType()));
-
+    totalCars++;
 
     auto base = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), spawn.x, spawn.y, 3));

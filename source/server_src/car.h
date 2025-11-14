@@ -27,11 +27,20 @@ public:
     void applyDamage(const float damage);
     bool isCarDestroy();
 
+    void markFinished(float t) {
+        finished = true;
+        finishTime = t;
+    }
+    bool isFinished() const { return finished; }
+    float getFinishTime() const { return finishTime; }
+
 private:
     ID clientId;
     CarType carType;
     float health;
     ID actualCheckpoint = 0;
+    bool finished = false;
+    float finishTime = 0.0f;
 
 };
 

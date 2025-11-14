@@ -20,6 +20,12 @@ struct CheckpointConfig {
     float x2, y2;
 };
 
+struct HintDef {
+    uint8_t id;
+    float x, y;
+    float dirX, dirY;
+};
+
 struct MapData {
     std::string city;
     std::vector<BuildingConfig> buildings;

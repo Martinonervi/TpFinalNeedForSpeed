@@ -42,13 +42,20 @@ private:
     // box2D
     WorldManager worldManager;
     std::unordered_map<ID, Car> cars;
-    std::vector<std::unique_ptr<Checkpoint>> checkpoints;
+    std::unordered_map<ID,Checkpoint> checkpoints;
     std::vector<std::unique_ptr<Building>> buildings;
 
     std::shared_ptr<gameLoopQueue> queue;
     std::shared_ptr<ClientsRegistry> registry;
     std::queue<WorldEvent> worldEvents;
     void processWorldEvents();
+
+    //tiempo de la carrera
+    float raceTimeSeconds = 0.0f;
+    bool raceStarted = false;
+    bool raceEnded   = false;
+    int finishedCarsCount = 0;
+    int totalCars = 0;
 
     // loop
     Printer printer;
