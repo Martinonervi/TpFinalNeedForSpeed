@@ -34,21 +34,17 @@ struct PhysicsUserData {
 
 class WorldContactHandler {
 public:
-    WorldContactHandler(std::queue<WorldEvent>& we): worldEvents(we) {}
+    explicit WorldContactHandler(std::queue<WorldEvent>& we): worldEvents(we) {}
     void init(b2WorldId w) { world = w;}
     void checkContactEvents();
 
 private:
-    b2WorldId world;
+    b2WorldId world{};
     std::queue<WorldEvent>& worldEvents;
 
-    void handleBeginContact(const b2ContactBeginTouchEvent& ev);
-    void handleEndContact(b2ContactEndTouchEvent ev);
     void handleHitContact(b2ContactHitEvent ev);
+    void handleSensorBegin(const b2SensorBeginTouchEvent& ev);
 
 };
-
-
-
 
 #endif

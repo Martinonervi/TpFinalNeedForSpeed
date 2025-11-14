@@ -1,6 +1,7 @@
 #include "client_receiver.h"
 #include "../common_src/queue.h"
 #include "../common_src/srv_car_hit_msg.h"
+#include "../common_src/srv_checkpoint_hit_msg.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -47,7 +48,15 @@ void ClientReceiver::run(){
                 std::cout << "[client Receiver] collision, id:" << msg.getPlayerId() << "\n";
                 std::cout << "[client Receiver] auto con vida: " << msg.getCarHealth() << "\n";
                 receiverQueue.push(base);
-
+                break;
+            }
+            case (Opcode::CHECKPOINT_HIT): {
+                SrvCheckpointHitMsg msg = protocol.recvCheckpointHitEvent();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<SrvCheckpointHitMsg>(std::move(msg)));
+                std::cout << "[client Receiver] CHECKPOINT_HIT, id:" << msg.getPlayerId() << "\n";
+                receiverQueue.push(base);
+                break;
             }
             default: {
                 std::cout << "comando desconocido: " << op << "\n";

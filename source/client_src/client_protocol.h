@@ -10,6 +10,7 @@
 #include "../common_src/send_player.h"
 #include "../common_src/metadatagames.h"
 #include "../common_src/srv_car_hit_msg.h"
+#include "../common_src/srv_checkpoint_hit_msg.h"
 
 #include "client_types.h"
 
@@ -33,6 +34,8 @@ public:
     MetadataGames getMetadata();
     GameMetadata readOneGame();
     SrvCarHitMsg recvCollisionEvent();
+    SrvCheckpointHitMsg recvCheckpointHitEvent();
+
 
 private:
     Socket& peer;

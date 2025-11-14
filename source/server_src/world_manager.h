@@ -21,27 +21,25 @@ struct PhysicsEntity {
     } kind;
 };
 
-
 class WorldManager {
 public:
-    WorldManager(std::queue<WorldEvent>& worldEvents);
+    explicit WorldManager(std::queue<WorldEvent>& worldEvents);
     ~WorldManager();
     void step(float dt, int subSteps);
 
     void mapLimits();
+    EntityId createCarBody(b2Vec2 pos, float angleRad);
     EntityId createBuilding(float x, float y, float w, float h, float angleRad);
     EntityId createCheckpointSensor(float x1, float y1, float x2, float y2);
-    EntityId createCarBody(b2Vec2 pos, float angleRad); // crea un auto dinámico y devuelve el id
+
     b2BodyId getBody(EntityId id) const;
 
     void destroyEntity(EntityId id);
 
 
-
 private:
-    b2WorldId world;
+    b2WorldId world{};
     EntityId nextId = 1;
-
     std::unordered_map<EntityId, PhysicsEntity> physics;
     WorldContactHandler worldContactHandler;
 };

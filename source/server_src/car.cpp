@@ -25,9 +25,8 @@ Car::Car(WorldManager& world,
             PhysicsType::Car,
             clientId
     };
+
     b2Body_SetUserData(this->body, ud);
-    b2Body_EnableContactEvents(this->body, true);
-    b2Body_EnableHitEvents(this->body, true);
 }
 
 

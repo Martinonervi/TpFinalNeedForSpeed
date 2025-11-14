@@ -35,12 +35,13 @@
 #define VICE_CITY_PATH  "../assets/cities/vice_city.png"
 #define EXPLOSION_PATH "../assets/effects/explosion.png"
 
-using Cars_W_Nitro = std::uint16_t;
 
 using ID = std::uint32_t;
 
 using CliMsgPtr = std::shared_ptr<CliMsg>;
 using SrvMsgPtr = std::shared_ptr<SrvMsg>;
+
+constexpr float PIXEL_TO_METER = 1.0f / 10.0f;   // 10 px = 1 m
 
 //no veo ganancia en que Cmd sea una clase, cumple su funcion perfecta como struct
 struct Cmd {

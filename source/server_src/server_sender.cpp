@@ -44,6 +44,10 @@ void Sender::run() {
                     n = protocol.sendCollisionEvent(dynamic_cast<SrvCarHitMsg&>(*msg));
                     break;
                 }
+                case Opcode::CHECKPOINT_HIT: {
+                    n = protocol.sendCheckpointHit(dynamic_cast<SrvCheckpointHitMsg&>(*msg));
+                    break;
+                }
                 default: {
                     std::cout << "cmd desconocido: " << msg->type() << "\n";
                     n = 0; //quiero salir

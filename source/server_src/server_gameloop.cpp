@@ -12,6 +12,7 @@
 #include "../common_src/constant_rate_loop.h"
 
 #include "../common_src/srv_car_hit_msg.h"
+#include "../common_src/srv_checkpoint_hit_msg.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
@@ -70,14 +71,15 @@ void GameLoop::run() {
     }
 }
 
-
 void GameLoop::CarHitCheckpointHandler(WorldEvent ev){
     auto it = cars.find(ev.carId);
     if (it == cars.end()) return;
     auto actualCheckpoint = it -> second.getActualCheckpoint();
     if (actualCheckpoint  + 1 == ev.checkpointId) {
-        it->second.setCheckpoint(actualCheckpoint);
-        //le aviso a la interfaz calculo
+        it->second.setCheckpoint(ev.checkpointId);
+        auto msg = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<SrvCheckpointHitMsg>(ev.carId, ev.checkpointId));
+        registry->sendTo(ev.carId, msg);
     }
 }
 
@@ -104,7 +106,7 @@ void GameLoop::CarHitBuildingHandler(WorldEvent ev,
     //  break;
     //}
 
-    // opcional: ver si fue frontal
+    // ver si fue frontal
     b2Rot rot = b2Body_GetRotation(body);
     b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
     // fwd es unitario
@@ -217,10 +219,9 @@ void GameLoop::processWorldEvents() {
     std::unordered_set<ID> alreadyHitCarPairThisFrame;
 
     while (!worldEvents.empty()) {
-        std::cout << "entre al while de processWorldEvents \n";
         WorldEvent ev = worldEvents.front();
         worldEvents.pop();
-        
+
         switch (ev.type) {
             case WorldEventType::CarHitCheckpoint: {
                 CarHitCheckpointHandler(ev);
@@ -266,7 +267,7 @@ void GameLoop::processCmds() {
 void GameLoop::initPlayerHandler(Cmd& cmd){
     const InitPlayer ip = dynamic_cast<const InitPlayer&>(*cmd.msg);
 
-    b2Vec2 spawn = { 4.0f, 4.0f };
+    b2Vec2 spawn = { 7.0f, 15.0f };
     cars.emplace(cmd.client_id, Car(this->worldManager, cmd.client_id, spawn, 0, ip.getCarType()));
 
 

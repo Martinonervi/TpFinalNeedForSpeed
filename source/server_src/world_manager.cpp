@@ -2,7 +2,7 @@
 
 WorldManager::WorldManager(std::queue<WorldEvent>& worldEvents): worldContactHandler(worldEvents) {
     b2WorldDef worldDef = b2DefaultWorldDef();
-    worldDef.gravity = (b2Vec2){0.0f, 0.0f};  // sin gravedad
+    worldDef.gravity = (b2Vec2){0.0f, 0.0f};
     this->world = b2CreateWorld(&worldDef);
     mapLimits();
     worldContactHandler.init(world);
@@ -10,37 +10,7 @@ WorldManager::WorldManager(std::queue<WorldEvent>& worldEvents): worldContactHan
 
 void WorldManager::step(float dt, int subSteps) {
     b2World_Step(this->world, dt, subSteps);
-
     worldContactHandler.checkContactEvents();
-}
-
-EntityId WorldManager::createCarBody(b2Vec2 pos, float angleRad) {
-
-    // defino body
-    b2BodyDef bd = b2DefaultBodyDef();
-    bd.type = b2_dynamicBody;
-    bd.position = pos;
-    bd.rotation = b2MakeRot(angleRad);
-    bd.linearDamping = 0.2f;
-    bd.angularDamping = 4.f; //reduce velocidad anguar (mientras +alto)
-
-    // creo body
-    b2BodyId body = b2CreateBody(world, &bd);
-
-    //creo shape
-    b2ShapeDef sd = b2DefaultShapeDef();
-    sd.density = 1.0f; //Masa = densidad * área de la figura
-    // aceleracion = F / masa
-    sd.material.friction = 0.9f; // afecta mas en vel lateral cuando doblas o derrapas
-    sd.material.restitution = 0.08f;
-    b2Polygon box = b2MakeBox(1.0f, 2.0f); //rectangulo 2x4
-
-    b2CreatePolygonShape(body, &sd, &box);
-
-
-    EntityId eid = nextId++;
-    physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Car };
-    return eid;
 }
 
 b2BodyId WorldManager::getBody(const EntityId id) const {
@@ -63,10 +33,10 @@ WorldManager::~WorldManager() {
     }
 }
 
+//no tiene colisones, tendria que hacer una clase marco y setearle la user data
 void WorldManager::mapLimits() {
     const float MAP_W_PIXELES = 4640.0f;
     const float MAP_H_PIXELES = 4672.0f;
-    constexpr float PIXEL_TO_METER = 1.0f / 10.0f;
 
     const float MAP_W = MAP_W_PIXELES * PIXEL_TO_METER;
     const float MAP_H = MAP_H_PIXELES * PIXEL_TO_METER;
@@ -125,6 +95,41 @@ void WorldManager::mapLimits() {
 }
 
 
+EntityId WorldManager::createCarBody(b2Vec2 pos, float angleRad) {
+
+    // defino body
+    b2BodyDef bd = b2DefaultBodyDef();
+    bd.type = b2_dynamicBody;
+    bd.position = pos;
+    bd.rotation = b2MakeRot(angleRad);
+    bd.linearDamping = 0.2f;
+    bd.angularDamping = 4.f; //reduce velocidad anguar (mientras +alto)
+
+    // creo body
+    b2BodyId body = b2CreateBody(world, &bd);
+
+    //creo shape
+    b2ShapeDef sd = b2DefaultShapeDef();
+    sd.density = 1.0f; //Masa = densidad * área de la figura
+    // aceleracion = F / masa
+    sd.material.friction = 0.9f; // afecta mas en vel lateral cuando doblas o derrapas
+    sd.material.restitution = 0.08f;
+    b2Polygon box = b2MakeBox(1.0f, 2.0f); //rectangulo 2x4
+
+    sd.isSensor = false; // no sensor
+    sd.enableSensorEvents = true; //asi los sensores lo ven
+
+    b2CreatePolygonShape(body, &sd, &box);
+
+    b2Body_EnableContactEvents(body, true);
+    b2Body_EnableHitEvents(body, true);
+
+    EntityId eid = nextId++;
+    physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Car };
+    return eid;
+}
+
+
 EntityId WorldManager::createCheckpointSensor(float x1, float y1,
                                               float x2, float y2) {
     float mx = (x1 + x2) * 0.5f;
@@ -147,6 +152,7 @@ EntityId WorldManager::createCheckpointSensor(float x1, float y1,
 
     b2ShapeDef sd = b2DefaultShapeDef();
     sd.isSensor = true; //no genera resp fisica en colision
+    sd.enableSensorEvents = true; //habilita el sensor contact
     b2CreatePolygonShape(body, &sd, &box);
 
     EntityId eid = nextId++;
@@ -171,6 +177,9 @@ EntityId WorldManager::createBuilding(float x, float y,
 
     b2ShapeDef sd = b2DefaultShapeDef();
     b2CreatePolygonShape(body, &sd, &box);
+
+    // edificios no necesitan hitEvents, con el auto ya alcanza creo
+    b2Body_EnableContactEvents(body, true);
 
     EntityId eid = nextId++;
     physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Building };

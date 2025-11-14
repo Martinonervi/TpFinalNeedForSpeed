@@ -52,7 +52,6 @@ void Receiver::run() {
                     CliMsgPtr base = std::static_pointer_cast<CliMsg>(
                             std::make_shared<InitPlayer>(std::move(ip)));
                     cmdQueue->push(Cmd{id, base});
-
                     break;
                 }
                 default: {

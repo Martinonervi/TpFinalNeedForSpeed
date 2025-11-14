@@ -22,17 +22,12 @@ public:
         b2BodyId body = world.getBody(physId);
         this->setBody(body);
 
-
         auto* ud = new PhysicsUserData{
                 .type = PhysicsType::Building,
                 .id = 0
         };
         b2Body_SetUserData(this->body, ud);
-
-        // edificios no necesitan hitEvents, con el auto ya alcanza creo
-        b2Body_EnableContactEvents(this->body, true);
     }
-
 
     float getX() const { return x; }
     float getY() const { return y; }
@@ -40,7 +35,6 @@ public:
     float getH() const { return h; }
     float getAngle() const { return angle; }
 
-    void setBody(b2BodyId b) { body = b; }
 
 private:
     float x, y;

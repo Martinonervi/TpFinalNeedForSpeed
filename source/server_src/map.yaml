@@ -82,9 +82,15 @@ buildings:
 
 route:
   checkpoints:
-    - id: 0
+    - id: 1
       kind: start
       x1: 2
-      y1: 6
-      x2: 10
-      y2: 6
+      y1: 311
+      x2: 222
+      y2: 311
+    - id: 2
+      kind:
+      x1: 2
+      y1: 311
+      x2: 222
+      y2: 311

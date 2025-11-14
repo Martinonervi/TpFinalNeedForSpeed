@@ -22,7 +22,6 @@ Checkpoint::Checkpoint(WorldManager& world, ID checkpointId, CheckpointKind kind
     };
     b2Body_SetUserData(this->body, ud);
 
-    b2Body_EnableContactEvents(this->body, true);
 }
 
 
