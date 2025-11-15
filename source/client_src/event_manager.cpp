@@ -7,14 +7,15 @@ EventManager::EventManager( ID& myCarId,
                                 SDL2pp::Renderer& renderer,
                                 Queue<CliMsgPtr>& senderQueue,
                                 TextureManager& textureManager,
-                                bool& running, bool& showMap)
+                                bool& running, bool& showMap, bool& quit)
 :       myCarId(myCarId),
         cars(cars),
         renderer(renderer),
         senderQueue(senderQueue),
         tm(textureManager),
         running(running),
-        showMap(showMap)
+        showMap(showMap),
+        quit(quit)
 {}
 
 void EventManager::handleEvents() const {
@@ -22,6 +23,7 @@ void EventManager::handleEvents() const {
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             running = false;
+            quit = true;
         } else if (event.type == SDL_KEYDOWN && myCarId != -1) {
             auto it = keyToMove.find(event.key.keysym.sym);
             if (it != keyToMove.end()) {

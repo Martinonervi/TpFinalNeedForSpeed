@@ -11,11 +11,11 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         camera(width, height, 4640.0, 4672.0),  // Agregar consts
         myCarId(-1),
         tm(renderer),
-        eventManager(myCarId, cars, renderer, senderQueue, tm, running, showMap) {}
+        eventManager(myCarId, cars, renderer, senderQueue, tm, running, showMap, quit) {}
 
 
 // Hay que manejar FPS, hay que tener en cuenta los autos que no estan en camara
-void ClientWindow::run() {
+bool ClientWindow::run() {
     Hud hud(renderer, tm, MAP_LIBERTY);
     Map map(renderer, tm, MAP_LIBERTY);
     while (running) {
@@ -67,4 +67,6 @@ void ClientWindow::run() {
     }
     TTF_Quit();
     SDL_Quit();
+
+    return quit;
 }
