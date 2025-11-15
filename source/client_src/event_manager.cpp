@@ -71,8 +71,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
         case COLLISION: {
             const auto ch = dynamic_cast<const SrvCarHitMsg&>(*msg);
             if (cars.count(ch.getPlayerId())) {
-                std::cout << ch.getPlayerId() << std::endl;
-                std::cout << ch.getCarHealth() << std::endl;
                 cars[ch.getPlayerId()]->setHealth(ch.getCarHealth());
             }
             break;

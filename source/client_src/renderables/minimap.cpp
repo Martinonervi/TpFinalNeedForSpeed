@@ -83,7 +83,8 @@ void Minimap::drawRecommendedPath(
     float scaleX, float scaleY
 ) const {
 
-    renderer.SetDrawColor(0, 0, 0, 255);  // CELESTE
+	const int thickness = 3;
+    renderer.SetDrawColor(0, 0, 0, 255);
 
     for (size_t i = 1; i < recommendedPath.size(); i++) {
         int x1 = x + static_cast<int>(recommendedPath[i - 1].x * 1);
@@ -91,7 +92,10 @@ void Minimap::drawRecommendedPath(
         int x2 = x + static_cast<int>(recommendedPath[i].x * 1);
         int y2 = y + static_cast<int>(recommendedPath[i].y * 1);
 
-        renderer.DrawLine(x1, y1, x2, y2);
+        for (int t = -thickness/2; t <= thickness/2; t++) {
+            renderer.DrawLine(x1 + t, y1, x2 + t, y2);  // grosor horizontal
+            renderer.DrawLine(x1, y1 + t, x2, y2 + t);  // grosor vertical
+        }
     }
 }
 
