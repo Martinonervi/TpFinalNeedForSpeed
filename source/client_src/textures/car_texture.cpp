@@ -41,25 +41,6 @@ SDL2pp::Texture& CarTexture::getSpeedometer() const {
     return speedometerTexture;
 }
 
-SDL2pp::Rect CarTexture::getNeedleFrame(float speed) const {
-    const int FRAMES = 8;           // cantidad de agujas
-    const float MAX_SPEED = 240.0f; // velocidad máxima
-    const int FRAME_WIDTH = 16;     // ancho aprox de cada aguja
-    const int FRAME_HEIGHT = 16;    // alto aprox de la tira superior
-
-    // Determinamos qué frame usar
-    if (speed < 0) speed = 0;
-    if (speed > MAX_SPEED) speed = MAX_SPEED;
-
-    int frameIndex = static_cast<int>((speed / MAX_SPEED) * (FRAMES - 1));
-
-    // Calcular la posición en la tira
-    int x = 13 + frameIndex * FRAME_WIDTH;
-    int y = 7; // las agujas están arriba
-
-    return SDL2pp::Rect(x, y, FRAME_WIDTH, FRAME_HEIGHT);
-}
-
 SDL2pp::Rect CarTexture::getDialFrame() const {
     const int WIDTH = 87;
     const int HEIGHT = 87;

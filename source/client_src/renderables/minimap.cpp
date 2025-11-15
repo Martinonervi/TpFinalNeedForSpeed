@@ -100,9 +100,7 @@ void Minimap::drawCheckpoints(
     float scaleX, float scaleY
 ) const {
 
-    SDL2pp::Texture& flagTexture = tm.getTexture();
-    int flagW = flagTexture.GetWidth();
-    int flagH = flagTexture.GetHeight();
+    SDL2pp::Texture& flagTexture = tm.getHud().getCheckpointTexture();
 
     for (size_t i = 0; i < checkpoints.size(); i++) {
         const auto& cp = checkpoints[i];
@@ -112,8 +110,8 @@ void Minimap::drawCheckpoints(
 
         SDL2pp::Rect srcRect = tm.getCheckpointFrame(0);
         SDL2pp::Rect dstRect(
-            miniX - srcRect.h/2,   // centrar
-            miniY - srcRect.h/2,   // centrar
+            miniX - srcRect.h/2,
+            miniY - srcRect.h/2,
             srcRect.h/2,
             srcRect.h/2
         );
