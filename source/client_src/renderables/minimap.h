@@ -8,9 +8,8 @@
 class Minimap {
 public:
     Minimap(MapType maptype, SDL2pp::Renderer& renderer, TextureManager& tm);
-    void draw(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId);
+    void draw(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId) const;
     void drawRecommendedPath(int x, int y, float scaleX, float scaleY) const;
-    void drawCheckpoints(int x, int y, float scaleX, float scaleY) const;
 
 private:
     MapType maptype;

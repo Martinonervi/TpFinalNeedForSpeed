@@ -30,7 +30,7 @@ public:
         Queue<CliMsgPtr>& senderQueue
         );
 
-    void run();
+    bool run();
 
 private:
     SDL2pp::SDL sdl;
@@ -43,6 +43,7 @@ private:
     ID myCarId;
     EventManager eventManager;
     bool running;
+    bool quit = false;
     bool showMap = true;
 
 };

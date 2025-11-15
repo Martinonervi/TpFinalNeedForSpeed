@@ -20,7 +20,7 @@ public:
     EventManager(ID& myCarId, std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                               SDL2pp::Renderer& renderer,
                               Queue<CliMsgPtr>& senderQueue, TextureManager& textureManager,
-                              bool& running, bool& showMap);
+                              bool& running, bool& showMap, bool& quit);
 
     void handleEvents() const;
     void handleServerMessage(const SrvMsgPtr& msg) const;
@@ -33,6 +33,7 @@ private:
     TextureManager& tm;
     bool& running;
     bool& showMap;
+    bool& quit;
 
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {

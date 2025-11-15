@@ -13,8 +13,10 @@ Hud::Hud(SDL2pp::Renderer& renderer, TextureManager& tm, const MapType maptype)
 }
 
 
-void Hud::drawOverlay(const int x, const int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars,
+void Hud::drawOverlay(const int x, const int y,
+                      std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                       const ID playerId) {
+
     map.draw(x, 10, cars, playerId);
 
     const auto it = cars.find(playerId);
@@ -25,7 +27,12 @@ void Hud::drawOverlay(const int x, const int y, std::unordered_map<ID, std::uniq
 
     drawBars(renderer, x, health);
     drawDial(renderer, 150.0f, x, y);
+
+    // Por ahora uso nums falsos
+    drawRaceNumber(3, 5);
+    drawGameTime(523);
 }
+
 
 void Hud::loadFont() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -96,31 +103,18 @@ float Hud::drawNeedle(const float x, const float y, const SDL2pp::Rect dstRectDi
     return clampedSpeed;
 }
 
-void Hud::drawSpeedText(const float clampedSpeed, const SDL2pp::Rect dstRectDial, const float x) const {
-    const std::string speedText = std::to_string(static_cast<int>(clampedSpeed)) + " km/h";
-    constexpr SDL_Color white = {255, 255, 255, 255};
-    SDL_Surface* textSurface = TTF_RenderText_Blended(font, speedText.c_str(), white);
-    if (!textSurface) {
-        return;
-    }
+void Hud::drawSpeedText(const float clampedSpeed,
+                        const SDL2pp::Rect dstRectDial,
+                        const float x) const {
 
-    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer.Get(), textSurface);
-    if (!textTexture) {
-        SDL_FreeSurface(textSurface);
-        return;
-    }
+    std::string speedText = std::to_string(static_cast<int>(clampedSpeed)) + " km/h";
+    SDL_Color white = {255, 255, 255, 255};
 
-    const SDL_Rect textRect = {
-        static_cast<int>(x - 40),
-        dstRectDial.y + dstRectDial.h,
-        80,
-        30
-    };
+    // Coordenadas donde querés que aparezca
+    int textX = static_cast<int>(x - 50);
+    int textY = dstRectDial.y + dstRectDial.h;
 
-    SDL_FreeSurface(textSurface);
-
-    SDL_RenderCopy(renderer.Get(), textTexture, nullptr, &textRect);
-    SDL_DestroyTexture(textTexture);
+    drawText(speedText, textX, textY, white);
 }
 
 void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const float health) const {
@@ -200,6 +194,60 @@ void Hud::drawEnergyFill(SDL2pp::Renderer& renderer, float percent,
     }
 
 }
+
+void Hud::drawGameTime(int totalSeconds) const {
+    int hours = totalSeconds / 3600;
+    int minutes = (totalSeconds % 3600) / 60;
+    int seconds = totalSeconds % 60;
+
+    char buffer[20];
+    snprintf(buffer, sizeof(buffer), "%02d:%02d:%02d", hours, minutes, seconds);
+
+    SDL_Color yellow = {255, 255, 0, 255};
+    drawText(buffer, 20, 65, yellow);
+}
+
+void Hud::drawRaceNumber(int current, int total) const {
+    std::string txt = "Race " + std::to_string(current) + "/" + std::to_string(total);
+    SDL_Color white = {255, 255, 255, 255};
+
+    drawText(txt, 20, 35, white);
+}
+
+
+void Hud::drawText(const std::string& text, const int x, const int y, const SDL_Color color) const {
+    if (!font) return; // seguridad: fuente válida
+    // Obtener surface
+    SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), color);
+    if (!surface) {
+        std::cerr << "TTF_RenderText_Blended falló: " << TTF_GetError() << std::endl;
+        return;
+    }
+
+    // Guardamos ancho/alto antes de liberar la surface
+    int w = surface->w;
+    int h = surface->h;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer.Get(), surface);
+    // Ya no necesitamos la surface
+    SDL_FreeSurface(surface);
+
+    if (!texture) {
+        std::cerr << "SDL_CreateTextureFromSurface falló: " << SDL_GetError() << std::endl;
+        return;
+    }
+
+    SDL_Rect textRect { x, y, w, h };
+    SDL_RenderCopy(renderer.Get(), texture, nullptr, &textRect);
+    SDL_DestroyTexture(texture);
+}
+
+
+/*
+void Hud::activeUpgrade() {
+
+}
+*/
 
 
 
