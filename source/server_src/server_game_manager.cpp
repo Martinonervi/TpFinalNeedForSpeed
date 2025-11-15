@@ -2,8 +2,7 @@
 
 #include "../common_src/joingame.h"
 #include "../common_src/metadatagames.h"
-
-#include "server_gameloop.h"
+#include "game_logic/server_gameloop.h"
 
 std::pair<std::shared_ptr<gameLoopQueue>, ID>
 GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {

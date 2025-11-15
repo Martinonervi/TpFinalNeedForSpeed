@@ -1,7 +1,7 @@
 #ifndef TPFINALNEEDFORSPEED_ENTITY_H
 #define TPFINALNEEDFORSPEED_ENTITY_H
 #include <box2d/box2d.h>
-#include "../common_src/constants.h"
+#include "../../common_src/constants.h"
 
 enum class EntityType {
     Car,

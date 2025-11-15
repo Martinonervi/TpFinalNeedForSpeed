@@ -1,8 +1,9 @@
 #pragma once
 #include <box2d/box2d.h>
-#include "../common_src/constants.h"
-#include "../common_src/move_Info.h"
-#include "../common_src/player_state.h"
+#include "../../common_src/constants.h"
+#include "../../common_src/move_Info.h"
+#include "../../common_src/player_state.h"
+
 #include "entity.h"
 
 
@@ -16,6 +17,7 @@ public:
 
     void applyControlsToBody(const MoveMsg& in, float dt);
     void applyControlsToBodyy(const MoveMsg& in, float dt);
+    void applyControlsToBodyyy(const MoveMsg& in, float dt);
     PlayerState snapshotState();
 
     ID getClientId() const {return this->clientId; };
@@ -37,7 +39,7 @@ public:
 private:
     ID clientId;
     CarType carType;
-    float health;
+    float health = 100.0f;
     ID actualCheckpoint = 0;
     bool finished = false;
     float finishTime = 0.0f;

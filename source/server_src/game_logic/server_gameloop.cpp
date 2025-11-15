@@ -3,23 +3,23 @@
 #include <chrono>
 #include <thread>
 
-#include "../common_src/client_disconnect.h"
-#include "../common_src/constant_rate_loop.h"
-#include "../common_src/init_player.h"
-#include "../common_src/move_Info.h"
-#include "../common_src/new_player.h"
-#include "../common_src/player.h"
-#include "../common_src/player_state.h"
-#include "../common_src/send_player.h"
-#include "../common_src/srv_car_hit_msg.h"
-#include "../common_src/srv_checkpoint_hit_msg.h"
+#include "../../common_src/client_disconnect.h"
+#include "../../common_src/constant_rate_loop.h"
+#include "../../common_src/init_player.h"
+#include "../../common_src/move_Info.h"
+#include "../../common_src/new_player.h"
+#include "../../common_src/player.h"
+#include "../../common_src/player_state.h"
+#include "../../common_src/send_player.h"
+#include "../../common_src/srv_car_hit_msg.h"
+#include "../../common_src/srv_checkpoint_hit_msg.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
 
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
         worldEvents(), worldManager(worldEvents),queue(std::move(queue)), registry(std::move(registry)) {
-    loadMapFromYaml("../server_src/map.yaml");
+    loadMapFromYaml("../server_src/world/map.yaml");
 }
 
 
@@ -214,14 +214,15 @@ void GameLoop::CarHitBuildingHandler(WorldEvent ev,
     registry->sendTo(car.getClientId(), baseCarA);
 }
 void GameLoop::CarHitCarHandler(WorldEvent ev,
-                                std::unordered_set<ID>& alreadyHitCarPairThisFrame){
+                                std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame){
     // normalizamos la pareja (a,b) para que a < b y así no duplicamos
     int idA = ev.carId;
     int idB = ev.otherCarId;
     if (idA > idB) std::swap(idA, idB);
 
-    //chequear esto
-    ID key = (static_cast<long long>(idA) << 32) | static_cast<unsigned int>(idB);
+    uint64_t key = (static_cast<uint64_t>(idA) << 32) |
+               static_cast<uint32_t>(idB);
+
     if (alreadyHitCarPairThisFrame.count(key)) return;
     alreadyHitCarPairThisFrame.insert(key);
 
@@ -278,12 +279,12 @@ void GameLoop::CarHitCarHandler(WorldEvent ev,
 
 
     auto baseCarA = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SrvCarHitMsg>(idA, carA.getHealth()));
-    registry->sendTo(idA, baseCarA);
+            std::make_shared<SrvCarHitMsg>(carA.getClientId(), carA.getHealth()));
+    registry->sendTo(carA.getClientId(), baseCarA);
 
     auto baseCarB = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SrvCarHitMsg>(idB, carB.getHealth()));
-    registry->sendTo(idB, baseCarB);
+            std::make_shared<SrvCarHitMsg>(carB.getClientId(), carB.getHealth()));
+    registry->sendTo(carB.getClientId(), baseCarB);
     std::cout << "carHitCar mandanod mensaje al Server Sender\n";
 }
 
@@ -291,7 +292,7 @@ void GameLoop::processWorldEvents() {
     // para no procesar 50 veces el mismo auto pegado al edificio en este frame
     std::unordered_set<ID> alreadyHitBuildingThisFrame;
     // para no procesar dos veces el mismo choque de autos A-B y B-A
-    std::unordered_set<ID> alreadyHitCarPairThisFrame;
+    std::unordered_set<uint64_t> alreadyHitCarPairThisFrame;
 
     while (!worldEvents.empty()) {
         WorldEvent ev = worldEvents.front();

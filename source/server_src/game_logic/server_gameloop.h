@@ -3,15 +3,17 @@
 
 #include <list>
 #include <map>
-#include "car.h"
-#include "server_client_registry.h"
-#include "server_types.h"
-#include <box2d/box2d.h>
-#include "world_manager.h"
-#include "map_parser.h"
-#include "checkpoint.h"
-#include "building.h"
 #include <unordered_set>
+
+#include <box2d/box2d.h>
+
+#include "../server_client_registry.h"
+#include "../server_types.h"
+#include "../world/building.h"
+#include "../world/car.h"
+#include "../world/checkpoint.h"
+#include "../world/map_parser.h"
+#include "../world/world_manager.h"
 
 class GameLoop: public Thread {
 
@@ -38,7 +40,7 @@ private:
 
     void CarHitCheckpointHandler(WorldEvent ev);
     void CarHitBuildingHandler(WorldEvent ev, std::unordered_set<ID>& alreadyHitBuildingThisFrame);
-    void CarHitCarHandler(WorldEvent ev, std::unordered_set<ID>& alreadyHitCarPairThisFrame);
+    void CarHitCarHandler(WorldEvent ev, std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame);
 
 
     // box2D

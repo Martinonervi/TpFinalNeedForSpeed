@@ -21,7 +21,7 @@ public:
 
 
 private:
-    uint8_t accelerate; // acelerar, 0 false, 1 true
+    uint8_t accelerate; // acelerar, 0 false, 1 adelante, 2 reversa
     uint8_t brake; // frenar, 0 false, 1 true
     int8_t  steer; // [-1,1]
     uint8_t nitro; // [0,1]

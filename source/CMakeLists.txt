@@ -83,7 +83,7 @@ target_link_libraries(client
 )
 
 # --- Servidor ---
-file(GLOB SERVER_SOURCES "server_src/*.cpp")
+file(GLOB_RECURSE SERVER_SOURCES "server_src/*.cpp")
 list(APPEND SERVER_SOURCES "server_main.cpp")
 add_executable(server ${SERVER_SOURCES})
 target_link_libraries(server PRIVATE common pthread yaml-cpp)

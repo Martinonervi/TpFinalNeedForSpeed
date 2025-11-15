@@ -5,8 +5,9 @@
 #ifndef SERVER_GAME_CONTEXT_H
 #define SERVER_GAME_CONTEXT_H
 
+#include "game_logic/server_gameloop.h"
+
 #include "server_types.h"
-#include "server_gameloop.h"
 
 
 class GameContext {

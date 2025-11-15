@@ -1,6 +1,8 @@
 #include "map_parser.h"
+
 #include <yaml-cpp/yaml.h>
-#include "../common_src/constants.h"
+
+#include "../../common_src/constants.h"
 
 MapData MapParser::load(const std::string& path) {
     YAML::Node root = YAML::LoadFile(path);
