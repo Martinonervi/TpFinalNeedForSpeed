@@ -19,10 +19,12 @@ public:
 
     void setAngle(float newAngle);
     void setCarType(CarType newCarType);
+    void setHealth(float health);
     float getAngle() const;
-    float getHealthPercentage() const;
+    float getHealth() const;
 
 private:
+    float health = 100.0f;
     float angle;
     CarType carType;
     int explodedFrame = 0;

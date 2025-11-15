@@ -52,10 +52,14 @@ void Car::setCarType(const CarType newCarType) {
     carType = newCarType;
 }
 
+void Car::setHealth(const float newHealth) {
+    health = newHealth;
+}
+
 void Car::explode() {
     explodedFrame = 1;
 }
 
 float Car::getAngle() const { return angle; }
 
-float Car::getHealthPercentage() const { return 70.0f; }
+float Car::getHealth() const { return health; }

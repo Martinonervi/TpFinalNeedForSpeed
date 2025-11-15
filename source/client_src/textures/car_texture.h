@@ -13,7 +13,6 @@ public:
     SDL2pp::Rect getFrame(CarType type, float angle) const;
     SDL2pp::Texture& getTexture() const;
     SDL2pp::Texture& getSpeedometer() const;
-    SDL2pp::Rect getNeedleFrame(float speed) const;
     SDL2pp::Rect getDialFrame() const;
 
 private:
