@@ -16,27 +16,8 @@ void Hud::drawOverlay(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>
     if (it == cars.end() || !it->second) return;
     const Car& playerCar = *it->second;
 
-    drawHealthBar(renderer, y, playerCar.getHealthPercentage());
+    drawBars(renderer, x);
     drawSpeed(renderer, 150.0f, x, y);
-}
-
-void Hud::drawHealthBar(SDL2pp::Renderer& renderer, int windowHeight, float healthPercent) const {
-    if (healthPercent < 0.0f) healthPercent = 0.0f;
-    if (healthPercent > 100.0f) healthPercent = 100.0f;
-
-    int barWidth = 200;
-    int barHeight = 20;
-    int x = 20;
-    int y = windowHeight - barHeight - 20;
-
-    renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
-
-    renderer.SetDrawColor(50, 50, 50, 200);
-    renderer.FillRect(SDL_Rect{x - 2, y - 2, barWidth + 4, barHeight + 4});
-
-    int filledWidth = static_cast<int>((healthPercent / 100.0f) * barWidth);
-    renderer.SetDrawColor(200, 0, 0, 255);
-    renderer.FillRect(SDL_Rect{x, y, filledWidth, barHeight});
 }
 
 void Hud::loadFont() {
@@ -67,7 +48,7 @@ void Hud::drawSpeed(SDL2pp::Renderer& renderer, float speed, const int windowWid
     SDL2pp::Rect dstRectDial(windowWidth - 190, windowHeight - 190, 150, 150);
     renderer.Copy(tex, dialRect, dstRectDial);
 
-   const float centerX = dstRectDial.x + dstRectDial.w / 2.0f;
+    const float centerX = dstRectDial.x + dstRectDial.w / 2.0f;
     const float centerY = dstRectDial.y + dstRectDial.h / 2.0f;
 
     constexpr float minSpeed = 0.0f;
@@ -124,3 +105,81 @@ void Hud::drawSpeed(SDL2pp::Renderer& renderer, float speed, const int windowWid
     SDL_RenderCopy(renderer.Get(), textTexture, nullptr, &textRect);
     SDL_DestroyTexture(textTexture);
 }
+
+void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth) const {
+    constexpr int scale = 3;
+    const int x = windowWidth / 3;
+    const int y = 10*scale;
+
+    SDL2pp::Texture& barsTexture = tm.getHud().getBarsTexture();
+
+    constexpr float healthPercent = 75.0f/100; // 75% vida
+    constexpr float energyPercent = 50.0f/100; // 50% energía
+
+    const SDL2pp::Rect healthSrc = tm.getHud().getHealthBar();
+    SDL2pp::Rect healthDst(x, y, healthSrc.w*scale, healthSrc.h*scale);
+
+    drawHealthFill(renderer, healthPercent, healthDst, scale);
+    renderer.Copy(barsTexture,
+                  healthSrc,
+                  healthDst);
+
+    const SDL2pp::Rect energySrc = tm.getHud().getEnergyBar();
+    const int energyX = x + healthSrc.w*scale + 10;
+    const int energyY = 5*scale;
+
+    SDL2pp::Rect energyDst(energyX, energyY, energySrc.w*scale, energySrc.h*scale);
+
+    drawEnergyFill(renderer, energyPercent, energyDst, scale);
+    renderer.Copy(barsTexture, energySrc, energyDst);
+}
+
+
+void Hud::drawHealthFill(SDL2pp::Renderer& renderer, float percent, SDL2pp::Rect healthDst, int scale) const
+{
+    int startFillX = 14 * scale;
+    int startFillY = 4 * scale;
+    int filledW =  (healthDst.w - startFillX) * percent;
+
+    SDL2pp::Rect dst = {
+        healthDst.x + startFillX,
+        startFillY + healthDst.y,
+        filledW,
+        healthDst.h - startFillY
+    };
+
+    renderer.SetDrawColor(255, 0, 0, 255);
+    renderer.FillRect(dst);
+}
+
+void Hud::drawEnergyFill(SDL2pp::Renderer& renderer, float percent, SDL2pp::Rect energyDst, int scale) const
+{
+    // Por fila: cuántos px hay realmente (forma escalera)
+    static constexpr int ROW_W[5] = {53, 53, 51, 49, 47};
+    constexpr int ROWS = 5;
+
+    int startFillX = 10 * scale;
+    int startFillY = 9 * scale;
+    int filledW =  (energyDst.w - startFillX) * percent;
+
+    int rowY = startFillY + energyDst.y;
+    int rowH = (energyDst.h - startFillY)/ROWS;
+    int rowW = filledW;
+
+    for (int row = 0; row < ROWS; row++) {
+        SDL2pp::Rect dst = {
+            energyDst.x + startFillX,
+            rowY,
+            rowW,
+            rowH,
+        };
+        rowY += rowH;
+        rowW -= scale;
+        renderer.SetDrawColor(255, 255, 0, 255);
+        renderer.FillRect(dst);
+    }
+
+}
+
+
+

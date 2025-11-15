@@ -35,7 +35,8 @@
 #define VICE_CITY_PATH  "../assets/cities/vice_city.png"
 #define EXPLOSION_PATH "../assets/effects/explosion.png"
 #define SPEEDOMETER_PATH "../assets/cars/speedometer.png"
-#define CHECKPOINT_FLAG "../assets/extras/checkpoint.png"
+#define CHECKPOINT_PATH "../assets/extras/checkpoint.png"
+#define BARS_PATH "../assets/extras/bars.png"
 
 
 using ID = std::uint32_t;

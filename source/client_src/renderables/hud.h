@@ -21,8 +21,13 @@ private:
     TTF_Font* font;
 
     void loadFont();
-    void drawHealthBar(SDL2pp::Renderer& renderer, int windowWidth, float healthPercent) const;
-    void drawSpeed(SDL2pp::Renderer& renderer, float speed, int windowHeight, int windowWidth) const;
+    void drawSpeed(SDL2pp::Renderer& renderer, float speed, int windowHeight,
+                   int windowWidth) const;
+    void drawBars(SDL2pp::Renderer& renderer, int windowWidth) const;
+    void drawHealthFill(SDL2pp::Renderer& renderer, float percent, SDL2pp::Rect healthDst,
+                        int scale) const;
+    void drawEnergyFill(SDL2pp::Renderer& renderer, float percent, SDL2pp::Rect energyDst,
+                        int scale) const;
 };
 
 
