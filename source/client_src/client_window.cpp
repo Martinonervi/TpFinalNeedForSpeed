@@ -31,10 +31,35 @@ void ClientWindow::run() {
         map.draw(camera);
 
         for (auto& [id, car]: cars) {
+            const auto carState = car->getState();
             if (id == myCarId) {
                 camera.follow(car->getX(), car->getY());
             }
-            car->draw(camera);
+            switch (carState) {
+                case ALIVE: {
+                    car->draw(camera);
+                    break;
+                }
+                case LOW_HEALTH: {
+                    // DIBUJAMOS ROJO EN LA PANTALLA
+                    break;
+                }
+                case DESTROYED: {
+                    /*
+                    cars.erase(id);
+                    if (id == myCarId) {
+                        myCarId = -1;
+                    } */
+                    break;
+                }
+                case EXPLODING: {
+                    car->drawExplosion(camera);
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
         }
         if (showMap)
             hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId);  // Por ahora asi
