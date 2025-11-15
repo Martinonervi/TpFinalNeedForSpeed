@@ -68,6 +68,7 @@ void LobbyWindow::populateGames(const std::vector<GameMetadata>& games) {
 void LobbyWindow::on_playButton_clicked() {
     // cambia a la página LobbySelector
     ui->stackedPages->setCurrentWidget(ui->LobbySelector);
+    applyBackgroundLobbySelector();
 
     // pedir partidas al servidor
     protocol.requestGames();
@@ -182,6 +183,7 @@ void LobbyWindow::on_createButton_clicked() {
 
 void LobbyWindow::on_backButton_clicked() {
     ui->stackedPages->setCurrentWidget(ui->MainMenu);
+    applyBackgroundSkin();
 }
 
 void LobbyWindow::applyLobbySelectorStyles() {
@@ -243,16 +245,20 @@ void LobbyWindow::applyLobbySelectorStyles() {
         "QPushButton#refreshButton { background: #6b6f78; border: 3px solid #3a3d44; }"
         "QPushButton#refreshButton:hover { background: #7a7f88; }"
         "QPushButton#refreshButton:pressed { background: #5a5e66; }"
+        "QFrame#panel {"
+        "  background: rgba(8,12,20,220);"
+        "  border: 2px solid #0f2236;"
+        "  border-radius: 14px;"
+        "  padding: 16px;"
+        "}"
     );
 
-    // 3) Sombra sutil al panel
     auto *shadow = new QGraphicsDropShadowEffect(ui->panel);
     shadow->setBlurRadius(28);
     shadow->setOffset(0, 6);
     shadow->setColor(QColor(0,0,0,160));
     ui->panel->setGraphicsEffect(shadow);
 
-    // 4) (Opcional) Estilo del botón Volver (fuera del panel) si lo querés 100% igual siempre
     ui->backButton->setStyleSheet(
         "QPushButton#backButton {"
         "  background: #E74C3C;"
@@ -270,11 +276,9 @@ void LobbyWindow::applyLobbySelectorStyles() {
 }
 
 void LobbyWindow::applyBackgroundSkin() {
-    // Aseguramos que las páginas respeten estilos y puedan ser transparentes
     ui->MainMenu->setAttribute(Qt::WA_StyledBackground, true);
     ui->LobbySelector->setAttribute(Qt::WA_StyledBackground, true);
 
-    // Opcional: si el QStackedWidget tenía estilos desde el .ui, los pisamos
     ui->stackedPages->setStyleSheet(QString());
 
     ui->MainMenu->setObjectName("MainMenu");
@@ -298,6 +302,34 @@ void LobbyWindow::applyBackgroundSkin() {
 
         QWidget#LobbySelector {
             background-image: url(:/images/lobby_bg.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+        }
+    )CSS";
+
+    this->setStyleSheet(css);
+}
+
+void LobbyWindow::applyBackgroundLobbySelector() {
+    ui->MainMenu->setAttribute(Qt::WA_StyledBackground, true);
+    ui->LobbySelector->setAttribute(Qt::WA_StyledBackground, true);
+
+    ui->stackedPages->setStyleSheet(QString());
+
+    ui->LobbySelector->setObjectName("LobbySelector");
+    ui->MainMenu->setObjectName("MainMenu");
+
+    const QString css = R"CSS(
+        /* Fondo por defecto del QMainWindow */
+        QMainWindow#LobbyWindow {
+            background-image: url(:/images/lobby_bg.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: black;
+        }
+        QWidget#MainMenu {
+            background-image: url(:/images/menu_bg_clean.png);
             background-repeat: no-repeat;
             background-position: center;
             background-color: transparent;
