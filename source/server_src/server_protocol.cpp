@@ -265,3 +265,27 @@ int ServerProtocol::sendCheckpointHit(SrvCheckpointHitMsg& msg) {
         throw("Error sending");
     }
 }
+
+
+int ServerProtocol::sendClientDisconnect(ClientDisconnect& msg) {
+    try {
+        Op type = Opcode::CLIENT_DISCONNECT;
+        ID player_id = msg.getPlayerId();
+
+
+        std::vector<char> buf(sizeof(Op) + sizeof(player_id));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &player_id, sizeof(player_id));
+        offset += sizeof(player_id);
+
+        int n = peer.sendall(buf.data(), offset);
+        return n;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}

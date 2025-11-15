@@ -11,8 +11,9 @@
 #include "../common_src/metadatagames.h"
 #include "../common_src/srv_car_hit_msg.h"
 #include "../common_src/srv_checkpoint_hit_msg.h"
-
+#include "../common_src/client_disconnect.h"
 #include "client_types.h"
+
 
 class ClientProtocol {
 public:
@@ -35,6 +36,7 @@ public:
     GameMetadata readOneGame();
     SrvCarHitMsg recvCollisionEvent();
     SrvCheckpointHitMsg recvCheckpointHitEvent();
+    ClientDisconnect recvClientDisconnect();
 
 
 private:

@@ -2,6 +2,7 @@
 #include "../common_src/queue.h"
 #include "../common_src/srv_car_hit_msg.h"
 #include "../common_src/srv_checkpoint_hit_msg.h"
+#include "../common_src/client_disconnect.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -57,6 +58,15 @@ void ClientReceiver::run(){
                 std::cout << "[client Receiver] CHECKPOINT_HIT, id:" << msg.getPlayerId() << "\n";
                 receiverQueue.push(base);
                 break;
+            }
+            case (Opcode::CLIENT_DISCONNECT): {
+                ClientDisconnect msg = protocol.recvClientDisconnect();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<ClientDisconnect>(std::move(msg)));
+                std::cout << "[client Receiver] CLIENT_DISCONNECT, id:"
+                << msg.getPlayerId()
+                << "\n";
+                receiverQueue.push(base);
             }
             default: {
                 std::cout << "comando desconocido: " << op << "\n";

@@ -3,14 +3,14 @@
 #include <chrono>
 #include <thread>
 
+#include "../common_src/client_disconnect.h"
+#include "../common_src/constant_rate_loop.h"
+#include "../common_src/init_player.h"
 #include "../common_src/move_Info.h"
+#include "../common_src/new_player.h"
 #include "../common_src/player.h"
 #include "../common_src/player_state.h"
 #include "../common_src/send_player.h"
-#include "../common_src/init_player.h"
-#include "../common_src/new_player.h"
-#include "../common_src/constant_rate_loop.h"
-
 #include "../common_src/srv_car_hit_msg.h"
 #include "../common_src/srv_checkpoint_hit_msg.h"
 
@@ -62,17 +62,18 @@ struct SrvWorldInit {
 };
 
 
-
-
 void GameLoop::checkPlayersStatus() {
     std::vector<ID> ids;
     for (auto& car: cars) {
         ids.push_back(car.first);
     }
     std::vector<ID> toDisconnect = registry->checkClients(ids);
-    for (auto idToDisconnect : toDisconnect) {
+    for (ID idToDisconnect : toDisconnect) {
         disconnectHandler(idToDisconnect);
         std::cout << "auto con id: " << idToDisconnect << " borrado" << "\n";
+        auto msg = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<ClientDisconnect>(idToDisconnect));
+        registry->broadcast(msg);
     }
 
 }
@@ -81,7 +82,7 @@ using Clock = std::chrono::steady_clock;
 void GameLoop::waitingForPlayers() {
     ConstantRateLoop loop(5.0);
     const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 35.0;
+    const double LOBBY_TIMEOUT_SEC = 5.0;
 
     const auto deadline = Clock::now() + std::chrono::duration<double>(LOBBY_TIMEOUT_SEC);
     while (true) {

@@ -13,6 +13,7 @@
 #include "server_types.h"
 #include "../common_src/srv_car_hit_msg.h"
 #include "../common_src/srv_checkpoint_hit_msg.h"
+#include "../common_src/client_disconnect.h"
 
 class ServerProtocol {
 public:
@@ -39,6 +40,8 @@ public:
     int sendCollisionEvent(SrvCarHitMsg& msg);
 
     int sendCheckpointHit(SrvCheckpointHitMsg& msg);
+
+    int sendClientDisconnect(ClientDisconnect& msg);
 
     void append(std::vector<char>& buf, const void* p, std::size_t n);
 

@@ -59,7 +59,8 @@ file(GLOB COMMON_SOURCES "common_src/*.cpp")
 add_library(common STATIC ${COMMON_SOURCES}
         common_src/requestgame.h
         common_src/joingame.h
-        common_src/metadatagames.h)
+        common_src/metadatagames.h
+        common_src/client_disconnect.h)
 target_include_directories(common PUBLIC ${libSDL2pp_SOURCE_DIR}/include)
 target_link_libraries(common PUBLIC SDL2pp::SDL2pp pthread box2d::box2d)
 

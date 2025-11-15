@@ -288,3 +288,19 @@ SrvCheckpointHitMsg ClientProtocol::recvCheckpointHitEvent(){
     }
     return SrvCheckpointHitMsg(player_id, checkpoint_id);
 }
+
+ClientDisconnect ClientProtocol::recvClientDisconnect() {
+    size_t n = 0;
+    ID player_id;
+
+    try {
+        n = peer.recvall(&player_id, sizeof(player_id));
+
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return ClientDisconnect(player_id);
+}
