@@ -1,6 +1,6 @@
 #ifndef TPFINALNEEDFORSPEED_CLIENT_MSG_H
 #define TPFINALNEEDFORSPEED_CLIENT_MSG_H
-#include "opcodes.h"
+#include "../opcodes.h"
 
 class CliMsg {
 public:

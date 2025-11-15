@@ -5,10 +5,10 @@
 
 #include <SDL2pp/SDL2pp.hh>
 
+#include "../common_src/cli_msg/move_Info.h"
 #include "../common_src/constants.h"
-#include "../common_src/move_Info.h"
-#include "../common_src/player_state.h"
 #include "../common_src/queue.h"
+#include "../common_src/srv_msg/player_state.h"
 #include "renderables/car.h"
 #include "renderables/map.h"
 #include "textures/texture_manager.h"

@@ -1,8 +1,9 @@
 #ifndef TPFINALNEEDFORSPEED_CLIENT_DISCONNECT_H
 #define TPFINALNEEDFORSPEED_CLIENT_DISCONNECT_H
 
+#include "../constants.h"
+
 #include "server_msg.h"
-#include "constants.h"
 
 class ClientDisconnect: public SrvMsg {
 public:

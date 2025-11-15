@@ -7,10 +7,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "opcodes.h"
-#include "client_msg.h"
-#include "server_msg.h"
+#include "cli_msg/client_msg.h"
+#include "srv_msg/server_msg.h"
 
+#include "opcodes.h"
 #include "queue.h"
 #include "socket.h"
 #include "thread.h"

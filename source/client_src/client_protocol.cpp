@@ -2,8 +2,8 @@
 
 #include <arpa/inet.h>
 
-#include "../common_src/metadatagames.h"
-#include "../common_src/requestgame.h"
+#include "../common_src/cli_msg/requestgame.h"
+#include "../common_src/srv_msg/metadatagames.h"
 
 
 ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}

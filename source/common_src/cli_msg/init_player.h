@@ -3,8 +3,10 @@
 
 #include <cstdint>
 #include <string>
+
+#include "../constants.h"
+
 #include "client_msg.h"
-#include "constants.h"
 
 class InitPlayer : public CliMsg {
 

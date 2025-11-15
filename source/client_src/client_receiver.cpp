@@ -1,8 +1,9 @@
 #include "client_receiver.h"
+
 #include "../common_src/queue.h"
-#include "../common_src/srv_car_hit_msg.h"
-#include "../common_src/srv_checkpoint_hit_msg.h"
-#include "../common_src/client_disconnect.h"
+#include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/srv_car_hit_msg.h"
+#include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}

@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "../common_src/requestgame.h"
+#include "../common_src/cli_msg/requestgame.h"
 
 ClientSender::ClientSender(ClientProtocol& protocol, Queue<CliMsgPtr>& senderQueue)
     :protocol(protocol), senderQueue(senderQueue){}

@@ -6,7 +6,7 @@
 
 #include <arpa/inet.h>
 
-#include "../common_src/requestgame.h"
+#include "../common_src/cli_msg/requestgame.h"
 
 ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 

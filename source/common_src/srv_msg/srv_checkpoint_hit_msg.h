@@ -1,8 +1,9 @@
 #ifndef TPFINALNEEDFORSPEED_SRV_CAR_PASS_CHECKPOINT_MSG_H
 #define TPFINALNEEDFORSPEED_SRV_CAR_PASS_CHECKPOINT_MSG_H
 
+#include "../constants.h"
+
 #include "server_msg.h"
-#include "constants.h"
 
 class SrvCheckpointHitMsg: public SrvMsg {
 public:

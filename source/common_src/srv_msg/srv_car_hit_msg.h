@@ -1,8 +1,9 @@
 #ifndef TPFINALNEEDFORSPEED_SRVCARHITMSG_H
 #define TPFINALNEEDFORSPEED_SRVCARHITMSG_H
 
+#include "../constants.h"
+
 #include "server_msg.h"
-#include "constants.h"
 
 class SrvCarHitMsg: public SrvMsg {
 public:

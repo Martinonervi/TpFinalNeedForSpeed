@@ -2,7 +2,8 @@
 #define METADATAGAMES_H
 
 #include <vector>
-#include "constants.h"
+
+#include "../constants.h"
 
 class MetadataGames: public SrvMsg {
 public:

@@ -10,12 +10,14 @@
 #include <mutex>
 #include <utility>
 #include <vector>
+
 #include "../common_src/constants.h"
-#include "server_types.h"
 #include "../common_src/queue.h"
+#include "../common_src/srv_msg/metadatagames.h"
+
 #include "server_client_registry.h"
 #include "server_game_context.h"
-#include "../common_src/metadatagames.h"
+#include "server_types.h"
 
 
 class GameManager {

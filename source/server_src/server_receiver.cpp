@@ -1,8 +1,10 @@
 #include "server_receiver.h"
+
 #include <memory>
 #include <utility>
-#include "../common_src/init_player.h"
-#include "../common_src/new_player.h"
+
+#include "../common_src/cli_msg/init_player.h"
+#include "../common_src/srv_msg/new_player.h"
 
 Receiver::Receiver(Socket& peer_socket, ID clientID, GameManager& game_manager_ref, SendQPtr sender_queue):
         peer(peer_socket),

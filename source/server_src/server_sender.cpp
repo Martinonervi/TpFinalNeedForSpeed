@@ -3,9 +3,10 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "../common_src/send_player.h"
-#include "../common_src/srv_car_hit_msg.h"
-#include "../common_src/client_disconnect.h"
+
+#include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/send_player.h"
+#include "../common_src/srv_msg/srv_car_hit_msg.h"
 
 Sender::Sender(Socket& peer_socket, SendQPtr queue):
         peer(peer_socket), msg_queue(std::move(queue)), protocol(peer) {}

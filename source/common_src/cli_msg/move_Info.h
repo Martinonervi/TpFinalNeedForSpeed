@@ -2,6 +2,7 @@
 #define TPFINALNEEDFORSPEED_MOVE_INFO_H
 
 #include <cstdint>
+
 #include "client_msg.h"
 
 

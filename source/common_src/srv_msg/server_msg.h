@@ -1,7 +1,7 @@
 #ifndef TPFINALNEEDFORSPEED_SERVER_MSG_H
 #define TPFINALNEEDFORSPEED_SERVER_MSG_H
 
-#include "opcodes.h"
+#include "../opcodes.h"
 
 class SrvMsg {
 public:

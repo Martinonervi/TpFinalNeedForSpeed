@@ -3,16 +3,16 @@
 #include <chrono>
 #include <thread>
 
-#include "../../common_src/client_disconnect.h"
+#include "../../common_src/cli_msg/init_player.h"
+#include "../../common_src/cli_msg/move_Info.h"
 #include "../../common_src/constant_rate_loop.h"
-#include "../../common_src/init_player.h"
-#include "../../common_src/move_Info.h"
-#include "../../common_src/new_player.h"
-#include "../../common_src/player.h"
-#include "../../common_src/player_state.h"
-#include "../../common_src/send_player.h"
-#include "../../common_src/srv_car_hit_msg.h"
-#include "../../common_src/srv_checkpoint_hit_msg.h"
+#include "../../common_src/srv_msg/client_disconnect.h"
+#include "../../common_src/srv_msg/new_player.h"
+#include "../../common_src/srv_msg/player.h"
+#include "../../common_src/srv_msg/player_state.h"
+#include "../../common_src/srv_msg/send_player.h"
+#include "../../common_src/srv_msg/srv_car_hit_msg.h"
+#include "../../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)

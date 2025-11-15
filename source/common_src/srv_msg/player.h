@@ -1,9 +1,11 @@
 #ifndef TPFINALNEEDFORSPEED_PLAYER_H
 #define TPFINALNEEDFORSPEED_PLAYER_H
 
-#include "server_msg.h"
 #include <cstdint>
-#include "constants.h"
+
+#include "../constants.h"
+
+#include "server_msg.h"
 
 class Player: public SrvMsg {
 public:

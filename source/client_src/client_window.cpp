@@ -6,8 +6,8 @@
 #include <SDL2pp/Window.hh>
 #include <unistd.h>
 
-#include "../common_src/new_player.h"
-#include "../common_src/send_player.h"
+#include "../common_src/srv_msg/new_player.h"
+#include "../common_src/srv_msg/send_player.h"
 #include "renderables/hud.h"
 
 ClientWindow::ClientWindow(const int width, const int height, const std::string& title,

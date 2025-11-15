@@ -1,17 +1,18 @@
 #pragma once
 #include <cstring>
 
-#include "../common_src/init_player.h"
-#include "../common_src/joingame.h"
-#include "../common_src/move_Info.h"
-#include "../common_src/new_player.h"
-#include "../common_src/player_state.h"
-#include "../common_src/requestgame.h"
-#include "../common_src/send_player.h"
-#include "../common_src/metadatagames.h"
-#include "../common_src/srv_car_hit_msg.h"
-#include "../common_src/srv_checkpoint_hit_msg.h"
-#include "../common_src/client_disconnect.h"
+#include "../common_src/cli_msg/init_player.h"
+#include "../common_src/cli_msg/move_Info.h"
+#include "../common_src/cli_msg/requestgame.h"
+#include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/joingame.h"
+#include "../common_src/srv_msg/metadatagames.h"
+#include "../common_src/srv_msg/new_player.h"
+#include "../common_src/srv_msg/player_state.h"
+#include "../common_src/srv_msg/send_player.h"
+#include "../common_src/srv_msg/srv_car_hit_msg.h"
+#include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
+
 #include "client_types.h"
 
 

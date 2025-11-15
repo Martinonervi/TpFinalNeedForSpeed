@@ -1,8 +1,9 @@
 #pragma once
 #include <box2d/box2d.h>
+
+#include "../../common_src/cli_msg/move_Info.h"
 #include "../../common_src/constants.h"
-#include "../../common_src/move_Info.h"
-#include "../../common_src/player_state.h"
+#include "../../common_src/srv_msg/player_state.h"
 
 #include "entity.h"
 
