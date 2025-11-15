@@ -7,10 +7,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "opcodes.h"
-#include "client_msg.h"
-#include "server_msg.h"
+#include "cli_msg/client_msg.h"
+#include "srv_msg/server_msg.h"
 
+#include "opcodes.h"
 #include "queue.h"
 #include "socket.h"
 #include "thread.h"
@@ -34,13 +34,17 @@
 #define LIBERTY_CITY_PATH  "../assets/cities/liberty_city.png"
 #define VICE_CITY_PATH  "../assets/cities/vice_city.png"
 #define EXPLOSION_PATH "../assets/effects/explosion.png"
+#define SPEEDOMETER_PATH "../assets/cars/speedometer.png"
+#define CHECKPOINT_PATH "../assets/extras/checkpoint.png"
+#define BARS_PATH "../assets/extras/bars.png"
 
-using Cars_W_Nitro = std::uint16_t;
 
 using ID = std::uint32_t;
 
 using CliMsgPtr = std::shared_ptr<CliMsg>;
 using SrvMsgPtr = std::shared_ptr<SrvMsg>;
+
+constexpr float PIXEL_TO_METER = 1.0f / 10.0f;   // 10 px = 1 m
 
 //no veo ganancia en que Cmd sea una clase, cumple su funcion perfecta como struct
 struct Cmd {

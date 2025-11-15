@@ -21,6 +21,11 @@ int ClientsRegistry::size() const { //borrar método, no sirve creo
     return static_cast<int>(clients.size());
 }
 
+bool ClientsRegistry::contains(ID id) const {
+    std::lock_guard<std::mutex> lk(mx);
+    return clients.find(id) != clients.end();
+}
+
 void ClientsRegistry::broadcast(const SrvMsgPtr& msg) {
     std::vector<SendQPtr> qs;
     {
@@ -58,4 +63,18 @@ void ClientsRegistry::sendTo(ID client_id, const SrvMsgPtr& msg) {
         // cliente cerrándose ,, borrarmos al cliente?
         // EraseQueue(client_id);
     }
+}
+
+std::vector<ID> ClientsRegistry::checkClients(std::vector<ID>& ids) {
+    std::vector<ID> disconnected_ids;
+    disconnected_ids.reserve(ids.size());
+    {
+        std::lock_guard<std::mutex> lk(mx);
+        for (auto& id: ids) {
+            if (clients.find(id) == clients.end()) {
+                disconnected_ids.push_back(id);
+            }
+        }
+    }
+    return disconnected_ids;
 }

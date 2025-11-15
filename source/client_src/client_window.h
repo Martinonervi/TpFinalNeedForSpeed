@@ -4,16 +4,22 @@
 #include <string>
 
 #include <SDL2pp/SDL2pp.hh>
+#include <SDL2pp/Renderer.hh>
+#include <SDL2pp/SDL.hh>
+#include <SDL2pp/Window.hh>
+#include <unistd.h>
+#include "renderables/hud.h"
 
+#include "../common_src/cli_msg/move_Info.h"
 #include "../common_src/constants.h"
-#include "../common_src/move_Info.h"
-#include "../common_src/player_state.h"
 #include "../common_src/queue.h"
+#include "../common_src/srv_msg/player_state.h"
 #include "renderables/car.h"
 #include "renderables/map.h"
 #include "textures/texture_manager.h"
 
 #include "client_camera.h"
+#include "event_manager.h"
 
 class ClientWindow {
 public:
@@ -30,26 +36,15 @@ private:
     SDL2pp::SDL sdl;
     SDL2pp::Window window;
     SDL2pp::Renderer renderer;
-    std::unique_ptr<TextureManager> tm;
+    TextureManager tm;
     Queue<SrvMsgPtr>& receiverQueue;
-    Queue<CliMsgPtr>& senderQueue;
     std::unordered_map<ID, std::unique_ptr<Car>> cars;
     Camera camera;
     ID myCarId;
-
-    const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
-        { SDLK_w, MoveMsg( 1, 0, 0, 0 ) },
-        { SDLK_s, MoveMsg( 2, 0, 0, 0 ) },
-        { SDLK_a, MoveMsg( 0, 0, -1, 0 ) },
-        { SDLK_d, MoveMsg( 0, 0,  1, 0 ) },
-        { SDLK_n, MoveMsg( 0, 0,  0, 1 ) },
-        { SDLK_SPACE, MoveMsg( 0, 1, 0, 0 ) },
-    };
-
+    EventManager eventManager;
     bool running;
     bool showMap = true;
-    void handleEvents();
-    void handleServerMessage(const SrvMsgPtr& msg);
+
 };
 
 #endif // CLIENTWINDOW_H

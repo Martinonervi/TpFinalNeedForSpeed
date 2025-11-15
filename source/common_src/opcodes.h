@@ -14,7 +14,8 @@ enum Opcode : Op {
     REQUEST_GAMES = 0X05,
     COLLISION = 0X06,
     CHECKPOINT_DEF = 0X07,
-    CHECKPOINT_HIT = 0X08
+    CHECKPOINT_HIT = 0X08,
+    CLIENT_DISCONNECT = 0X09,
 };
 
 enum err_code : Op {

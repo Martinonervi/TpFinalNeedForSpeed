@@ -1,8 +1,8 @@
 #include "car_texture.h"
 #include <cmath>
 
-CarTexture::CarTexture(SDL2pp::Texture& carsTexture)
-    : carsTexture(carsTexture) {
+CarTexture::CarTexture(SDL2pp::Texture& carsTexture, SDL2pp::Texture& speedometerTexture)
+    : carsTexture(carsTexture), speedometerTexture(speedometerTexture) {
     carInfo[CAR_GREEN] = {0, SMALL_CAR, SMALL_CAR};
     carInfo[CAR_RED] = {64, MEDIUM_CAR, MEDIUM_CAR};
     carInfo[CAR_PORSCHE] = {144, MEDIUM_CAR, MEDIUM_CAR};
@@ -35,4 +35,16 @@ SDL2pp::Rect CarTexture::getFrame(const CarType type, const float angle) const {
 
 SDL2pp::Texture& CarTexture::getTexture() const {
     return carsTexture;
+}
+
+SDL2pp::Texture& CarTexture::getSpeedometer() const {
+    return speedometerTexture;
+}
+
+SDL2pp::Rect CarTexture::getDialFrame() const {
+    const int WIDTH = 87;
+    const int HEIGHT = 87;
+    const int X = 10;
+    const int Y = 29;
+    return SDL2pp::Rect(X, Y, WIDTH, HEIGHT);
 }

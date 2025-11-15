@@ -3,7 +3,10 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "../common_src/send_player.h"
+
+#include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/send_player.h"
+#include "../common_src/srv_msg/srv_car_hit_msg.h"
 
 Sender::Sender(Socket& peer_socket, SendQPtr queue):
         peer(peer_socket), msg_queue(std::move(queue)), protocol(peer) {}
@@ -37,6 +40,18 @@ void Sender::run() {
                 case Opcode::NEW_PLAYER:
                 {
                     n = protocol.sendPlayerInit(dynamic_cast<Player&>(*msg));
+                    break;
+                }
+                case Opcode::COLLISION: {
+                    n = protocol.sendCollisionEvent(dynamic_cast<SrvCarHitMsg&>(*msg));
+                    break;
+                }
+                case Opcode::CHECKPOINT_HIT: {
+                    n = protocol.sendCheckpointHit(dynamic_cast<SrvCheckpointHitMsg&>(*msg));
+                    break;
+                }
+                case Opcode::CLIENT_DISCONNECT: {
+                    n = protocol.sendClientDisconnect(dynamic_cast<ClientDisconnect&>(*msg));
                     break;
                 }
                 default: {

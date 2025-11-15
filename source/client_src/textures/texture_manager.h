@@ -6,6 +6,7 @@
 #include "car_texture.h"
 #include "city_texture.h"
 #include "effects_texture.h"
+#include "hud_texture.h"
 #include "people_texture.h"
 
 class TextureManager {
@@ -16,19 +17,26 @@ public:
     PeopleTexture& getPeople();
     CityTexture& getCities();
     EffectsTexture& getEffects();
+    HudTexture& getHud();
+    SDL2pp::Texture& getTexture();
+    SDL2pp::Rect getCheckpointFrame(int frame) const;
 
 private:
     std::optional<SDL2pp::Texture> carsTexture;
+    std::optional<SDL2pp::Texture> speedometerTexture;
     std::optional<SDL2pp::Texture> peopleTexture;
     std::optional<SDL2pp::Texture> cityLibertyTexture;
     std::optional<SDL2pp::Texture> citySanAndreasTexture;
     std::optional<SDL2pp::Texture> cityViceCityTexture;
     std::optional<SDL2pp::Texture> explosionTextures;
+    std::optional<SDL2pp::Texture> barsTexture;
+    std::optional<SDL2pp::Texture> flagTexture;
 
     std::optional<CarTexture> carManager;
     std::optional<PeopleTexture> peopleManager;
     std::optional<CityTexture> cityManager;
     std::optional<EffectsTexture> effectsManager;
+    std::optional<HudTexture> hudManager;
 
     static SDL2pp::Texture loadWithColorKey(
         SDL2pp::Renderer& renderer,

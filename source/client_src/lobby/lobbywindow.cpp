@@ -6,8 +6,10 @@
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
 
-#include "../../common_src/requestgame.h"
-#include "../../common_src/joingame.h"
+#include "../../common_src/cli_msg/requestgame.h"
+#include "../../common_src/srv_msg/joingame.h"
+
+#include "ui_lobbywindow.h"
 
 LobbyWindow::LobbyWindow(ClientProtocol& protocol, QWidget *parent)
     : QMainWindow(parent),

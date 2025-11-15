@@ -1,7 +1,8 @@
+#include "game_logic/server_gameloop.h"
+
 #include "server_acceptor.h"
-#include "server_gameloop.h"
-#include "server_types.h"
 #include "server_game_manager.h"
+#include "server_types.h"
 
 
 class Server {

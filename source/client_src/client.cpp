@@ -1,11 +1,12 @@
 #include "client.h"
 
-#include "../common_src/joingame.h"
-#include "../common_src/requestgame.h"
+#include <QApplication>
+
+#include "../common_src/cli_msg/requestgame.h"
+#include "../common_src/srv_msg/joingame.h"
+#include "lobby/lobbywindow.h"
 
 #include "client_window.h"
-#include <QApplication>
-#include "lobby/lobbywindow.h"
 
 Client::Client(const char* host, const char* service)
     : peer(host, service), protocol(peer),

@@ -25,10 +25,13 @@ public:
     void EraseQueue(ID id);
     // tamaño actual
     int size() const;
+    bool contains(ID id) const;
 
     // broadcast
     void broadcast(const SrvMsgPtr& msg);
     void sendTo(ID client_id, const SrvMsgPtr& msg);
+
+    std::vector<ID> checkClients(std::vector<ID>& ids);
 
 private:
     mutable std::mutex mx;

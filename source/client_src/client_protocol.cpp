@@ -2,8 +2,8 @@
 
 #include <arpa/inet.h>
 
-#include "../common_src/metadatagames.h"
-#include "../common_src/requestgame.h"
+#include "../common_src/cli_msg/requestgame.h"
+#include "../common_src/srv_msg/metadatagames.h"
 
 
 ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}
@@ -251,4 +251,56 @@ GameMetadata ClientProtocol::readOneGame() {
     out.players = ntohl(players_BE);
     out.started = started;
     return out;
+}
+
+SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
+    size_t n = 0;
+    ID player_id;
+    float health;
+
+    try {
+        n = peer.recvall(&player_id, sizeof(player_id));
+        n += peer.recvall(&health, sizeof(health));
+
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return SrvCarHitMsg(player_id, health);
+}
+
+SrvCheckpointHitMsg ClientProtocol::recvCheckpointHitEvent(){
+    size_t n = 0;
+    ID player_id;
+    ID checkpoint_id;
+
+    try {
+        n = peer.recvall(&player_id, sizeof(player_id));
+        n += peer.recvall(&checkpoint_id, sizeof(checkpoint_id));
+
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return SrvCheckpointHitMsg(player_id, checkpoint_id);
+}
+
+ClientDisconnect ClientProtocol::recvClientDisconnect() {
+    size_t n = 0;
+    ID player_id;
+
+    try {
+        n = peer.recvall(&player_id, sizeof(player_id));
+
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return ClientDisconnect(player_id);
 }
