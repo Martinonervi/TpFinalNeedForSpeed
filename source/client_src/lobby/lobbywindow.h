@@ -34,4 +34,7 @@ private:
     ClientProtocol& protocol;
 
     void populateGames(const std::vector<GameMetadata>& games);
+    void applyLobbySelectorStyles();
+    void applyBackgroundSkin();
+    void applyBackgroundLobbySelector();
 };
