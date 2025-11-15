@@ -65,18 +65,18 @@ struct CarTuning {
     float INTENT_POW       = 1.35f;
 
     // Giro
-    float LOW_TURN         = 2.6f;   // rad/s (baja vel/intención alta)
-    float HIGH_TURN        = 1.0f;   // rad/s (alta vel/intención alta)
-    float SPEED_FADE_K     = 0.020f; // 1/(1+k|v_long|)
+    float LOW_TURN         = 2.6f;
+    float HIGH_TURN        = 1.0f;
+    float SPEED_FADE_K     = 0.020f;
     float TURN_RATE_MAX    = 3.2f;
-    float MIN_TURN_BASE    = 0.25f;  // rad/s (giro mínimo en centro)
+    float MIN_TURN_BASE    = 0.25f;
 
     // Alinear vel→heading (siempre acompaña la imagen)
     float ALIGN_BASE       = 0.50f;
     float ALIGN_STEER_GAIN = 0.35f;
     float ALIGN_SPEED_K    = 0.010f;
     float ALIGN_MAX        = 0.95f;
-    float ALIGN_MIN_TAP    = 0.10f;  // micro-alineación aun en tap
+    float ALIGN_MIN_TAP    = 0.10f;
 
     // Parada / anti-creep
     float STOP_EPS_L       = 0.05f;
@@ -88,27 +88,26 @@ static CarTuning T;
 
 struct SteeringState {
     float steerEma = 0.f;
-    float intent   = 0.f;   // 0..1
-    int   holdDir  = 0;     // -1/0/+1
-    float holdTime = 0.f;   // s mismo signo
+    float intent   = 0.f;
+    int   holdDir  = 0;
+    float holdTime = 0.f;
 };
 static SteeringState S;
 
-// Implementación principal
+//tengo que ver esto con detalle
 void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     if (dt <= 0.f) dt = 1.f/60.f;
 
-    // Inputs normalizados
-    const uint8_t acc = in.getAccelerate();                      // 0/1/2
+
+    const uint8_t acc = in.getAccelerate();
     const float throttle = (acc==1)? 1.f : (acc==2)? -1.f : 0.f;
-    const float brake    = (in.getBrake()? 1.f : 0.f);           // 0/1
+    const float brake    = (in.getBrake()? 1.f : 0.f);
     float steerRaw       = clampf(static_cast<float>(in.getSteer()), -1.f, 1.f);
 
     if (std::fabs(steerRaw) < T.STEER_DEADZONE) steerRaw = 0.f;
     S.steerEma = lerp(S.steerEma, steerRaw, T.STEER_EMA_ALPHA);
     const float steer = clampf(S.steerEma, -1.f, 1.f);
 
-    // Estado físico
     const b2Rot  rot   = b2Body_GetRotation(body);
     const b2Vec2 fwd   = b2RotateVector(rot, {0.f, 1.f});
     const b2Vec2 right = b2RotateVector(rot, {1.f, 0.f});
@@ -119,7 +118,6 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     const float speed  = std::sqrt(vel.x*vel.x + vel.y*vel.y);
     const float vmax   = (v_long >= 0.f) ? T.VMAX_FWD : T.VMAX_REV;
 
-    // Longitudinal: motor + freno + drag
     {
         b2Vec2 F{0.f, 0.f};
         const float engine_cap = 1.f - clampf(std::fabs(v_long)/vmax, 0.f, 1.f);
@@ -135,11 +133,10 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
         b2Body_ApplyForceToCenter(body, F, true);
     }
 
-    // Alta/baja velocidad y tap-grace
+
     const bool  highSpeed = std::fabs(v_long) >= T.HIGH_SPEED_TH;
     const float tapGrace  = highSpeed ? T.TAP_GRACE_HIGH : T.TAP_GRACE_LOW;
 
-    // Tap/Hold acumulativo
     const int dir = sgnz(steer);
     if (dir == 0) {
         S.holdDir = 0;
@@ -149,7 +146,7 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
         if (dir != S.holdDir) {
             S.holdDir = dir;
             S.holdTime = 0.f;
-            S.intent *= 0.5f; // por qué: evita heredar toda la intención al lado opuesto
+            S.intent *= 0.5f;
         } else {
             S.holdTime += dt;
         }
@@ -159,34 +156,29 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
         }
     }
 
-    // Centro: 0 cerca del centro → no rota; 1 lejos
     float centerX = clampf(std::fabs(steer) / std::max(1e-3f, T.CENTER_EPS), 0.f, 1.f);
     centerX = std::pow(centerX, T.CENTER_EXP);
     const float centerScale = smooth01(centerX);
 
-    // Tap scale (no rotar durante grace)
     const float tapScale = (S.holdTime >= tapGrace) ? 1.f : 0.f;
 
-    // Autoridad de giro base según velocidad/intención (más en baja, menos en alta)
     float baseTurnBySpeed = lerp(T.HIGH_TURN, T.LOW_TURN,
                                  clampf((T.HIGH_SPEED_TH - std::fabs(v_long))/T.HIGH_SPEED_TH, 0.f, 1.f));
     float baseTurnByIntent = lerp(T.LOW_TURN, T.HIGH_TURN, S.intent);
     float baseTurn = std::max(baseTurnBySpeed, baseTurnByIntent);
 
-    // Menos giro en alta (suaviza)
     const float speedFade = 1.f / (1.f + T.SPEED_FADE_K * std::fabs(v_long));
 
-    // Tasa de giro final
     float turnRate = baseTurn * speedFade * centerScale * tapScale;
     turnRate = clampf(turnRate, 0.f, T.TURN_RATE_MAX);
 
-    // Giro mínimo suave (evita meseta en el centro)
+
     if (std::fabs(steer) > 0.f) {
         const float minTurn = T.MIN_TURN_BASE * (1.f / (1.f + 0.02f * std::fabs(v_long)));
         turnRate = std::max(turnRate, minTurn);
     }
 
-    // Rotar por tasa
+
     const float angle    = std::atan2(rot.s, rot.c);
     const float dtheta   = steer * turnRate * dt;
     const float newAngle = angle + dtheta;
@@ -195,7 +187,6 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     const b2Rot  newRot  = b2MakeRot(newAngle);
     b2Body_SetTransform(body, pos, newRot);
 
-    // Alinear velocidad al heading (conservar módulo)
     const b2Vec2 newFwd    = b2RotateVector(newRot, {0.f, 1.f});
     const b2Vec2 targetVel = { newFwd.x * speed, newFwd.y * speed };
 
@@ -203,7 +194,6 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     alignK *= 1.f / (1.f + T.ALIGN_SPEED_K * std::fabs(v_long));
     alignK *= tapScale; // por qué: en tap puro evitá reorientar en exceso
 
-    // micro-alineación siempre (evita quedarse “clavado” en tap)
     const float alignMin = T.ALIGN_MIN_TAP / (1.f + T.ALIGN_SPEED_K * std::fabs(v_long));
     alignK = std::max(alignK, alignMin);
     alignK = clampf(alignK, 0.f, T.ALIGN_MAX);
@@ -212,10 +202,8 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
                             lerp(vel.y, targetVel.y, alignK) };
     b2Body_SetLinearVelocity(body, newVel);
 
-    // Sin yaw residual (evita drift angular)
     b2Body_SetAngularVelocity(body, 0.f);
 
-    // Cap suave VMAX
     if (std::fabs(v_long) > vmax * (1.f + T.VMAX_OVERS)) {
         const float excess = std::fabs(v_long) - vmax * (1.f + T.VMAX_OVERS);
         const float s      = (v_long >= 0.f) ? 1.f : -1.f;
@@ -223,7 +211,6 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
         b2Body_ApplyLinearImpulseToCenter(body, jcap, true);
     }
 
-    // Parada suave + anti-creep
     if (std::fabs(v_long) < T.STOP_EPS_L && brake > 0.9f && throttle == 0.f) {
         const b2Vec2 v2 = b2Body_GetLinearVelocity(body);
         if (std::fabs(v2.x) < T.STOP_EPS_V && std::fabs(v2.y) < T.STOP_EPS_V) {

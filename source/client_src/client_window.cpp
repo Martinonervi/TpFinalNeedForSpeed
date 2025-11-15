@@ -55,6 +55,8 @@ void ClientWindow::run() {
         if (showMap) hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId); // Por ahora asi
         renderer.Present();
     }
+    TTF_Quit();
+    SDL_Quit();
 }
 
 
