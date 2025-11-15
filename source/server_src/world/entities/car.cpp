@@ -37,13 +37,13 @@ static inline int sgnz(float x){ return (x>0.f) - (x<0.f); }
 
 struct CarTuning {
     // Longitudinal
-    float ENGINE_FWD   = 1100.f;
+    float ENGINE_FWD   = 1500.f;
     float ENGINE_REV   = 1200.f;
     float BRAKE_FORCE  = 3600.f;
     float DRAG_K       = 10.0f;
 
     // Vel máx
-    float VMAX_FWD     = 16.f;
+    float VMAX_FWD     = 26.f;
     float VMAX_REV     = 9.f;
     float VMAX_OVERS   = 0.01f;
     float VCAP_IMP     = 0.22f;
