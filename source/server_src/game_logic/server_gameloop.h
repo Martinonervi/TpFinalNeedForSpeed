@@ -9,9 +9,9 @@
 
 #include "../server_client_registry.h"
 #include "../server_types.h"
-#include "../world/building.h"
-#include "../world/car.h"
-#include "../world/checkpoint.h"
+#include "../world/entities/building.h"
+#include "../world/entities/car.h"
+#include "../world/entities/checkpoint.h"
 #include "../world/map_parser.h"
 #include "../world/world_manager.h"
 

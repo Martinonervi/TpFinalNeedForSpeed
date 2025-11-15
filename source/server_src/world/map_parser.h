@@ -3,7 +3,8 @@
 
 #include <string>
 #include <vector>
-#include "checkpoint.h"
+
+#include "entities/checkpoint.h"
 
 struct BuildingConfig {
     float x;

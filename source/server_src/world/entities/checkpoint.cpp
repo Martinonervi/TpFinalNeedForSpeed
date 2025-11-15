@@ -1,5 +1,6 @@
 #include "checkpoint.h"
-#include "world_manager.h"
+
+#include "../world_manager.h"
 
 Checkpoint::Checkpoint(WorldManager& world, ID checkpointId, CheckpointKind kind,
                        float x1, float y1, float x2, float y2)

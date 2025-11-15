@@ -1,5 +1,6 @@
 #include "building.h"
-#include "world_manager.h"
+
+#include "../world_manager.h"
 
 Building::Building(WorldManager& world,
             float x, float y,

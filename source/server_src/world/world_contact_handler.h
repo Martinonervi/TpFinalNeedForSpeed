@@ -2,8 +2,8 @@
 #define TPFINALNEEDFORSPEED_WORLD_CONTACT_LISTENER_H
 #include "../../common_src/constants.h"
 #include "box2d/box2d.h"
-#include "car.h"
-#include "checkpoint.h"
+#include "entities/car.h"
+#include "entities/checkpoint.h"
 
 enum class WorldEventType {
     CarHitCheckpoint,
