@@ -165,7 +165,8 @@ void Hud::drawHealthFill(SDL2pp::Renderer& renderer, const float health, SDL2pp:
         healthDst.h - startFillY
     };
 
-    renderer.SetDrawColor(255, 0, 0, 255);
+    renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
+    renderer.SetDrawColor(255, 0, 77, 125);
     renderer.FillRect(dst);
 }
 
@@ -193,7 +194,8 @@ void Hud::drawEnergyFill(SDL2pp::Renderer& renderer, float percent,
         };
         rowY += rowH;
         rowW -= scale;
-        renderer.SetDrawColor(255, 255, 0, 255);
+        renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
+        renderer.SetDrawColor(255, 255, 0, 125);
         renderer.FillRect(dst);
     }
 

@@ -63,15 +63,17 @@ enum CarType {
     CAR_COUNT
 };
 
+enum CarState {
+    ALIVE,
+    LOW_HEALTH,
+    EXPLODING,
+    DESTROYED
+};
+
 enum MapType {
     MAP_LIBERTY,
     MAP_SAN_ANDREAS,
     MAP_VICE
-};
-
-enum EffectType {
-    EXPLOSION,
-    LOW_HEALTH
 };
 
 struct CarInfo {
