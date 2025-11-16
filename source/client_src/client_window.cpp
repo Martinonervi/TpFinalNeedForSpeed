@@ -11,11 +11,11 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         camera(width, height, 4640.0, 4672.0),  // Agregar consts
         myCarId(-1),
         tm(renderer),
-        eventManager(myCarId, cars, renderer, senderQueue, tm, running, showMap) {}
+        eventManager(myCarId, cars, renderer, senderQueue, tm, running, showMap, quit) {}
 
 
 // Hay que manejar FPS, hay que tener en cuenta los autos que no estan en camara
-void ClientWindow::run() {
+bool ClientWindow::run() {
     Hud hud(renderer, tm, MAP_LIBERTY);
     Map map(renderer, tm, MAP_LIBERTY);
     while (running) {
@@ -31,10 +31,35 @@ void ClientWindow::run() {
         map.draw(camera);
 
         for (auto& [id, car]: cars) {
+            const auto carState = car->getState();
             if (id == myCarId) {
                 camera.follow(car->getX(), car->getY());
             }
-            car->draw(camera);
+            switch (carState) {
+                case ALIVE: {
+                    car->draw(camera);
+                    break;
+                }
+                case LOW_HEALTH: {
+                    // DIBUJAMOS ROJO EN LA PANTALLA
+                    break;
+                }
+                case DESTROYED: {
+                    /*
+                    cars.erase(id);
+                    if (id == myCarId) {
+                        myCarId = -1;
+                    } */
+                    break;
+                }
+                case EXPLODING: {
+                    car->drawExplosion(camera);
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
         }
         if (showMap)
             hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId);  // Por ahora asi
@@ -42,4 +67,6 @@ void ClientWindow::run() {
     }
     TTF_Quit();
     SDL_Quit();
+
+    return quit;
 }

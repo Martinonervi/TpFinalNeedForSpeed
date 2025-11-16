@@ -30,6 +30,9 @@ private:
                         int scale) const;
     void drawEnergyFill(SDL2pp::Renderer& renderer, float percent, SDL2pp::Rect energyDst,
                         int scale) const;
+    void drawGameTime(int totalSeconds) const;
+    void drawRaceNumber(int current, int total) const;
+    void drawText(const std::string& text, int x, int y, SDL_Color color) const;
 };
 
 

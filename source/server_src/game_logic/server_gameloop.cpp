@@ -56,7 +56,6 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
 }
 
 
-
 using Clock = std::chrono::steady_clock;
 void GameLoop::waitingForPlayers() {
     ConstantRateLoop loop(5.0);
@@ -112,6 +111,7 @@ void GameLoop::checkPlayersStatus() {
         registry->broadcast(msg);
     }
 }
+
 
 bool GameLoop::isRaceStarted() const {
     return this->raceStarted;
@@ -253,7 +253,7 @@ void GameLoop::broadcastCarSnapshots() {
                 dirY = vy / len;
             }
         } else {
-            next = 0; // o lo que quieras para "no hay más checkpoint"
+            //termino la carrera
         }
 
         ps.setCheckpointInfo(next, dirX, dirY);

@@ -31,8 +31,6 @@ void Client::lobbyState() {
         recvGame();
     }
     */
-
-
 }
 
 void Client::recvGame() {

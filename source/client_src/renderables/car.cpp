@@ -7,7 +7,7 @@ Car::Car(
     const CarType carType,
     const float angle
     )
-    : Entity(renderer, tm, startX, startY), angle(angle), carType(carType)
+    : Entity(renderer, tm, startX, startY), angle(angle), carType(carType), carState(ALIVE)
 {}
 
 void Car::update(const float newX, const float newY, const float newAngle) {
@@ -24,23 +24,6 @@ void Car::draw(const Camera& camera) {
     SDL2pp::Rect dstRect(drawX, drawY, srcRect.w/1.25, srcRect.h/1.25);
 
     renderer.Copy(texture, srcRect,dstRect);
-
-    if (explodedFrame > 0) {
-        SDL2pp::Texture& exploTexture(tm.getEffects().getExplosion());
-        SDL2pp::Rect srcExploRect(tm.getEffects().getFrame(explodedFrame));
-
-        const int explosionWidth = srcExploRect.w * 3;
-        const int explosionHeight = srcExploRect.h * 3;
-
-        const int exploX = static_cast<int>(x - camera.getX() - explosionWidth / 2);
-        const int exploY = static_cast<int>(y - camera.getY() - explosionHeight / 2);
-
-        SDL2pp::Rect dstExploRect(exploX, exploY, explosionWidth, explosionHeight);
-
-        renderer.Copy(exploTexture, srcExploRect, dstExploRect);
-
-        explodedFrame = explodedFrame == 8 ? 0 : explodedFrame + 1;
-    }
 }
 
 void Car::setAngle(const float newAngle) {
@@ -53,12 +36,37 @@ void Car::setCarType(const CarType newCarType) {
 }
 
 void Car::setHealth(const float newHealth) {
+    if (newHealth <= 0 && carState == ALIVE) {
+        explosionFrame = 1;
+        carState = EXPLODING;
+    }
     health = newHealth;
 }
 
-void Car::explode() {
-    explodedFrame = 1;
+void Car::drawExplosion(const Camera& camera) {
+    SDL2pp::Texture& tex = tm.getEffects().getExplosion();
+
+    SDL2pp::Rect src(tm.getEffects().getFrame(explosionFrame));
+
+    const int size = src.w * 3;
+    const int drawX = int(x - camera.getX() - size / 2);
+    const int drawY = int(y - camera.getY() - size / 2);
+
+    SDL2pp::Rect dst(drawX, drawY, size, size);
+    renderer.Copy(tex, src, dst);
+
+    frameTicks++;
+    if (frameTicks >= TICKS_PER_FRAME) {
+        frameTicks = 0;
+        explosionFrame++;
+    }
+
+    if (explosionFrame >= 7) {
+        carState = DESTROYED;
+    }
 }
+
+CarState Car::getState() const { return carState; }
 
 float Car::getAngle() const { return angle; }
 
