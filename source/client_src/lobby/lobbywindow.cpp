@@ -19,6 +19,16 @@ LobbyWindow::LobbyWindow(ClientProtocol& protocol, QWidget *parent)
 
     applyBackgroundSkin();
     applyLobbySelectorStyles();
+    applyCarSelectorStyles();
+    initCarSelector({
+        ":/cars/car0.png",
+        ":/cars/car1.png",
+        ":/cars/car2.png",
+        ":/cars/car3.png",
+        ":/cars/car4.png",
+        ":/cars/car5.png",
+        ":/cars/car6.png",
+    });
 
     ui->stackedPages->setCurrentWidget(ui->MainMenu);
 
@@ -135,7 +145,7 @@ void LobbyWindow::on_joinButton_clicked() {
     if (info.couldJoin()) {
         QMessageBox::information(this, "Unirse a partida",
                                  "Te uniste correctamente a la partida.");
-        close();
+        ui->stackedPages->setCurrentWidget(ui->CarSelector);
     } else {
         err_code code = info.getExitStatus();
         if (code == FULL_GAME) {
@@ -169,7 +179,7 @@ void LobbyWindow::on_createButton_clicked() {
     if (info.couldJoin()) {
         QMessageBox::information(this, "Crear partida",
                                  "Partida creada y unida correctamente.");
-        close();
+        ui->stackedPages->setCurrentWidget(ui->CarSelector);
     } else {
         err_code code = info.getExitStatus();
         if (code == FULL_GAME) {
@@ -287,7 +297,6 @@ void LobbyWindow::applyBackgroundSkin() {
     ui->LobbySelector->setObjectName("LobbySelector");
 
     const QString css = R"CSS(
-        /* Fondo por defecto del QMainWindow */
         QMainWindow#LobbyWindow {
             background-image: url(:/images/menu_bg_clean.png);
             background-repeat: no-repeat;
@@ -339,4 +348,144 @@ void LobbyWindow::applyBackgroundLobbySelector() {
     )CSS";
 
     this->setStyleSheet(css);
+}
+
+
+// ------------ CAR SELECTOR ------------
+
+void LobbyWindow::applyCarSelectorStyles() {
+    // Página transparente (para ver el background global)
+    ui->CarSelector->setStyleSheet("background: transparent;");
+
+    // Panel estilo “card” con borde y sombra suave
+    ui->carPanel->setStyleSheet(
+        "QFrame#carPanel {"
+        "  background: rgba(8,12,20,220);"
+        "  border: 2px solid #0f2236;"
+        "  border-radius: 14px;"
+        "}"
+        "QLabel#carTitleLabel {"
+        "  color: #f3f0d0;"
+        "  font-size: 28px;"
+        "  font-weight: 900;"
+        "  letter-spacing: 1px;"
+        "}"
+        "QLabel#carInfoLabel {"
+        "  color: #f3f0d0;"
+        "  font-size: 20px;"
+        "  font-weight: 700;"
+        "  padding: 6px 0 10px 0;"
+        "  border-bottom: 1px solid rgba(255,255,255,0.08);"
+        "  qproperty-alignment: AlignHCenter;"
+        "}"
+        /* flechas */
+        "QPushButton#prevCarButton, QPushButton#nextCarButton {"
+        "  min-width: 64px; min-height: 64px;"
+        "  border: 3px solid #1f3e61;"
+        "  background: #2f5c8b;"
+        "  color: white; font-size: 26px; font-weight: 900;"
+        "  border-radius: 10px;"
+        "}"
+        "QPushButton#prevCarButton:hover, QPushButton#nextCarButton:hover {"
+        "  background: #3a6ea7;"
+        "}"
+        /* botón principal */
+        "QPushButton#selectCarButton {"
+        "  min-height: 48px;"
+        "  background: #2ecc40;"
+        "  border: 3px solid #0d5f1a;"
+        "  color: white; font-weight: 900; font-size: 22px;"
+        "  border-radius: 12px;"
+        "}"
+        "QPushButton#selectCarButton:hover { background: #3fe24f; }"
+        "QPushButton#selectCarButton:pressed { background: #1fa72f; }"
+    );
+
+    // Botón Volver (afuera del panel, igual estilo al tuyo)
+    ui->backButtonCar->setStyleSheet(
+        "QPushButton#backButtonCar {"
+        "  background: #E74C3C;"
+        "  border: 3px solid #7A1E18;"
+        "  color: white; font-weight: 800; font-size: 22px;"
+        "  border-radius: 12px; padding: 10px 36px;"
+        "}"
+        "QPushButton#backButtonCar:hover   { background: #FF5E4F; }"
+        "QPushButton#backButtonCar:pressed { background: #C83A2C; }"
+    );
+
+    // (Opcional) sombra al panel si te gusta
+    auto *shadow = new QGraphicsDropShadowEffect(ui->carPanel);
+    shadow->setBlurRadius(28);
+    shadow->setOffset(0, 6);
+    shadow->setColor(QColor(0,0,0,160));
+    ui->carPanel->setGraphicsEffect(shadow);
+}
+
+void LobbyWindow::initCarSelector(const QVector<QString>& sprites) {
+    m_carSprites = sprites;
+    if (m_carSprites.isEmpty()) { // necesario (?)
+        ui->carInfoLabel->setText("No hay autos");
+        ui->carImage->clear();
+        ui->prevCarButton->setEnabled(false);
+        ui->nextCarButton->setEnabled(false);
+        ui->selectCarButton->setEnabled(false);
+        return;
+    }
+    m_currentCar = 0;
+    ui->prevCarButton->setEnabled(true);
+    ui->nextCarButton->setEnabled(true);
+    ui->selectCarButton->setEnabled(true);
+    updateCarView();
+}
+
+void LobbyWindow::updateCarView() {
+    const int total = m_carSprites.size();
+    if (total == 0) return;
+
+    // texto “Auto X / N”
+    ui->carInfoLabel->setText(QString("Auto %1 / %2").arg(m_currentCar + 1).arg(total));
+
+    QPixmap pm(m_carSprites[m_currentCar]);
+    if (!pm.isNull()) {
+        QSize target = ui->carImage->size();
+        ui->carImage->setPixmap(pm.scaled(target, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else {
+        ui->carImage->setText("Sin imagen");
+    }
+
+    // habilitar/deshabilitar flechas si querés “bordes duros”
+    ui->prevCarButton->setEnabled(m_currentCar > 0);
+    ui->nextCarButton->setEnabled(m_currentCar < total - 1);
+}
+
+void LobbyWindow::on_backButtonCar_clicked() {
+    ui->stackedPages->setCurrentWidget(ui->LobbySelector);
+}
+
+void LobbyWindow::on_prevCarButton_clicked() {
+    if (m_currentCar >= 0) { --m_currentCar; updateCarView(); }
+}
+
+void LobbyWindow::on_nextCarButton_clicked() {
+    if (m_currentCar + 1 < m_carSprites.size()) { ++m_currentCar; updateCarView(); }
+}
+
+void LobbyWindow::on_selectCarButton_clicked() {
+    int n = 0;
+    auto type = static_cast<CarType>(m_currentCar);
+    InitPlayer ip("jugador", type);
+    CliMsgPtr msg = std::make_shared<InitPlayer>(ip);
+    try {
+        n = protocol.sendInitPlayer(dynamic_cast<const InitPlayer&>(*msg));
+    }catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+                     "Respuesta inesperada del servidor.");
+        return;
+    }
+    if (n == 0) {
+        QMessageBox::warning(this, "Seleccionar auto",
+                     "Respuesta inesperada del servidor.");
+        return;
+    }
+    close();
 }

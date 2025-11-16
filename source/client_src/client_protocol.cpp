@@ -30,7 +30,7 @@ int ClientProtocol::sendInitPlayer(const InitPlayer& ip) const {
         return n;
     }  catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
-        throw("Error sending");
+        throw std::runtime_error("Error sending");
     }
 
 }

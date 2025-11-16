@@ -4,6 +4,9 @@
 #include <vector>
 
 #include "../client_protocol.h"
+#include <QVector>
+#include <QString>
+#include <QPixmap>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -19,8 +22,9 @@ public:
     ~LobbyWindow() override;
 
     private slots:
-        // Menú principal
-        void on_playButton_clicked();
+
+    // Menú principal
+    void on_playButton_clicked();
     void on_quitButton_clicked();
 
     // LobbySelector
@@ -29,12 +33,27 @@ public:
     void on_backButton_clicked();
     void on_createButton_clicked();
 
-private:
-    Ui::LobbyWindow *ui;
-    ClientProtocol& protocol;
+    // Car selector
+    void on_backButtonCar_clicked();
+    void on_prevCarButton_clicked();
+    void on_nextCarButton_clicked();
+    void on_selectCarButton_clicked();
 
+private:
+
+    // Lobby selector
     void populateGames(const std::vector<GameMetadata>& games);
     void applyLobbySelectorStyles();
     void applyBackgroundSkin();
     void applyBackgroundLobbySelector();
+
+    // Car selector
+    void applyCarSelectorStyles();
+    void initCarSelector(const QVector<QString>& sprites);
+    void updateCarView();
+
+    Ui::LobbyWindow *ui;
+    ClientProtocol& protocol;
+    QVector<QString> m_carSprites;
+    int m_currentCar{0};
 };

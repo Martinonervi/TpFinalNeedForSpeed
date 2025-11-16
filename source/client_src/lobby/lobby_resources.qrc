@@ -1,6 +1,16 @@
 <RCC>
     <qresource prefix="/images">
-        <file>menu_bg_clean.png</file>
-        <file>lobby_bg.png</file>
+        <file alias="menu_bg_clean.png">resources/menu_bg_clean.png</file>
+        <file alias="lobby_bg.png">resources/lobby_bg.png</file>
+    </qresource>
+
+    <qresource prefix="/cars">
+        <file alias="car0.png">resources/car0.png</file>
+        <file alias="car1.png">resources/car1.png</file>
+        <file alias="car2.png">resources/car2.png</file>
+        <file alias="car3.png">resources/car3.png</file>
+        <file alias="car4.png">resources/car4.png</file>
+        <file alias="car5.png">resources/car5.png</file>
+        <file alias="car6.png">resources/car6.png</file>
     </qresource>
 </RCC>

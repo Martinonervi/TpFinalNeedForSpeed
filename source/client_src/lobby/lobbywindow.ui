@@ -13,15 +13,37 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">        QMainWindow#LobbyWindow {
+            background-image: url(:/images/menu_bg_clean.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: black;
+        }
+
+        QWidget#MainMenu {
+            background-image: url(:/images/menu_bg_clean.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+        }
+
+        QWidget#LobbySelector {
+            background-image: url(:/images/lobby_bg.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+        }</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="0">
+   <layout class="QVBoxLayout" name="verticalLayout_5">
+    <item>
      <widget class="QStackedWidget" name="stackedPages">
       <property name="styleSheet">
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="MainMenu">
        <property name="styleSheet">
@@ -358,6 +380,186 @@ QPushButton#backButton:disabled { background:#9E9E9E; border-color:#5E5E5E; colo
           </widget>
          </item>
         </layout>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="CarSelector">
+       <widget class="QFrame" name="carPanel">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>80</y>
+          <width>451</width>
+          <height>401</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QFrame#carPanel {
+  background: rgba(8,12,20,220);
+  border: 2px solid #0f2236;
+  border-radius: 14px;
+}
+
+QLabel#carTitleLabel {
+  color: #f3f0d0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+QLabel#carInfoLabel {
+  color: #f3f0d0;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 6px 0 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  qproperty-alignment: AlignHCenter;
+}
+
+/* flechas */
+QPushButton#prevCarButton, QPushButton#nextCarButton {
+  min-width: 64px; min-height: 64px;
+  border: 3px solid #1f3e61;
+  background: #2f5c8b;
+  color: white; font-size: 26px; font-weight: 900;
+  border-radius: 10px;
+}
+
+QPushButton#prevCarButton:hover, QPushButton#nextCarButton:hover {
+  background: #3a6ea7;
+}
+
+/* botón principal */
+QPushButton#selectCarButton {
+  min-height: 48px;
+  background: #2ecc40;
+  border: 3px solid #0d5f1a;
+  color: white; font-weight: 900; font-size: 22px;
+  border-radius: 12px;
+}
+
+QPushButton#selectCarButton:hover { background: #3fe24f; }
+QPushButton#selectCarButton:pressed { background: #1fa72f; }
+</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Shadow::Raised</enum>
+        </property>
+        <widget class="QLabel" name="carTitleLabel">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>10</y>
+           <width>351</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>SELECCIONAR AUTO</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="carInfoLabel">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>50</y>
+           <width>161</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>1/7</string>
+         </property>
+        </widget>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="geometry">
+          <rect>
+           <x>-1</x>
+           <y>90</y>
+           <width>451</width>
+           <height>221</height>
+          </rect>
+         </property>
+         <widget class="QWidget" name="horizontalLayoutWidget_3">
+          <property name="geometry">
+           <rect>
+            <x>19</x>
+            <y>9</y>
+            <width>411</width>
+            <height>201</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="prevCarButton">
+             <property name="text">
+              <string>◀</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="carImage">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="nextCarButton">
+             <property name="text">
+              <string>▶</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+        <widget class="QPushButton" name="selectCarButton">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>310</y>
+           <width>151</width>
+           <height>54</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Seleccionar</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QPushButton" name="backButtonCar">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>144</width>
+          <height>52</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton#backButtonCar {
+  background: #E74C3C;
+  border: 3px solid #7A1E18;
+  color: white;
+  font-weight: 800;
+  font-size: 22px;
+  border-radius: 12px;
+  padding: 10px 36px;
+}
+QPushButton#backButtonCar:hover    { background: #FF5E4F; }
+QPushButton#backButtonCar:pressed  { background: #C83A2C; }
+QPushButton#backButtonCar:disabled { background:#9E9E9E; border-color:#5E5E5E; color:#E6E6E6; }
+</string>
+        </property>
+        <property name="text">
+         <string>Volver</string>
+        </property>
        </widget>
       </widget>
      </widget>

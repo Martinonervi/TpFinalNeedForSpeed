@@ -62,6 +62,7 @@ void Client::run() {
     sender.start();
     receiver.start();
 
+    /*
     while (std::getline(std::cin, line)) {
         if (line.empty())
             continue;
@@ -80,6 +81,7 @@ void Client::run() {
         senderQueue.push(msg);
         break;
     }
+    */
 
     ClientWindow client_window(
         1200,
