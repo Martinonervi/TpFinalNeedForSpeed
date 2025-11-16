@@ -351,13 +351,11 @@ void LobbyWindow::applyBackgroundLobbySelector() {
 }
 
 
-// ------------ CAR SELECTOR ------------
+// ------------ CAR SELECTOR ------------ //
 
 void LobbyWindow::applyCarSelectorStyles() {
-    // Página transparente (para ver el background global)
     ui->CarSelector->setStyleSheet("background: transparent;");
 
-    // Panel estilo “card” con borde y sombra suave
     ui->carPanel->setStyleSheet(
         "QFrame#carPanel {"
         "  background: rgba(8,12,20,220);"
@@ -401,7 +399,6 @@ void LobbyWindow::applyCarSelectorStyles() {
         "QPushButton#selectCarButton:pressed { background: #1fa72f; }"
     );
 
-    // Botón Volver (afuera del panel, igual estilo al tuyo)
     ui->backButtonCar->setStyleSheet(
         "QPushButton#backButtonCar {"
         "  background: #E74C3C;"
@@ -413,7 +410,6 @@ void LobbyWindow::applyCarSelectorStyles() {
         "QPushButton#backButtonCar:pressed { background: #C83A2C; }"
     );
 
-    // (Opcional) sombra al panel si te gusta
     auto *shadow = new QGraphicsDropShadowEffect(ui->carPanel);
     shadow->setBlurRadius(28);
     shadow->setOffset(0, 6);
