@@ -16,10 +16,13 @@
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
+#define FILE_YAML_PATH "../server_src/world/map.yaml"
 
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
-        worldEvents(), worldManager(worldEvents),queue(std::move(queue)), registry(std::move(registry)) {
-    loadMapFromYaml("../server_src/world/map.yaml");
+worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
+registry(std::move(registry)), eventHandlers(cars, checkpoints, *this->registry,
+            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded)  {
+    loadMapFromYaml(FILE_YAML_PATH);
 }
 
 
@@ -45,38 +48,14 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
                         worldManager,
                         cpCfg.id,
                         cpCfg.kind,
-                        cpCfg.x1, cpCfg.y1,
-                        cpCfg.x2, cpCfg.y2
+                        cpCfg.x, cpCfg.y,
+                        cpCfg.w, cpCfg.h, cpCfg.angle
                         )
         );
     }
-    // -> ACA
 }
 
-//la idea es q lo mande al principio
-struct SrvWorldInit {
-    uint16_t checkpointCount;
-    //vector CheckpointDef
-    uint16_t hintCount;
-    //vector HintDef
-};
 
-
-void GameLoop::checkPlayersStatus() {
-    std::vector<ID> ids;
-    for (auto& car: cars) {
-        ids.push_back(car.first);
-    }
-    std::vector<ID> toDisconnect = registry->checkClients(ids);
-    for (ID idToDisconnect : toDisconnect) {
-        disconnectHandler(idToDisconnect);
-        std::cout << "auto con id: " << idToDisconnect << " borrado" << "\n";
-        auto msg = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<ClientDisconnect>(idToDisconnect));
-        registry->broadcast(msg);
-    }
-
-}
 
 using Clock = std::chrono::steady_clock;
 void GameLoop::waitingForPlayers() {
@@ -92,16 +71,6 @@ void GameLoop::waitingForPlayers() {
     }
     this->raceStarted = true;
 }
-
-bool GameLoop::isRaceStarted() const {
-    return this->raceStarted;
-}
-
-bool GameLoop::isConnected(ID id) const {
-    return registry->contains(id);
-}
-
-
 
 void GameLoop::run() {
     waitingForPlayers();
@@ -129,169 +98,31 @@ void GameLoop::run() {
     }
 }
 
-void GameLoop::CarHitCheckpointHandler(WorldEvent ev){
-    auto itCar = cars.find(ev.carId);
-    if (itCar == cars.end()) return;
-    auto& car = itCar->second;
-
-    auto actualCheckpoint = car.getActualCheckpoint();
-    if (actualCheckpoint  + 1 != ev.checkpointId) return;
-
-    car.setCheckpoint(ev.checkpointId);
-
-    auto itCheck = checkpoints.find(ev.checkpointId);
-    if (itCheck == checkpoints.end()) return;
-    auto& cp = itCheck->second;
-
-    if (cp.getKind() == CheckpointKind::Finish and !car.isFinished()) {
-        car.markFinished(raceTimeSeconds);
-        finishedCarsCount++;
-        if (finishedCarsCount == totalCars) {
-            this->raceEnded = true;
-        }
-
+void GameLoop::checkPlayersStatus() {
+    std::vector<ID> ids;
+    for (auto& car: cars) {
+        ids.push_back(car.first);
     }
-    // flag ultimo checkpoint
-    auto msg = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SrvCheckpointHitMsg>(ev.carId, ev.checkpointId));
-    registry->sendTo(ev.carId, msg);
-
+    std::vector<ID> toDisconnect = registry->checkClients(ids);
+    for (ID idToDisconnect : toDisconnect) {
+        disconnectHandler(idToDisconnect);
+        std::cout << "auto con id: " << idToDisconnect << " borrado" << "\n";
+        auto msg = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<ClientDisconnect>(idToDisconnect));
+        registry->broadcast(msg);
+    }
 }
 
-void GameLoop::CarHitBuildingHandler(WorldEvent ev,
-                                     std::unordered_set<ID>& alreadyHitBuildingThisFrame){
-    if (alreadyHitBuildingThisFrame.count(ev.carId)) return;
-    alreadyHitBuildingThisFrame.insert(ev.carId);
-
-    auto it = cars.find(ev.carId);
-    if (it == cars.end()) return;
-    Car& car = it->second;
-    b2BodyId body = car.getBody();
-
-    b2Vec2 vel = b2Body_GetLinearVelocity(body); //vel auto
-
-    // velocidad en la dirección del choque
-    // producto interno
-    // n unitario
-    float impactSpeed = std::fabs(vel.x * ev.nx + vel.y * ev.ny);
-
-    // si es muy lento pase pase
-    //const float MIN_IMPACT = 1.5f;
-    //if (impactSpeed < MIN_IMPACT) {
-    //  break;
-    //}
-
-    // ver si fue frontal
-    b2Rot rot = b2Body_GetRotation(body);
-    b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
-    // fwd es unitario
-    float frontal = fwd.x * ev.nx + fwd.y * ev.ny;
-    //fwd*n = ||fwd||*||n||*cos(ø)
-    //como ambos son unitarios
-    //fwd*n = cos(ø)
-
-
-    // daño base
-    float damage = impactSpeed * 0.5f;
-    if (frontal > 0.7f) { // casi de frente
-        damage *= 2.0f;
-    }
-
-    car.applyDamage(damage);
-    if (car.isCarDestroy()) {
-        //le aviso a la interfaz
-    }
-
-    // frenar un poco empujando contra la normal
-    b2Vec2 newVel = {
-            vel.x - ev.nx * impactSpeed * 0.5f,
-            vel.y - ev.ny * impactSpeed * 0.5f
-    };
-    b2Body_SetLinearVelocity(body, newVel);
-
-    auto baseCarA = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SrvCarHitMsg>(car.getClientId(), car.getHealth()));
-    registry->sendTo(car.getClientId(), baseCarA);
+bool GameLoop::isRaceStarted() const {
+    return this->raceStarted;
 }
-void GameLoop::CarHitCarHandler(WorldEvent ev,
-                                std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame){
-    // normalizamos la pareja (a,b) para que a < b y así no duplicamos
-    int idA = ev.carId;
-    int idB = ev.otherCarId;
-    if (idA > idB) std::swap(idA, idB);
 
-    uint64_t key = (static_cast<uint64_t>(idA) << 32) |
-               static_cast<uint32_t>(idB);
-
-    if (alreadyHitCarPairThisFrame.count(key)) return;
-    alreadyHitCarPairThisFrame.insert(key);
-
-    auto itA = cars.find(ev.carId);
-    auto itB = cars.find(ev.otherCarId);
-    if (itA == cars.end() || itB == cars.end()) return;
-
-    Car& carA = itA->second;
-    Car& carB = itB->second;
-
-    b2BodyId bodyA = carA.getBody();
-    b2BodyId bodyB = carB.getBody();
-
-    b2Vec2 vA = b2Body_GetLinearVelocity(bodyA);
-    b2Vec2 vB = b2Body_GetLinearVelocity(bodyB);
-
-
-    float aAlongN = vA.x * ev.nx + vA.y * ev.ny;
-    float bAlongN = vB.x * ev.nx + vB.y * ev.ny;
-
-    float aImpact = std::fabs(aAlongN);
-    float bImpact = std::fabs(bAlongN);
-
-    const float MIN_IMPACT = 1.0f;
-    if (aImpact < MIN_IMPACT && bImpact < MIN_IMPACT) return;
-
-    // daño cruzado: cada uno sufre por la velocidad del otro
-    float damageA = bImpact * 0.4f;
-    float damageB = aImpact * 0.4f;
-
-
-    carA.applyDamage(damageA);
-    carB.applyDamage(damageB);
-
-    if (carA.isCarDestroy()) {
-        //le aviso a la interfaz
-    }
-    if (carB.isCarDestroy()) {
-        //le aviso a la interfaz
-    }
-
-    // frenar un poco
-    b2Vec2 newVA = {
-            vA.x - ev.nx * aAlongN * 0.4f,
-            vA.y - ev.ny * aAlongN * 0.4f
-    };
-    b2Vec2 newVB = {
-            vB.x + ev.nx * bAlongN * 0.4f,
-            vB.y + ev.ny * bAlongN * 0.4f
-    };
-
-    b2Body_SetLinearVelocity(bodyA, newVA);
-    b2Body_SetLinearVelocity(bodyB, newVB);
-
-
-    auto baseCarA = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SrvCarHitMsg>(carA.getClientId(), carA.getHealth()));
-    registry->sendTo(carA.getClientId(), baseCarA);
-
-    auto baseCarB = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SrvCarHitMsg>(carB.getClientId(), carB.getHealth()));
-    registry->sendTo(carB.getClientId(), baseCarB);
-    std::cout << "carHitCar mandanod mensaje al Server Sender\n";
+bool GameLoop::isConnected(ID id) const {
+    return registry->contains(id);
 }
 
 void GameLoop::processWorldEvents() {
-    // para no procesar 50 veces el mismo auto pegado al edificio en este frame
     std::unordered_set<ID> alreadyHitBuildingThisFrame;
-    // para no procesar dos veces el mismo choque de autos A-B y B-A
     std::unordered_set<uint64_t> alreadyHitCarPairThisFrame;
 
     while (!worldEvents.empty()) {
@@ -300,15 +131,15 @@ void GameLoop::processWorldEvents() {
 
         switch (ev.type) {
             case WorldEventType::CarHitCheckpoint: {
-                CarHitCheckpointHandler(ev);
+                eventHandlers.CarHitCheckpointHandler(ev);
                 break;
             }
             case WorldEventType::CarHitBuilding: {
-                CarHitBuildingHandler(ev, alreadyHitBuildingThisFrame);
+                eventHandlers.CarHitBuildingHandler(ev, alreadyHitBuildingThisFrame);
                 break;
             }
             case WorldEventType::CarHitCar: {
-                CarHitCarHandler(ev, alreadyHitCarPairThisFrame);
+                eventHandlers.CarHitCarHandler(ev, alreadyHitCarPairThisFrame);
                 break;
             }
             default:
@@ -380,6 +211,7 @@ void GameLoop::initPlayerHandler(Cmd& cmd){
 void GameLoop::movementHandler(Cmd& cmd) {
     auto it = cars.find(cmd.client_id);
     if (it == cars.end()) return;
+    if (it->second.isCarDestroy()) return;
 
     const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
 
@@ -395,13 +227,40 @@ void GameLoop::disconnectHandler(ID id) {
     cars.erase(id);
 }
 
-
 void GameLoop::broadcastCarSnapshots() {
     for (auto& [id, car] : cars) {
         PlayerState ps = car.snapshotState();
+
+        ID actual = car.getActualCheckpoint();
+        ID next   = actual + 1;
+
+        float dirX = 0.f, dirY = 0.f;
+
+        auto itCp = checkpoints.find(next);
+        if (itCp != checkpoints.end()) {
+            const Checkpoint& cp = itCp->second;
+
+            b2BodyId body = car.getBody();
+            b2Vec2 pos = b2Body_GetPosition(body);
+
+            float vx = cp.getX() - pos.x;
+            float vy = cp.getY() - pos.y;
+
+            float len = std::sqrt(vx*vx + vy*vy);
+            if (len > 0.0001f) {
+                //normalizo
+                dirX = vx / len;
+                dirY = vy / len;
+            }
+        } else {
+            next = 0; // o lo que quieras para "no hay más checkpoint"
+        }
+
+        ps.setCheckpointInfo(next, dirX, dirY);
+
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerState>(std::move(ps)));
-        registry->broadcast(base); // todos los jugadores quieren saber tu posicion
+        registry->broadcast(base);
     }
 }
 

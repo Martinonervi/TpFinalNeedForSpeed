@@ -30,7 +30,9 @@ public:
     void mapLimits();
     EntityId createCarBody(b2Vec2 pos, float angleRad);
     EntityId createBuilding(float x, float y, float w, float h, float angleRad);
-    EntityId createCheckpointSensor(float x1, float y1, float x2, float y2);
+    EntityId createCheckpointSensor(float cx, float cy,
+                                              float w, float h,
+                                              float angleRad);
 
     b2BodyId getBody(EntityId id) const;
 

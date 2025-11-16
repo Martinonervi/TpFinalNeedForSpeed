@@ -14,6 +14,7 @@
 #include "../world/entities/checkpoint.h"
 #include "../world/map_parser.h"
 #include "../world/world_manager.h"
+#include "world_event_handlers.h"
 
 class GameLoop: public Thread {
 
@@ -38,9 +39,7 @@ private:
     void disconnectHandler(ID id);
     void broadcastCarSnapshots();
 
-    void CarHitCheckpointHandler(WorldEvent ev);
-    void CarHitBuildingHandler(WorldEvent ev, std::unordered_set<ID>& alreadyHitBuildingThisFrame);
-    void CarHitCarHandler(WorldEvent ev, std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame);
+
 
 
     // box2D
@@ -67,6 +66,8 @@ private:
 
     // loop
     Printer printer;
+
+    WorldEventHandlers eventHandlers;
 };
 
 #endif

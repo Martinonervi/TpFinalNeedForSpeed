@@ -19,12 +19,25 @@ public:
     float    getY()        const { return y; }
     float    getAngleRad() const { return angleRad; }
 
+    ID getCurrentCheckpointId() const { return currentCheckpointId; }
+    float getHintDirX() const { return hintDirX; }
+    float getHintDirY() const { return hintDirY; }
+
+    void setCheckpointInfo(ID nextId, float dirX, float dirY) {
+        currentCheckpointId = nextId;
+        hintDirX = dirX;
+        hintDirY = dirY;
+    }
 
 private:
     ID player_id;
     float    x;
     float    y;
     float    angleRad;
+
+    ID currentCheckpointId = 0;
+    float hintDirX = 0.f;
+    float hintDirY = 0.f;
 };
 
 

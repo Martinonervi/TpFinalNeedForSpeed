@@ -17,9 +17,13 @@ struct BuildingConfig {
 struct CheckpointConfig {
     int id;
     CheckpointKind kind;
-    float x1, y1;
-    float x2, y2;
+    float x;
+    float y;
+    float w;
+    float h;
+    float angle;
 };
+
 
 struct HintDef {
     uint8_t id;

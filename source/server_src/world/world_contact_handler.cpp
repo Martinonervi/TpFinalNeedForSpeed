@@ -57,9 +57,6 @@ void WorldContactHandler::handleSensorBegin(const b2SensorBeginTouchEvent& ev) {
         return;
     }
 
-    std::cout << "auto pasando por checkpoint (carId=" << car->id
-              << ", cpId=" << cp->id << ")\n";
-
     WorldEvent event{
             .type         = WorldEventType::CarHitCheckpoint,
             .carId        = car->id,

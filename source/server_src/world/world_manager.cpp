@@ -29,14 +29,7 @@ static inline void destroyBodyAndUserData(b2BodyId body) {
     }
     b2DestroyBody(body);
 }
-/*
-void WorldManager::destroyEntity(const EntityId id) {
-    auto it = physics.find(id);
-    if (it == physics.end()) return;
-    b2DestroyBody(it->second.body);
-    physics.erase(it);
-}
-*/
+
 void WorldManager::destroyEntity(const EntityId id) {
     auto it = physics.find(id);
     if (it == physics.end()) return;
@@ -193,30 +186,23 @@ EntityId WorldManager::createCarBody(b2Vec2 pos, float angleRad) {
     return eid;
 }
 
-
-EntityId WorldManager::createCheckpointSensor(float x1, float y1,
-                                              float x2, float y2) {
-    float mx = (x1 + x2) * 0.5f;
-    float my = (y1 + y2) * 0.5f;
-
-    float dx = x2 - x1;
-    float dy = y2 - y1;
-    float length = std::sqrt(dx*dx + dy*dy);
-    float angle  = std::atan2(dy, dx);
-
+EntityId WorldManager::createCheckpointSensor(float cx, float cy,
+                                              float w, float h,
+                                              float angleRad) {
     b2BodyDef bd = b2DefaultBodyDef();
     bd.type = b2_staticBody;
-    bd.position = (b2Vec2){ mx, my };
-    bd.rotation = b2MakeRot(angle);
+    bd.position = (b2Vec2){ cx, cy };
+    bd.rotation = b2MakeRot(angleRad);
     b2BodyId body = b2CreateBody(world, &bd);
 
-    float halfLen = length * 0.5f;
-    float halfThickness = 1.0f;
-    b2Polygon box = b2MakeBox(halfLen, halfThickness);
+    float halfW = std::max(w * 0.5f, 0.05f);  // mínimo por las dudas
+    float halfH = std::max(h * 0.5f, 0.05f);
+
+    b2Polygon box = b2MakeBox(halfW, halfH);
 
     b2ShapeDef sd = b2DefaultShapeDef();
-    sd.isSensor = true; //no genera resp fisica en colision
-    sd.enableSensorEvents = true; //habilita el sensor contact
+    sd.isSensor = true;            // no genera respuesta física
+    sd.enableSensorEvents = true;  // habilita eventos de sensor
     b2CreatePolygonShape(body, &sd, &box);
 
     EntityId eid = nextId++;
