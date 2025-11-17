@@ -15,15 +15,14 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         myCarId(-1),
         nextCheckpoint(-1),
         tm(renderer),
-        eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue, tm, checkpoints, running, showMap, quit) {}
+        hint(renderer, tm, 0, 0),
+        eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue, tm, checkpoints, hint, running, showMap, quit) {}
 
 
 // Hay que manejar FPS, hay que tener en cuenta los autos que no estan en camara
 bool ClientWindow::run() {
     Hud hud(renderer, tm, MAP_LIBERTY);
     Map map(renderer, tm, MAP_LIBERTY);
-    Hint hint(renderer, tm, 40, 40);
-    float counter = 0;
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
@@ -36,9 +35,9 @@ bool ClientWindow::run() {
         renderer.Clear();
         map.draw(camera);
 
-
-        hint.draw(camera);
-        hint.setAngle(counter++);
+        if (nextCheckpoint != -1) {
+            hint.draw(camera, checkpoints[nextCheckpoint]->getX(), checkpoints[nextCheckpoint]->getY());
+        }
         for (auto& [id, checkpoint] : checkpoints) {
             checkpoint->draw(camera);
         }
@@ -46,6 +45,7 @@ bool ClientWindow::run() {
             const auto carState = car->getState();
             if (id == myCarId) {
                 camera.follow(car->getX(), car->getY());
+                hint.update(10, 10, car->getX(), car->getY()); // Angulo y distancia
             }
             switch (carState) {
                 case ALIVE: {

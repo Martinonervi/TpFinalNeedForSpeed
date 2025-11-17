@@ -9,6 +9,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 Queue<CliMsgPtr>& senderQueue,
                                 TextureManager& textureManager,
                                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
+                                Hint& hint,
                                 bool& running, bool& showMap, bool& quit)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
@@ -17,6 +18,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         renderer(renderer),
         senderQueue(senderQueue),
         tm(textureManager),
+        hint(hint),
         running(running),
         showMap(showMap),
         quit(quit)
@@ -73,11 +75,14 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
                     ps.getY()*PIXELS_PER_METER,
                     ps.getAngleRad());
             }
+            // Lo vamos a mover
             if (!checkpoints.count(ps.getNextCheckpointId())) {
                 checkpoints[ps.getNextCheckpointId()] = std::make_unique<Checkpoint>(renderer, tm,
                     ps.getCheckX()*PIXELS_PER_METER, ps.getCheckY()*PIXELS_PER_METER);
             }
             nextCheckpoint = ps.getNextCheckpointId();
+            hint.update(0, 0, cars[myCarId]->getX(), cars[myCarId]->getY());
+            //_______
 
             break;
         }

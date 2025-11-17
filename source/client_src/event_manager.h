@@ -15,6 +15,7 @@
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "renderables/car.h"
 #include "renderables/checkpoint.h"
+#include "renderables/hint.h"
 
 class EventManager {
 public:
@@ -23,6 +24,7 @@ public:
                               SDL2pp::Renderer& renderer,
                               Queue<CliMsgPtr>& senderQueue, TextureManager& textureManager,
                               std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
+                              Hint& hint,
                               bool& running, bool& showMap, bool& quit);
 
     void handleEvents() const;
@@ -36,6 +38,7 @@ private:
     SDL2pp::Renderer& renderer;
     Queue<CliMsgPtr>& senderQueue;
     TextureManager& tm;
+    Hint& hint;
     bool& running;
     bool& showMap;
     bool& quit;

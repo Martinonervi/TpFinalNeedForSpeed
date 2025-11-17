@@ -8,11 +8,14 @@
 class Hint : public Entity {
 public:
     Hint(SDL2pp::Renderer& renderer, TextureManager& tm, float x, float y);
-    void draw(const Camera& camera) override;
+    void draw(const Camera& camera, float cpX, float cpY) const;
+    void update(float newAngle, float newDistance, float carX, float carY);
     void setAngle(float newAngle);
+    void setDistance(float newDistance);
 
 private:
     float angle;
+    float distance;
 };
 
 

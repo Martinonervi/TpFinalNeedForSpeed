@@ -11,8 +11,9 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer)
     flagTexture.emplace(renderer, CHECKPOINT_PATH);
     arrowTexture.emplace(renderer, "../assets/extras/arrow.png");
     barsTexture.emplace(renderer, BARS_PATH);
+    upgradeFrameTexture.emplace(renderer, "../assets/extras/item-frame.png");
 
-    hudManager.emplace(*barsTexture);
+    hudManager.emplace(*barsTexture, *upgradeFrameTexture);
 
     speedometerTexture.emplace(loadWithColorKey(renderer, SPEEDOMETER_PATH, 221, 221, 56));
     carsTexture.emplace(loadWithColorKey(renderer, CARS_PATH, 163, 163, 13));

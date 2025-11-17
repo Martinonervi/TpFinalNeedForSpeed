@@ -44,6 +44,7 @@ private:
     Camera camera;
     ID myCarId;
     ID nextCheckpoint;
+    Hint hint;
     EventManager eventManager;
     bool running;
     bool quit = false;

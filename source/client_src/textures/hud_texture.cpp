@@ -1,7 +1,7 @@
 #include "hud_texture.h"
 
-HudTexture::HudTexture(SDL2pp::Texture& bars) :
-    bars(bars)
+HudTexture::HudTexture(SDL2pp::Texture& bars, SDL2pp::Texture& upgradeFrame) :
+    bars(bars), upgradeFrame(upgradeFrame)
 {}
 
 SDL2pp::Rect HudTexture::getHealthBar() const {
@@ -22,4 +22,8 @@ SDL2pp::Rect HudTexture::getEnergyBar() const {
 
 SDL2pp::Texture& HudTexture::getBarsTexture() const {
     return bars;
+}
+
+SDL2pp::Texture& HudTexture::getUpgradeFrame() const {
+    return upgradeFrame;
 }
