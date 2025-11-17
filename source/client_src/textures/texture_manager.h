@@ -18,8 +18,6 @@ public:
     CityTexture& getCities();
     EffectsTexture& getEffects();
     HudTexture& getHud();
-    SDL2pp::Texture& getTexture();
-    SDL2pp::Rect getCheckpointFrame(int frame) const;
 
 private:
     std::optional<SDL2pp::Texture> carsTexture;

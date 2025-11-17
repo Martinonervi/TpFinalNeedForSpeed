@@ -11,7 +11,7 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer)
     flagTexture.emplace(renderer, CHECKPOINT_PATH);
     barsTexture.emplace(renderer, BARS_PATH);
 
-    hudManager.emplace(*barsTexture, *flagTexture);
+    hudManager.emplace(*barsTexture);
 
     speedometerTexture.emplace(loadWithColorKey(renderer, SPEEDOMETER_PATH, 221, 221, 56));
     carsTexture.emplace(loadWithColorKey(renderer, CARS_PATH, 163, 163, 13));
@@ -23,7 +23,7 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer)
     cityLibertyTexture.emplace(renderer, SDL2pp::Surface(LIBERTY_CITY_PATH));
     citySanAndreasTexture.emplace(renderer, SDL2pp::Surface(SAN_ANDREAS_PATH));
     cityViceCityTexture.emplace(renderer, SDL2pp::Surface(VICE_CITY_PATH));
-    cityManager.emplace(*cityLibertyTexture, *citySanAndreasTexture, *cityViceCityTexture);
+    cityManager.emplace(*cityLibertyTexture, *citySanAndreasTexture, *cityViceCityTexture, *flagTexture);
 
     explosionTextures.emplace(renderer, SDL2pp::Surface(EXPLOSION_PATH));
     effectsManager.emplace(*explosionTextures);
@@ -45,16 +45,3 @@ PeopleTexture& TextureManager::getPeople() { return peopleManager.value(); }
 CityTexture& TextureManager::getCities() { return cityManager.value(); }
 EffectsTexture& TextureManager::getEffects() { return effectsManager.value(); }
 HudTexture& TextureManager::getHud() { return hudManager.value(); }
-
-// NUEVO ARCHIVO
-
-SDL2pp::Rect TextureManager::getCheckpointFrame(const int frame) const {
-    const int FRAME_WIDTH = 60;
-    const int FRAME_HEIGHT = 60;
-
-
-    int x = static_cast<int>(frame/10) * FRAME_WIDTH;
-    int y = 0;
-
-    return SDL2pp::Rect(x, y, FRAME_WIDTH, FRAME_HEIGHT);
-}

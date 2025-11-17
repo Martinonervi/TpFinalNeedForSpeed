@@ -62,6 +62,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
         }
         case Movement: {
             const auto ps = dynamic_cast<const PlayerState&>(*msg);
+
             if (cars.count(ps.getPlayerId())) {
                 cars[ps.getPlayerId()]->update(
                     ps.getX()*PIXELS_PER_METER,

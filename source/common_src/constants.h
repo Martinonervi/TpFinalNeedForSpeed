@@ -6,6 +6,9 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+#include <cstdint>
+#include <cmath>
+#include <arpa/inet.h>
 
 #include "cli_msg/client_msg.h"
 #include "srv_msg/server_msg.h"
@@ -52,7 +55,7 @@ struct Cmd {
     std::shared_ptr<CliMsg> msg;
 };
 
-enum CarType {
+enum CarType : uint8_t{
     CAR_GREEN,
     CAR_RED,
     CAR_PORSCHE,
@@ -63,14 +66,14 @@ enum CarType {
     CAR_COUNT
 };
 
-enum CarState {
+enum CarState : uint8_t{
     ALIVE,
     LOW_HEALTH,
     EXPLODING,
     DESTROYED
 };
 
-enum MapType {
+enum MapType : uint8_t{
     MAP_LIBERTY,
     MAP_SAN_ANDREAS,
     MAP_VICE
@@ -92,3 +95,15 @@ enum class EntityLayer {
     GROUND,
     BRIDGE
 };
+
+inline uint32_t encodeFloat100BE(float value) {
+    int32_t fixed = static_cast<int32_t>(std::lround(value * 100.0f));
+    uint32_t as_u32 = static_cast<uint32_t>(fixed);
+    return htonl(as_u32);
+}
+
+inline float decodeFloat100BE(uint32_t be_value) {
+    uint32_t as_u32 = ntohl(be_value);
+    int32_t fixed = static_cast<int32_t>(as_u32);
+    return static_cast<float>(fixed) / 100.0f;
+}
