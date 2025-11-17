@@ -321,3 +321,26 @@ DisconnectReq ServerProtocol::recvDisconnectReq() {
     ID id = static_cast<ID>(ntohl(ID_BE));
     return DisconnectReq(id);
 }
+
+int ServerProtocol::sendPlayerStats(PlayerStats& msg) {
+    try {
+        Op type = Opcode::STATS;
+        uint8_t checkpoints = msg.getCheckpoints();
+
+
+        std::vector<char> buf(sizeof(uint8_t));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &checkpoints, sizeof(uint8_t));
+        offset += sizeof(uint8_t);
+
+        int n = peer.sendall(buf.data(), offset);
+        return n;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}

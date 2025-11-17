@@ -5,6 +5,7 @@
 
 #include "../common_src/cli_msg/disconnect_request.h"
 #include "../common_src/cli_msg/init_player.h"
+#include "../common_src/cli_msg/requeststats.h"
 #include "../common_src/srv_msg/new_player.h"
 
 Receiver::Receiver(Socket& peer_socket, ID clientID, GameManager& game_manager_ref, SendQPtr sender_queue):
@@ -36,6 +37,12 @@ void Receiver::run() {
                         //    std::make_shared<ClientDisconnect>(id));
                         //sender_queue->push(msg);
                     }
+                    break;
+                }
+                case Opcode::STATS:{
+                    CliMsgPtr base = std::static_pointer_cast<CliMsg>(
+                            std::make_shared<RequestStats>());
+                    cmdQueue->push(Cmd{id, base});
                     break;
                 }
                 case Opcode::REQUEST_GAMES: {

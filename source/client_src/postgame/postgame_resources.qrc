@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/postgame">
+        <file>resources/lobby_bg.png</file>
+    </qresource>
+</RCC>

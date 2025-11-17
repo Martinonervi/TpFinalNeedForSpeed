@@ -5,6 +5,7 @@
 #include "../common_src/cli_msg/disconnect_request.h"
 #include "../common_src/cli_msg/requestgame.h"
 #include "../common_src/srv_msg/metadatagames.h"
+#include "../common_src/srv_msg/playerstats.h"
 
 
 ClientProtocol::ClientProtocol(Socket& peer): peer(peer) {}
@@ -368,4 +369,35 @@ void ClientProtocol::sendDisconnectReq(DisconnectReq& dr) {
         std::cerr << e.what() << '\n';
         throw("Error sending");
     }
+}
+
+void ClientProtocol::requestStats() {
+    try {
+        Op type = STATS;
+        std::vector<char> buf(sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type , sizeof(Op));
+        offset += sizeof(type);
+
+        peer.sendall(buf.data(), offset);
+    }  catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+PlayerStats ClientProtocol::recvStats() {
+    uint8_t checkpoints;
+    int n = 0;
+    try {
+        n = peer.recvall(&checkpoints, sizeof(uint8_t));
+
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return PlayerStats(checkpoints);
 }

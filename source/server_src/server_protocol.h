@@ -1,15 +1,16 @@
 #pragma once
 #include <memory>
 
+#include "../common_src/cli_msg/disconnect_request.h"
 #include "../common_src/cli_msg/init_player.h"
 #include "../common_src/cli_msg/move_Info.h"
 #include "../common_src/cli_msg/requestgame.h"
-#include "../common_src/cli_msg/disconnect_request.h"
 #include "../common_src/srv_msg/client_disconnect.h"
 #include "../common_src/srv_msg/joingame.h"
 #include "../common_src/srv_msg/metadatagames.h"
 #include "../common_src/srv_msg/player.h"
 #include "../common_src/srv_msg/player_state.h"
+#include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/send_player.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
@@ -49,6 +50,8 @@ public:
     void writeGameAppend(std::vector<char>& buf, const GameMetadata& metadata);
 
     DisconnectReq recvDisconnectReq();
+
+    int sendPlayerStats(PlayerStats& msg);
 
 private:
     Socket& peer;

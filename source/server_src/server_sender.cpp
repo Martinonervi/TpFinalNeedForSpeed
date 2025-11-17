@@ -28,6 +28,10 @@ void Sender::run() {
             int n;
 
             switch (msg->type()) {
+                case Opcode::STATS:{ // no esta testeado
+                    protocol.sendPlayerStats(dynamic_cast<PlayerStats&>(*msg));
+                    break;
+                }
                 case Opcode::REQUEST_GAMES:{
                     n = protocol.sendGames(dynamic_cast<const MetadataGames&>(*msg));
                     break;

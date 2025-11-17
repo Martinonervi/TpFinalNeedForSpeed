@@ -13,6 +13,7 @@
 #include "../common_src/srv_msg/send_player.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
+#include "../common_src/srv_msg/playerstats.h"
 
 #include "client_types.h"
 
@@ -40,6 +41,8 @@ public:
     SrvCheckpointHitMsg recvCheckpointHitEvent();
     ClientDisconnect recvClientDisconnect();
     void sendDisconnectReq(DisconnectReq& dr);
+    void requestStats();
+    PlayerStats recvStats();
 
 
 private:
