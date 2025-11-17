@@ -73,6 +73,7 @@ void GameLoop::waitingForPlayers() {
 
 void GameLoop::run() {
     waitingForPlayers();
+    raceStartTime = Clock::now();
     try {
         ConstantRateLoop loop(60.0);
 
@@ -82,7 +83,9 @@ void GameLoop::run() {
             worldManager.step(TIME_STEP, SUB_STEP_COUNT);
 
             if (!raceEnded) {
-                raceTimeSeconds += TIME_STEP;
+                auto now = Clock::now();
+                std::chrono::duration<float> elapsed = now - raceStartTime;
+                raceTimeSeconds = elapsed.count();
             }
 
             broadcastCarSnapshots();
