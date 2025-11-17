@@ -37,25 +37,38 @@ static inline float lerp(float a, float b, float t) {
     return a + (b - a) * t;
 }
 
-void Car::applyControlsToBody(const MoveMsg& in, float dt) {
+namespace {
+constexpr float ENGINE_FWD  = 1500.f;
+constexpr float ENGINE_REV  = 1200.f;
+constexpr float BRAKE_FORCE = 3600.f;
+constexpr float DRAG_K      = 10.f;
+
+constexpr float VMAX_FWD    = 26.f;
+constexpr float VMAX_REV    = 9.f;
+
+constexpr float SPEED_REF   = 25.f;
+constexpr float MAX_TORQUE  = 140.f;
+}
+
+void Car::applyControlsToBody(const MoveMsg& in, float /*dt*/) {
     const uint8_t acc = in.getAccelerate();
     const float throttle = (acc == 1) ? 1.f : (acc == 2) ? -1.f : 0.f;
     const float brake    = in.getBrake() ? 1.f : 0.f;
     float steer          = in.getSteer();
 
+    applyLongitudinalForces(throttle, brake);
+    applySteering(steer);
+    applyDrift();
+}
+
+
+void Car::applyLongitudinalForces(float throttle, float brake) {
     b2Rot  rot = b2Body_GetRotation(body);
     b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
     b2Vec2 vel = b2Body_GetLinearVelocity(body);
 
     float v_long = vel.x * fwd.x + vel.y * fwd.y;
 
-    const float ENGINE_FWD  = 1500.f;
-    const float ENGINE_REV  = 1200.f;
-    const float BRAKE_FORCE = 3600.f;
-    const float DRAG_K      = 10.f;
-
-    const float VMAX_FWD = 26.f;
-    const float VMAX_REV = 9.f;
     float vmax = (v_long >= 0.f) ? VMAX_FWD : VMAX_REV;
 
     b2Vec2 F{0.f, 0.f};
@@ -74,117 +87,68 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     F += (-DRAG_K * v_long) * fwd;
 
     b2Body_ApplyForceToCenter(body, F, true);
-
-    if (steer != 0.f) {
-        float steerNorm = clampf(steer, -1.f, 1.f);
-
-        float speed = std::sqrt(vel.x * vel.x + vel.y * vel.y);
-        const float SPEED_REF = 25.f;
-
-        float speedFactor  = 1.f - clampf(speed / SPEED_REF, 0.f, 1.f);
-        float torqueScale  = 0.3f + 0.7f * speedFactor;
-
-        const float MAX_TORQUE = 140.f;
-        float torque = steerNorm * MAX_TORQUE * torqueScale;
-
-        b2Body_ApplyTorque(body, torque, true);
-
-
-
-        rot = b2Body_GetRotation(body);
-        fwd = b2RotateVector(rot, {0.f, 1.f});
-        vel = b2Body_GetLinearVelocity(body);
-
-        float speedNow = std::sqrt(vel.x * vel.x + vel.y * vel.y);
-
-        b2Vec2 targetVel = { fwd.x * speedNow, fwd.y * speedNow };
-
-        float alignBase = 0.45f;
-        float align = alignBase * std::fabs(steerNorm);
-
-        b2Vec2 newVel {
-            lerp(vel.x, targetVel.x, align),
-            lerp(vel.y, targetVel.y, align)
-        };
-        b2Body_SetLinearVelocity(body, newVel);
-    }
 }
 
 
-void Car::applyControlsToBodyyy(const MoveMsg& in, float dt) {
-    float throttle = in.getAccelerate();
-    if (throttle == 2) {
-        throttle = -1.0f;
+namespace {
+constexpr float TURN_SPEED = 2.8f;   // rad/s, qué tan rápido gira a fondo
+constexpr float STEER_SMOOTH = 0.25f; // cuánto “suavizás” el cambio de omega (0–1)
+}
+
+void Car::applySteering(float steer) {
+    // steer ∈ {-1, 0, 1} o [-1,1], da igual
+    if (steer == 0.f) {
+        // si querés que deje de girar cuando soltás
+        float currentOmega = b2Body_GetAngularVelocity(body);
+        float newOmega = lerp(currentOmega, 0.f, STEER_SMOOTH);
+        b2Body_SetAngularVelocity(body, newOmega);
+        return;
     }
-    const float brake    = clampf(in.getBrake(),      0.f, 1.f);
-    const float steer    = clampf(in.getSteer(),     -1.f, 1.f);
 
+    float steerNorm = clampf(steer, -1.f, 1.f);
 
-    b2Rot rot = b2Body_GetRotation(body);
-    b2Vec2 fwd   = b2RotateVector(rot, {0.f, 1.f});
-    b2Vec2 right = b2RotateVector(rot, {1.f, 0.f});
+    float targetOmega = steerNorm * TURN_SPEED;
+    float currentOmega = b2Body_GetAngularVelocity(body);
 
+    // suavizo el cambio para que no sea brusco
+    float newOmega = lerp(currentOmega, targetOmega, STEER_SMOOTH);
 
+    b2Body_SetAngularVelocity(body, newOmega);
+}
+
+namespace {
+constexpr float DRIFT_SPEED_REF = 25.f; // a partir de acá decimos "va rápido"
+constexpr float LATERAL_K_SLOW  = 0.8f; // cuánto mato la vel. lateral cuando va lento
+constexpr float LATERAL_K_FAST  = 0.4f; // cuánto mato la vel. lateral cuando va rápido
+}
+
+void Car::applyDrift() {
     b2Vec2 vel = b2Body_GetLinearVelocity(body);
-    float v_long = vel.x * fwd.x + vel.y * fwd.y;
-    float v_lat  = vel.x * right.x + vel.y * right.y;
+    float speed = std::sqrt(vel.x * vel.x + vel.y * vel.y);
+
+    if (speed < 0.1f) return;
+
+    b2Rot  rot = b2Body_GetRotation(body);
+    b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
+    b2Vec2 right{ fwd.y, -fwd.x }; // perpendicular
 
 
-    const float engineForce = 6000.f;
-    const float brakeForce  = 1200.f;
-    const float c_drag      = 12.f;
-    const float maxSpeed    = 200.f;
+    float v_fwd    = vel.x * fwd.x   + vel.y * fwd.y;
+    float v_lat    = vel.x * right.x + vel.y * right.y;
 
-    b2Vec2 F = {0.f, 0.f};
+    // cuánto quiero matar v_lat según la velocidad
+    float speedFactor = clampf(speed / DRIFT_SPEED_REF, 0.f, 1.f);
+    float k = lerp(LATERAL_K_SLOW, LATERAL_K_FAST, speedFactor);
+    // k ~ 0.8 en lento (mato casi todo), k ~ 0.4 en rápido (dejo más drift)
 
-    if (throttle != 0.f && std::fabs(v_long) < maxSpeed * 1.01f) {
-        float scale = 1.f - clampf(std::fabs(v_long) / maxSpeed, 0.f, 1.f);
-        F += engineForce * throttle * scale * fwd;
-    }
+    float v_lat_new = v_lat * (1.f - k); // reduzco la parte lateral
 
-    if (brake > 0.f) {
-        float dir = (v_long >= 0.f) ? -1.f : 1.f;
-        F += dir * brakeForce * brake * fwd;
-    }
+    // reconstruyo la velocidad
+    b2Vec2 newVel =
+            v_fwd * fwd +
+            v_lat_new * right;
 
-
-    F += (-c_drag * v_long) * fwd;
-
-
-    b2Body_ApplyForceToCenter(body, F, true);
-
-    float m = b2Body_GetMass(body);
-    float slipFactor = 0.75f;
-    b2Vec2 J = (-m * v_lat * slipFactor * right);
-    b2Body_ApplyLinearImpulseToCenter(body, J, true);
-
-    float angle = std::atan2(rot.s, rot.c);
-
-    const float PI = 3.14159265f;
-    const float turnSpeed = PI / 2.0f;
-    float turn = steer * turnSpeed * dt;
-
-    float newAngle = angle + turn;
-
-    b2Vec2 pos = b2Body_GetPosition(body);
-    b2Body_SetTransform(body, pos, b2MakeRot(newAngle));
-
-    b2Vec2 newFwd = b2RotateVector(b2MakeRot(newAngle), {0.f, 1.f});
-
-    // proyectamos la velocidad actual sobre la nueva dirección
-    float speedAlongNewFwd = vel.x * newFwd.x + vel.y * newFwd.y;
-
-    // armamos una velocidad nueva hacia adelante
-    b2Vec2 newVel = { newFwd.x * speedAlongNewFwd, newFwd.y * speedAlongNewFwd };
     b2Body_SetLinearVelocity(body, newVel);
-
-    const float stopEps = 0.05f;
-    if (std::fabs(speedAlongNewFwd) < stopEps && throttle == 0.f && brake == 1.f) {
-        b2Vec2 v2 = b2Body_GetLinearVelocity(body);
-        if (std::fabs(v2.x) < 0.02f && std::fabs(v2.y) < 0.02f) {
-            b2Body_SetLinearVelocity(body, {0.f, 0.f});
-        }
-    }
 }
 
 
