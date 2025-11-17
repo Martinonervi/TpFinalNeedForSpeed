@@ -168,5 +168,5 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
     auto baseCarB = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCarHitMsg>(carB.getClientId(), carB.getHealth()));
     registry.sendTo(carB.getClientId(), baseCarB);
-    std::cout << "carHitCar mandanod mensaje al Server Sender\n";
+    std::cout << "[WorldEventHandlers] carHitCar mandanod mensaje al Server Sender\n";
 }

@@ -82,15 +82,30 @@ PlayerState ClientProtocol::recvSrvMsg() {
         float    y;
         float    angleRad;
 
+        ID nextCheckpointId;
+        float checkX;
+        float checkY;
+        float hintDirX;
+        float hintDirY;
+
         peer.recvall(&player_id, sizeof(player_id));
         peer.recvall(&x, sizeof(x));
         peer.recvall(&y, sizeof(y));
         peer.recvall(&angleRad, sizeof(angleRad));
 
+        peer.recvall(&nextCheckpointId, sizeof(nextCheckpointId));
+        peer.recvall(&checkX, sizeof(checkX));
+        peer.recvall(&checkY, sizeof(checkY));
+        peer.recvall(&hintDirX, sizeof(hintDirX));
+        peer.recvall(&hintDirY, sizeof(hintDirY));
+
         //endianess para los floats??
         player_id = ntohs(player_id);
 
-        return PlayerState(player_id, x, y, angleRad);
+        PlayerState ps(player_id, x, y, angleRad);
+        ps.setCheckpointInfo(nextCheckpointId, checkX, checkY, hintDirX, hintDirY);
+        return ps;
+
     } catch (const std::exception& e) {
         std::cerr << "client_main error: " << e.what() << "\n";
         throw RETURN_FAILURE;
