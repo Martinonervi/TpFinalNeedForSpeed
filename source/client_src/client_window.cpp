@@ -1,5 +1,7 @@
 #include "client_window.h"
 
+#include "./renderables/checkpoint.h"
+
 ClientWindow::ClientWindow(const int width, const int height, const std::string& title,
                            Queue<SrvMsgPtr>& receiverQueue, Queue<CliMsgPtr>& senderQueue):
         sdl(SDL_INIT_VIDEO),
@@ -18,6 +20,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
 bool ClientWindow::run() {
     Hud hud(renderer, tm, MAP_LIBERTY);
     Map map(renderer, tm, MAP_LIBERTY);
+    Checkpoint checkpoint(renderer, tm, 80, 520);
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
@@ -29,6 +32,12 @@ bool ClientWindow::run() {
         renderer.SetDrawColor(0, 0, 0, 255);
         renderer.Clear();
         map.draw(camera);
+
+        // Aca podria hacer un dibuja tal capa
+
+        if (showMap) checkpoint.setInactive();
+        if (!showMap) checkpoint.setActive();
+        checkpoint.draw(camera);
 
         for (auto& [id, car]: cars) {
             const auto carState = car->getState();
