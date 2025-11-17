@@ -18,7 +18,7 @@ class LobbyWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit LobbyWindow(ClientProtocol& protocol, QWidget *parent = nullptr);
+    explicit LobbyWindow(ClientProtocol& protocol, bool& was_closed, QWidget *parent = nullptr);
     ~LobbyWindow() override;
 
     private slots:
@@ -57,4 +57,5 @@ private:
     QVector<QString> m_carSprites;
     int m_currentCar{0};
     ID joined_id{0};
+    bool& was_closed;
 };

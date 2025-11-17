@@ -11,10 +11,11 @@
 
 #include "ui_lobbywindow.h"
 
-LobbyWindow::LobbyWindow(ClientProtocol& protocol, QWidget *parent)
+LobbyWindow::LobbyWindow(ClientProtocol& protocol, bool& was_closed, QWidget *parent)
     : QMainWindow(parent),
-      ui(new Ui::LobbyWindow),
-      protocol(protocol) {
+    ui(new Ui::LobbyWindow),
+    protocol(protocol),
+    was_closed(was_closed){
     ui->setupUi(this);
 
     applyBackgroundSkin();
@@ -96,6 +97,7 @@ void LobbyWindow::on_playButton_clicked() {
 }
 
 void LobbyWindow::on_quitButton_clicked() {
+    was_closed = true;
     close();
 }
 

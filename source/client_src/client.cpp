@@ -13,16 +13,18 @@ Client::Client(const char* host, const char* service)
 receiver(protocol, receiverQueue), sender(protocol, senderQueue)
 {}
 
-void Client::lobbyState() {
+bool Client::lobbyState() {
     int argc = 0;
     char** argv = nullptr;
     QApplication app(argc, argv);
+    bool was_closed = false;
 
-    LobbyWindow window(protocol);
+    LobbyWindow window(protocol, was_closed);
 
     window.show();
 
     app.exec();   // event loop de Qt
+
     /*  por si quieren probar algo sin qt
     std::string line;
     while (!in_game && std::getline(std::cin, line)) {
@@ -31,6 +33,7 @@ void Client::lobbyState() {
         recvGame();
     }
     */
+    return was_closed;
 }
 
 void Client::recvGame() { // solo para probar cosas
@@ -57,10 +60,7 @@ void Client::sendRequest(int game_id) { // solo para probar cosas
 void Client::run() {
 
     std::string line;
-    lobbyState();
-
-    // aca falta ver si se unió a una partida o no para cerrar todo
-    // if (se_cerró?)
+    if (lobbyState()) { return;}
 
     sender.start();
     receiver.start();

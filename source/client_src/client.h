@@ -13,7 +13,8 @@ public:
 private:
     void close();  // cierra el socket (por si hiciera falta cerrar más cosas)antes de irse
                    // ordenadamente
-    void lobbyState();
+    bool lobbyState(); // lógica disparadora de QT, devuelve true
+                       // si el cliente nunca entró en partida
     void sendRequest(int game_id);
     void recvGame();
     void stop();
