@@ -15,6 +15,7 @@
 #include "../world/map_parser.h"
 #include "../world/world_manager.h"
 #include "world_event_handlers.h"
+#include "chrono"
 
 class GameLoop: public Thread {
 
@@ -59,6 +60,7 @@ private:
 
     //tiempo de la carrera
     float raceTimeSeconds = 0.0f;
+    std::chrono::steady_clock::time_point raceStartTime;
     bool raceStarted = false;
     bool raceEnded   = false;
     int finishedCarsCount = 0;

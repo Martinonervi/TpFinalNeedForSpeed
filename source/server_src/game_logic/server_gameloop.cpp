@@ -73,6 +73,7 @@ void GameLoop::waitingForPlayers() {
 
 void GameLoop::run() {
     waitingForPlayers();
+    raceStartTime = Clock::now();
     try {
         ConstantRateLoop loop(60.0);
 
@@ -82,7 +83,9 @@ void GameLoop::run() {
             worldManager.step(TIME_STEP, SUB_STEP_COUNT);
 
             if (!raceEnded) {
-                raceTimeSeconds += TIME_STEP;
+                auto now = Clock::now();
+                std::chrono::duration<float> elapsed = now - raceStartTime;
+                raceTimeSeconds = elapsed.count();
             }
 
             broadcastCarSnapshots();
@@ -105,7 +108,8 @@ void GameLoop::checkPlayersStatus() {
     std::vector<ID> toDisconnect = registry->checkClients(ids);
     for (ID idToDisconnect : toDisconnect) {
         disconnectHandler(idToDisconnect);
-        std::cout << "auto con id: " << idToDisconnect << " borrado" << "\n";
+        std::cout << "[GameLoop] auto con id: " << idToDisconnect
+        << " borrado" << "\n";
         auto msg = std::static_pointer_cast<SrvMsg>(
             std::make_shared<ClientDisconnect>(idToDisconnect));
         registry->broadcast(msg);
@@ -237,26 +241,22 @@ void GameLoop::broadcastCarSnapshots() {
         float dirX = 0.f, dirY = 0.f;
 
         auto itCp = checkpoints.find(next);
-        if (itCp != checkpoints.end()) {
-            const Checkpoint& cp = itCp->second;
+        if (itCp == checkpoints.end()) return; //termino
+        const Checkpoint& cp = itCp->second;
 
-            b2BodyId body = car.getBody();
-            b2Vec2 pos = b2Body_GetPosition(body);
+        b2BodyId body = car.getBody();
+        b2Vec2 pos = b2Body_GetPosition(body);
 
-            float vx = cp.getX() - pos.x;
-            float vy = cp.getY() - pos.y;
+        float vx = cp.getX() - pos.x;
+        float vy = cp.getY() - pos.y;
 
-            float len = std::sqrt(vx*vx + vy*vy);
-            if (len > 0.0001f) {
-                //normalizo
-                dirX = vx / len;
-                dirY = vy / len;
-            }
-        } else {
-            //termino la carrera
+        float len = std::sqrt(vx*vx + vy*vy);
+        if (len > 0.0001f) { //normalizo
+            dirX = vx / len;
+            dirY = vy / len;
         }
 
-        ps.setCheckpointInfo(next, dirX, dirY);
+        ps.setCheckpointInfo(next, cp.getX(), cp.getY(), dirX, dirY);
 
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerState>(std::move(ps)));

@@ -19,23 +19,28 @@ public:
     float    getY()        const { return y; }
     float    getAngleRad() const { return angleRad; }
 
-    ID getCurrentCheckpointId() const { return currentCheckpointId; }
+    ID getNextCheckpointId() const { return nextCheckpointId; }
     float getHintDirX() const { return hintDirX; }
     float getHintDirY() const { return hintDirY; }
+    float getCheckX() const { return checkX; }
+    float getCheckY() const { return checkY; }
 
-    void setCheckpointInfo(ID nextId, float dirX, float dirY) {
-        currentCheckpointId = nextId;
+    void setCheckpointInfo(ID nextId, float cx, float cy, float dirX, float dirY) {
+        nextCheckpointId = nextId;
+        checkX = cx;
+        checkY = cy;
         hintDirX = dirX;
         hintDirY = dirY;
     }
-
 private:
     ID player_id;
     float    x;
     float    y;
     float    angleRad;
 
-    ID currentCheckpointId = 0;
+    ID nextCheckpointId = 0;
+    float checkX = 0;
+    float checkY = 0;
     float hintDirX = 0.f;
     float hintDirY = 0.f;
 };

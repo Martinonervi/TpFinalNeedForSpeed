@@ -50,6 +50,11 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         const float x      = ps.getX();
         const float y      = ps.getY();
         const float angle  = ps.getAngleRad();
+        const ID nextCheckpointId = ps.getNextCheckpointId();
+        const float checkX = ps.getCheckX();
+        const float checkY = ps.getCheckY();
+        const float hintDirX = ps.getHintDirX();
+        const float hintDirY = ps.getHintDirY();
 
         std::vector<char> buf;
         buf.reserve(sizeof(type) + sizeof(pid) + sizeof(x) + sizeof(y) + sizeof(angle));
@@ -65,6 +70,12 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         append(&x,     sizeof(x));
         append(&y,     sizeof(y));
         append(&angle, sizeof(angle));
+
+        append(&nextCheckpointId, sizeof(nextCheckpointId));
+        append(&checkX, sizeof(checkX));
+        append(&checkY, sizeof(checkY));
+        append(&hintDirX, sizeof(hintDirX));
+        append(&hintDirY, sizeof(hintDirY));
 
         return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {
