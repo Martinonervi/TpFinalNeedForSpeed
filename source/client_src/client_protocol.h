@@ -4,6 +4,7 @@
 #include "../common_src/cli_msg/init_player.h"
 #include "../common_src/cli_msg/move_Info.h"
 #include "../common_src/cli_msg/requestgame.h"
+#include "../common_src/cli_msg/disconnect_request.h"
 #include "../common_src/srv_msg/client_disconnect.h"
 #include "../common_src/srv_msg/joingame.h"
 #include "../common_src/srv_msg/metadatagames.h"
@@ -38,6 +39,7 @@ public:
     SrvCarHitMsg recvCollisionEvent();
     SrvCheckpointHitMsg recvCheckpointHitEvent();
     ClientDisconnect recvClientDisconnect();
+    void sendDisconnectReq(DisconnectReq& dr);
 
 
 private:

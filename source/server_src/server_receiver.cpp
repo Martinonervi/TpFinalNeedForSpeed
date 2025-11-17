@@ -3,6 +3,7 @@
 #include <memory>
 #include <utility>
 
+#include "../common_src/cli_msg/disconnect_request.h"
 #include "../common_src/cli_msg/init_player.h"
 #include "../common_src/srv_msg/new_player.h"
 
@@ -25,9 +26,23 @@ void Receiver::run() {
                 break;
             }
             switch (op) {
+                case Opcode::CLIENT_DISCONNECT: {
+                    DisconnectReq req = protocol.recvDisconnectReq();
+                    if (joined_game_id != 0) {
+                        game_manager.LeaveGame(id, joined_game_id);
+                        cmdQueue = nullptr;
+                        joined_game_id = 0;
+                        //auto msg = std::static_pointer_cast<SrvMsg>(
+                        //    std::make_shared<ClientDisconnect>(id));
+                        //sender_queue->push(msg);
+                    }
+                    break;
+                }
                 case Opcode::REQUEST_GAMES: {
                     MetadataGames games = game_manager.getGames();
-                    protocol.sendGames(games);
+                    auto msg = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<MetadataGames>(std::move(games)));
+                    sender_queue->push(msg);
                     break;
                 }
                 case Opcode::JOIN_GAME:{

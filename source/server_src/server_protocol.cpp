@@ -13,13 +13,11 @@ ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 
 int ServerProtocol::sendPlayerInit(Player& sp) const {
     try {
-        // OJO: definir un wire-format claro. Acá empaquetamos:
-        // Op (1? 4? según tu enum) + uint16_t id + CarType + float x + float y + float angle
-        const Op type      = sp.type();
-        const uint16_t pid = /*htons*/(sp.getPlayerId());  // decidir si querés network order
-        const CarType car  = sp.getCarType();
-        const float x      = sp.getX();
-        const float y      = sp.getY();
+        const Op type = sp.type();
+        const uint16_t pid = /*htons*/(sp.getPlayerId());
+        const CarType car = sp.getCarType();
+        const float x = sp.getX();
+        const float y = sp.getY();
         const float angle  = sp.getAngleRad();
 
         std::vector<char> buf;
@@ -152,8 +150,9 @@ int ServerProtocol::sendGameInfo(const JoinGame& game_info) {
         Op type = JOIN_GAME;
         bool joined = game_info.couldJoin();
         err_code code = game_info.getExitStatus();
+        uint32_t ID_BE = htonl(game_info.getGameID());
 
-        std::vector<char> buf(sizeof(Op) + sizeof(bool) + sizeof(Op));
+        std::vector<char> buf(sizeof(Op) + sizeof(bool) + sizeof(Op) + sizeof(ID));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
@@ -164,6 +163,9 @@ int ServerProtocol::sendGameInfo(const JoinGame& game_info) {
 
         memcpy(buf.data() + offset, &code, sizeof(err_code));
         offset += sizeof(err_code);
+
+        memcpy(buf.data() + offset, &ID_BE, sizeof(uint32_t));
+        offset += sizeof(uint32_t);
 
         int n = peer.sendall(buf.data(), offset);
         return n;
@@ -288,4 +290,22 @@ int ServerProtocol::sendClientDisconnect(ClientDisconnect& msg) {
         std::cerr << e.what() << '\n';
         throw("Error sending");
     }
+}
+
+DisconnectReq ServerProtocol::recvDisconnectReq() {
+    size_t n = 0;
+
+    uint32_t ID_BE;
+
+    try {
+        n = peer.recvall(&ID_BE, sizeof(uint32_t));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+
+    ID id = static_cast<ID>(ntohl(ID_BE));
+    return DisconnectReq(id);
 }

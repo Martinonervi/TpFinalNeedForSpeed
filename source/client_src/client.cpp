@@ -23,7 +23,7 @@ void Client::lobbyState() {
     window.show();
 
     app.exec();   // event loop de Qt
-    /*
+    /*  por si quieren probar algo sin qt
     std::string line;
     while (!in_game && std::getline(std::cin, line)) {
         int game_id = std::stoi(line);
@@ -33,7 +33,7 @@ void Client::lobbyState() {
     */
 }
 
-void Client::recvGame() {
+void Client::recvGame() { // solo para probar cosas
     Op op = protocol.readActionByte();
     if (op != JOIN_GAME) {
         throw("em...");
@@ -48,7 +48,7 @@ void Client::recvGame() {
     }
 }
 
-void Client::sendRequest(int game_id) {
+void Client::sendRequest(int game_id) { // solo para probar cosas
     auto rq = std::make_shared<RequestGame>(static_cast<ID>(game_id));
     CliMsgPtr base = rq;
     protocol.sendRequestGame(*rq);
@@ -58,6 +58,9 @@ void Client::run() {
 
     std::string line;
     lobbyState();
+
+    // aca falta ver si se unió a una partida o no para cerrar todo
+    // if (se_cerró?)
 
     sender.start();
     receiver.start();

@@ -1,11 +1,11 @@
 #include "lobbywindow.h"
-#include "ui_lobbywindow.h"
 
+#include <QGraphicsDropShadowEffect>
+#include <QMessageBox>
 #include <QTableWidget>
 #include <QTableWidgetItem>
-#include <QMessageBox>
-#include <QGraphicsDropShadowEffect>
 
+#include "../../common_src/cli_msg/disconnect_request.h"
 #include "../../common_src/cli_msg/requestgame.h"
 #include "../../common_src/srv_msg/joingame.h"
 
@@ -109,6 +109,7 @@ void LobbyWindow::on_refreshButton_clicked() {
         MetadataGames games = protocol.getMetadata();
         populateGames(games.getMetadata());
     } else {
+        std::cout << "Opcode: " <<static_cast<int>(op) << static_cast<Opcode>(op) <<std::endl;
         QMessageBox::warning(this, "Error",
                              "Respuesta inesperada al actualizar partidas.");
     }
@@ -177,6 +178,7 @@ void LobbyWindow::on_createButton_clicked() {
     JoinGame info = protocol.recvGameInfo();
 
     if (info.couldJoin()) {
+        joined_id = info.getGameID();
         QMessageBox::information(this, "Crear partida",
                                  "Partida creada y unida correctamente.");
         ui->stackedPages->setCurrentWidget(ui->CarSelector);
@@ -455,7 +457,23 @@ void LobbyWindow::updateCarView() {
 }
 
 void LobbyWindow::on_backButtonCar_clicked() {
+    int n = 0;
+    DisconnectReq dr(joined_id);
+    CliMsgPtr msg = std::make_shared<DisconnectReq>(dr);
+    protocol.sendDisconnectReq(dr);
+    joined_id = 0;
+
+    /*
+    Op opcode = protocol.readActionByte();
+
+    if (opcode == INIT_PLAYER) {
+        std::cout << "recibí init player" << std::endl;
+        protocol.recvSendPlayer();
+    }
+    */
+
     ui->stackedPages->setCurrentWidget(ui->LobbySelector);
+    on_refreshButton_clicked();
 }
 
 void LobbyWindow::on_prevCarButton_clicked() {

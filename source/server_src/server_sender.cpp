@@ -28,25 +28,33 @@ void Sender::run() {
             int n;
 
             switch (msg->type()) {
+                case Opcode::REQUEST_GAMES:{
+                    n = protocol.sendGames(dynamic_cast<const MetadataGames&>(*msg));
+                    break;
+                }
                 case Opcode::JOIN_GAME:{
                     n = protocol.sendGameInfo(dynamic_cast<const JoinGame&>(*msg));
                     break;
                 }
                 case Opcode::Movement: {
+                    if (!playing){continue;}
                     n = protocol.sendPlayerState(dynamic_cast<const PlayerState&>(*msg));
                     break;
                 }
                 case Opcode::INIT_PLAYER:
                 case Opcode::NEW_PLAYER:
                 {
+                    playing = true;
                     n = protocol.sendPlayerInit(dynamic_cast<Player&>(*msg));
                     break;
                 }
                 case Opcode::COLLISION: {
+                    if (!playing){continue;}
                     n = protocol.sendCollisionEvent(dynamic_cast<SrvCarHitMsg&>(*msg));
                     break;
                 }
                 case Opcode::CHECKPOINT_HIT: {
+                    if (!playing){continue;}
                     n = protocol.sendCheckpointHit(dynamic_cast<SrvCheckpointHitMsg&>(*msg));
                     break;
                 }

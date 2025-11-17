@@ -56,4 +56,5 @@ private:
     ClientProtocol& protocol;
     QVector<QString> m_carSprites;
     int m_currentCar{0};
+    ID joined_id{0};
 };

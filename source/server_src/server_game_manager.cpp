@@ -26,7 +26,7 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
             std::cout << "[Game Manager] New game created, game id: " << gid << std::endl;
         }
 
-        sender_queue->push(std::make_shared<JoinGame>(true, SUCCES));
+        sender_queue->push(std::make_shared<JoinGame>(true, SUCCES, gid));
         raw->start();
         std::cout << "[Game Manager] Player joined:  " << client_id << ", game id: " << static_cast<int>(last_id) << std::endl;
         return {q, gid};
@@ -37,7 +37,7 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
             std::lock_guard<std::mutex> lk(mx);
             auto it = games.find(game_id);
             if (it == games.end()) {
-                sender_queue->push(std::make_shared<JoinGame>(false, INEXISTENT_GAME));
+                sender_queue->push(std::make_shared<JoinGame>(false, INEXISTENT_GAME, 0));
                 throw std::runtime_error("Partida inexistente");
             }
             reg = it->second.getRegistry();
@@ -45,10 +45,10 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
         }
         try {
             reg->AddClient(sender_queue, client_id);
-            sender_queue->push(std::make_shared<JoinGame>(true, SUCCES));
+            sender_queue->push(std::make_shared<JoinGame>(true, SUCCES, game_id));
             std::cout << "[Game Manager] Player joined:  " << client_id << ", game id: " << game_id<< std::endl;
         } catch (const std::exception&) {
-            sender_queue->push(std::make_shared<JoinGame>(false, FULL_GAME));
+            sender_queue->push(std::make_shared<JoinGame>(false, FULL_GAME, 0));
             throw;
         }
         return {q, game_id};
@@ -73,6 +73,7 @@ void GameManager::LeaveGame(ID client_id, ID game_id) {
         auto it = games.find(game_id);
         if (it == games.end()) return;
         it->second.getRegistry()->EraseQueue(client_id);
+        std::cout << "[Game Manager] Player id: " << client_id << " left game: " << static_cast<uint32_t>(game_id) << std::endl;
         if (it->second.getRegistry()->size() == 0) {
             to_stop = it->second.takeGameThread();  // mover el loop
             games.erase(it);                       // borrar del mapa ahora que ya no hay hilos

@@ -24,4 +24,5 @@ private:
     SendQPtr msg_queue;
     ServerProtocol protocol;
     bool listening{true};
+    bool playing{false};
 };

@@ -47,8 +47,6 @@ void ClientReceiver::run(){
                 SrvCarHitMsg msg = protocol.recvCollisionEvent();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SrvCarHitMsg>(std::move(msg)));
-                std::cout << "[client Receiver] collision, id:" << msg.getPlayerId() << "\n";
-                std::cout << "[client Receiver] auto con vida: " << msg.getCarHealth() << "\n";
                 receiverQueue.push(base);
                 break;
             }
@@ -56,7 +54,6 @@ void ClientReceiver::run(){
                 SrvCheckpointHitMsg msg = protocol.recvCheckpointHitEvent();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SrvCheckpointHitMsg>(std::move(msg)));
-                std::cout << "[client Receiver] CHECKPOINT_HIT, id:" << msg.getPlayerId() << "\n";
                 receiverQueue.push(base);
                 break;
             }

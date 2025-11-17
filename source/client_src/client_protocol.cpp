@@ -2,6 +2,7 @@
 
 #include <arpa/inet.h>
 
+#include "../common_src/cli_msg/disconnect_request.h"
 #include "../common_src/cli_msg/requestgame.h"
 #include "../common_src/srv_msg/metadatagames.h"
 
@@ -189,11 +190,15 @@ JoinGame ClientProtocol::recvGameInfo() {
     try {
         bool joined;
         err_code exit_code;
+        uint32_t game_id_BE;
 
         peer.recvall(&joined, sizeof(bool));
         peer.recvall(&exit_code, sizeof(err_code));
+        peer.recvall(&game_id_BE, sizeof(uint32_t));
 
-        return JoinGame(joined, exit_code);
+        ID game_id = static_cast<ID>(ntohl(game_id_BE));
+
+        return JoinGame(joined, exit_code, game_id);
     } catch (const std::exception& e) {
         std::cerr << "client_main error: " << e.what() << "\n";
         throw RETURN_FAILURE;
@@ -303,4 +308,25 @@ ClientDisconnect ClientProtocol::recvClientDisconnect() {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
     return ClientDisconnect(player_id);
+}
+
+void ClientProtocol::sendDisconnectReq(DisconnectReq& dr) {
+    try{
+        Op opcode = dr.type();
+        ID game_id = htonl(dr.getGameID());
+
+        std::vector<char> buf(sizeof(Op) + sizeof(uint32_t));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &game_id, sizeof(uint32_t));
+        offset += sizeof(uint32_t);
+
+        peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
 }
