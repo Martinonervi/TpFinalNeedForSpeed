@@ -1,15 +1,19 @@
 #include "event_manager.h"
 
 #include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 
-EventManager::EventManager( ID& myCarId,
+EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                                 SDL2pp::Renderer& renderer,
                                 Queue<CliMsgPtr>& senderQueue,
                                 TextureManager& textureManager,
+                                std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                                 bool& running, bool& showMap, bool& quit)
 :       myCarId(myCarId),
+        nextCheckpoint(nextCheckpoint),
         cars(cars),
+        checkpoints(checkpoints),
         renderer(renderer),
         senderQueue(senderQueue),
         tm(textureManager),
@@ -69,6 +73,12 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
                     ps.getY()*PIXELS_PER_METER,
                     ps.getAngleRad());
             }
+            if (!checkpoints.count(ps.getNextCheckpointId())) {
+                checkpoints[ps.getNextCheckpointId()] = std::make_unique<Checkpoint>(renderer, tm,
+                    ps.getCheckX()*PIXELS_PER_METER, ps.getCheckY()*PIXELS_PER_METER);
+            }
+            nextCheckpoint = ps.getNextCheckpointId();
+
             break;
         }
         case COLLISION: {
@@ -87,6 +97,12 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
                 running = false;
             }
             break;
+        }
+        case CHECKPOINT_HIT: {
+            const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
+            if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
+                checkpoints[nextCheckpoint]->setInactive();
+            }
         }
         default:
             break;
