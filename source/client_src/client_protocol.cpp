@@ -15,7 +15,7 @@ int ClientProtocol::sendInitPlayer(const InitPlayer& ip) const {
         //std::string name = ip.getName();
         CarType carType = ip.getCarType();
 
-        std::vector<char> buf(sizeof(CliMsg));
+        std::vector<char> buf(sizeof(type) + sizeof(carType));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(type));
@@ -44,7 +44,7 @@ int ClientProtocol::sendClientMove(const MoveMsg& moveMsg) const {
         uint8_t nitro = moveMsg.getNitro();
         Op type = Movement;
 
-        std::vector<char> buf(sizeof(CliMsg));
+        std::vector<char> buf(sizeof(type) + sizeof(accelerate) + sizeof(brake) + sizeof(steer) + sizeof(nitro));
         size_t offset = 0;
 
         //type
@@ -78,30 +78,40 @@ int ClientProtocol::sendClientMove(const MoveMsg& moveMsg) const {
 
 PlayerState ClientProtocol::recvSrvMsg() {
     try {
-        uint16_t player_id;
-        float    x;
-        float    y;
-        float    angleRad;
+        uint16_t player_id_BE;
+        uint32_t x_BE;
+        uint32_t y_BE;
+        uint32_t angleRad_BE;
 
-        ID nextCheckpointId;
-        float checkX;
-        float checkY;
-        float hintDirX;
-        float hintDirY;
+        ID nextCheckpointId_BE;
+        uint32_t checkX_BE;
+        uint32_t checkY_BE;
+        uint32_t hintDirX_BE;
+        uint32_t hintDirY_BE;
 
-        peer.recvall(&player_id, sizeof(player_id));
-        peer.recvall(&x, sizeof(x));
-        peer.recvall(&y, sizeof(y));
-        peer.recvall(&angleRad, sizeof(angleRad));
+        peer.recvall(&player_id_BE, sizeof(uint16_t));
+        peer.recvall(&x_BE, sizeof(uint32_t));
+        peer.recvall(&y_BE, sizeof(uint32_t));
+        peer.recvall(&angleRad_BE, sizeof(uint32_t));
 
-        peer.recvall(&nextCheckpointId, sizeof(nextCheckpointId));
-        peer.recvall(&checkX, sizeof(checkX));
-        peer.recvall(&checkY, sizeof(checkY));
-        peer.recvall(&hintDirX, sizeof(hintDirX));
-        peer.recvall(&hintDirY, sizeof(hintDirY));
+        peer.recvall(&nextCheckpointId_BE, sizeof(uint32_t));
+        peer.recvall(&checkX_BE, sizeof(uint32_t));
+        peer.recvall(&checkY_BE, sizeof(uint32_t));
+        peer.recvall(&hintDirX_BE, sizeof(uint32_t));
+        peer.recvall(&hintDirY_BE, sizeof(uint32_t));
 
         //endianess para los floats??
-        player_id = ntohs(player_id);
+
+        uint16_t player_id = ntohs(player_id_BE);
+        float x = decodeFloat100BE(x_BE);
+        float y = decodeFloat100BE(y_BE);
+        float angleRad = decodeFloat100BE(angleRad_BE);
+
+        ID   nextCheckpointId = ntohl(nextCheckpointId_BE);  // ID no va x100 en el server
+        float checkX = decodeFloat100BE(checkX_BE);
+        float checkY = decodeFloat100BE(checkY_BE);
+        float hintDirX = decodeFloat100BE(hintDirX_BE);
+        float hintDirY = decodeFloat100BE(hintDirY_BE);
 
         PlayerState ps(player_id, x, y, angleRad);
         ps.setCheckpointInfo(nextCheckpointId, checkX, checkY, hintDirX, hintDirY);
@@ -130,18 +140,18 @@ Op ClientProtocol::readActionByte() const {
 SendPlayer ClientProtocol::recvSendPlayer() {
     size_t n = 0;
 
-    uint16_t player_id;
+    uint16_t player_id_BE;
     CarType carType;
-    float x;
-    float y;
-    float angleRad;
+    uint32_t x_BE;
+    uint32_t y_BE;
+    uint32_t angleRad_BE;
 
     try {
-        n = peer.recvall(&player_id, sizeof(player_id));
+        n = peer.recvall(&player_id_BE, sizeof(uint16_t));
         n += peer.recvall(&carType, sizeof(carType));
-        n += peer.recvall(&x, sizeof(x));
-        n += peer.recvall(&y, sizeof(y));
-        n += peer.recvall(&angleRad, sizeof(angleRad));
+        n += peer.recvall(&x_BE, sizeof(uint32_t));
+        n += peer.recvall(&y_BE, sizeof(uint32_t));
+        n += peer.recvall(&angleRad_BE, sizeof(uint32_t));
 
 
     } catch (...) {
@@ -150,47 +160,54 @@ SendPlayer ClientProtocol::recvSendPlayer() {
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
+    uint16_t player_id = ntohs(player_id_BE);
+    float x = decodeFloat100BE(x_BE);
+    float y = decodeFloat100BE(y_BE);
+    float angleRad = decodeFloat100BE(angleRad_BE);
     return SendPlayer(player_id, carType, x, y, angleRad);
 }
 
 NewPlayer ClientProtocol::recvNewPlayer() {
     size_t n = 0;
 
-    uint16_t player_id;
+    uint16_t player_id_BE;
     CarType carType;
-    float x;
-    float y;
-    float angleRad;
+    uint32_t x_BE;
+    uint32_t y_BE;
+    uint32_t angleRad_BE;
 
     try {
-        n = peer.recvall(&player_id, sizeof(player_id));
+        n = peer.recvall(&player_id_BE, sizeof(uint16_t));
         n += peer.recvall(&carType, sizeof(carType));
-        n += peer.recvall(&x, sizeof(x));
-        n += peer.recvall(&y, sizeof(y));
-        n += peer.recvall(&angleRad, sizeof(angleRad));
-
-
+        n += peer.recvall(&x_BE, sizeof(uint32_t));
+        n += peer.recvall(&y_BE, sizeof(uint32_t));
+        n += peer.recvall(&angleRad_BE, sizeof(uint32_t));
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
     }
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
+    float player_id = ntohs(player_id_BE);
+    float x = decodeFloat100BE(x_BE);
+    float y = decodeFloat100BE(y_BE);
+    float angleRad = decodeFloat100BE(angleRad_BE);
+
     return NewPlayer(player_id, carType, x, y, angleRad);
 }
 
 int ClientProtocol::sendRequestGame(RequestGame& request_game) {
     try {
         Op type = JOIN_GAME;
-        ID game_id = request_game.getGameID();
+        ID game_id_BE = htonl(request_game.getGameID());
 
-        std::vector<char> buf(sizeof(JoinGame));
+        std::vector<char> buf(sizeof(Op) + sizeof(ID));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type , sizeof(Op));
         offset += sizeof(type);
 
-        memcpy(buf.data() + offset, &game_id , sizeof(ID));
+        memcpy(buf.data() + offset, &game_id_BE , sizeof(ID));
         offset += sizeof(ID);
 
         int n = peer.sendall(buf.data(), offset);
@@ -275,12 +292,12 @@ GameMetadata ClientProtocol::readOneGame() {
 
 SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
     size_t n = 0;
-    ID player_id;
-    float health;
+    ID player_id_BE;
+    uint32_t health_BE;
 
     try {
-        n = peer.recvall(&player_id, sizeof(player_id));
-        n += peer.recvall(&health, sizeof(health));
+        n = peer.recvall(&player_id_BE, sizeof(uint32_t));
+        n += peer.recvall(&health_BE, sizeof(uint32_t));
 
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
@@ -288,17 +305,20 @@ SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
+
+    ID player_id = ntohl(player_id_BE);
+    float health = decodeFloat100BE(health_BE);
     return SrvCarHitMsg(player_id, health);
 }
 
 SrvCheckpointHitMsg ClientProtocol::recvCheckpointHitEvent(){
     size_t n = 0;
-    ID player_id;
-    ID checkpoint_id;
+    ID player_id_BE;
+    ID checkpoint_id_BE;
 
     try {
-        n = peer.recvall(&player_id, sizeof(player_id));
-        n += peer.recvall(&checkpoint_id, sizeof(checkpoint_id));
+        n = peer.recvall(&player_id_BE, sizeof(ID));
+        n += peer.recvall(&checkpoint_id_BE, sizeof(ID));
 
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
@@ -306,15 +326,18 @@ SrvCheckpointHitMsg ClientProtocol::recvCheckpointHitEvent(){
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
+
+    ID player_id = ntohl(player_id_BE);
+    ID checkpoint_id = ntohl(checkpoint_id_BE);
     return SrvCheckpointHitMsg(player_id, checkpoint_id);
 }
 
 ClientDisconnect ClientProtocol::recvClientDisconnect() {
     size_t n = 0;
-    ID player_id;
+    ID player_id_BE;
 
     try {
-        n = peer.recvall(&player_id, sizeof(player_id));
+        n = peer.recvall(&player_id_BE, sizeof(ID));
 
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
@@ -322,6 +345,7 @@ ClientDisconnect ClientProtocol::recvClientDisconnect() {
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
+    ID player_id = ntohl(player_id_BE);
     return ClientDisconnect(player_id);
 }
 
