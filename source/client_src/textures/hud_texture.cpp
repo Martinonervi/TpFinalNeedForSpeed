@@ -1,7 +1,7 @@
 #include "hud_texture.h"
 
-HudTexture::HudTexture(SDL2pp::Texture& bars, SDL2pp::Texture& checkpoint) :
-    bars(bars), checkpoint(checkpoint)
+HudTexture::HudTexture(SDL2pp::Texture& bars) :
+    bars(bars)
 {}
 
 SDL2pp::Rect HudTexture::getHealthBar() const {
@@ -19,11 +19,6 @@ SDL2pp::Rect HudTexture::getEnergyBar() const {
     int h = 16;
     return {x, y, w, h};
 }
-
-SDL2pp::Texture& HudTexture::getCheckpointTexture() const {
-    return checkpoint;
-}
-
 
 SDL2pp::Texture& HudTexture::getBarsTexture() const {
     return bars;
