@@ -25,7 +25,7 @@ void Minimap::draw(const int windowWidth, const int windowHeight,
     uint8_t originalAlpha;
     SDL_GetTextureAlphaMod(texture.Get(), &originalAlpha);
 
-    texture.SetAlphaMod(120);
+    texture.SetAlphaMod(115);
 
     renderer.Copy(texture, srcRect, dstRect);
 
