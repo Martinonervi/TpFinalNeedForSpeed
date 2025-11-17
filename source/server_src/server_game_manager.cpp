@@ -10,7 +10,7 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
         throw std::runtime_error("sender_queue null");
     }
 
-    if (game_id == 0) {
+    if (game_id == 0) { // id estandar para crear partida
         auto reg = std::make_shared<ClientsRegistry>();
         auto q = std::make_shared<gameLoopQueue>();
         auto loop = std::make_unique<GameLoop>(q, reg);
@@ -30,7 +30,7 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
         raw->start();
         std::cout << "[Game Manager] Player joined:  " << client_id << ", game id: " << static_cast<int>(last_id) << std::endl;
         return {q, gid};
-    } else {
+    } else { // pedido de unirse a una partida existente
         std::shared_ptr<ClientsRegistry> reg;
         std::shared_ptr<gameLoopQueue> q;
         {

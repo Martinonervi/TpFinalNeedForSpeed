@@ -14,14 +14,14 @@ ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 int ServerProtocol::sendPlayerInit(Player& sp) const {
     try {
         const Op type = sp.type();
-        const uint16_t pid = /*htons*/(sp.getPlayerId());
+        const uint16_t pid = htons(sp.getPlayerId());
         const CarType car = sp.getCarType();
-        const float x = sp.getX();
-        const float y = sp.getY();
-        const float angle  = sp.getAngleRad();
+        const uint32_t x_cast = encodeFloat100BE(sp.getX());
+        const uint32_t y_cast = encodeFloat100BE(sp.getY());
+        const uint32_t angle  = encodeFloat100BE(sp.getAngleRad());
 
         std::vector<char> buf;
-        buf.reserve(sizeof(type) + sizeof(pid) + sizeof(car) + sizeof(x) + sizeof(y) + sizeof(angle));
+        buf.reserve(sizeof(Op) + sizeof(uint16_t) + sizeof(CarType) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t));
 
         auto append = [&buf](const void* p, std::size_t n) {
             const std::size_t old = buf.size();
@@ -29,12 +29,12 @@ int ServerProtocol::sendPlayerInit(Player& sp) const {
             std::memcpy(buf.data() + old, p, n);
         };
 
-        append(&type,  sizeof(type));
-        append(&pid,   sizeof(pid));
-        append(&car,   sizeof(car));
-        append(&x,     sizeof(x));
-        append(&y,     sizeof(y));
-        append(&angle, sizeof(angle));
+        append(&type,sizeof(type));
+        append(&pid,sizeof(pid));
+        append(&car,sizeof(car));
+        append(&x_cast,sizeof(uint32_t));
+        append(&y_cast, sizeof(uint32_t));
+        append(&angle, sizeof(uint32_t));
 
         return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {
@@ -45,19 +45,19 @@ int ServerProtocol::sendPlayerInit(Player& sp) const {
 
 int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
     try {
-        const Op type      = Movement;
+        const Op type = Movement;
         const uint16_t pid = htons(ps.getPlayerId());
-        const float x      = ps.getX();
-        const float y      = ps.getY();
-        const float angle  = ps.getAngleRad();
-        const ID nextCheckpointId = ps.getNextCheckpointId();
-        const float checkX = ps.getCheckX();
-        const float checkY = ps.getCheckY();
-        const float hintDirX = ps.getHintDirX();
-        const float hintDirY = ps.getHintDirY();
+        const uint32_t x = encodeFloat100BE(ps.getX());
+        const uint32_t y = encodeFloat100BE(ps.getY());
+        const uint32_t angle  = encodeFloat100BE(ps.getAngleRad());
+        const ID nextCheckpointId = htonl(ps.getNextCheckpointId());
+        const uint32_t checkX = encodeFloat100BE(ps.getCheckX());
+        const uint32_t checkY = encodeFloat100BE(ps.getCheckY());
+        const uint32_t hintDirX = encodeFloat100BE(ps.getHintDirX());
+        const uint32_t hintDirY = encodeFloat100BE(ps.getHintDirY());
 
         std::vector<char> buf;
-        buf.reserve(sizeof(type) + sizeof(pid) + sizeof(x) + sizeof(y) + sizeof(angle));
+        buf.reserve(sizeof(type) + sizeof(pid) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t));
 
         auto append = [&buf](const void* p, std::size_t n) {
             const std::size_t old = buf.size();
@@ -147,8 +147,9 @@ MoveMsg ServerProtocol::recvMoveInfo() {
 
 RequestGame ServerProtocol::recvGameInfo() {
     try {
-        ID game_id;
-        peer.recvall(&game_id, sizeof(ID));
+        uint32_t game_id_BE;
+        peer.recvall(&game_id_BE, sizeof(uint32_t));
+        ID game_id = ntohl(game_id_BE);
         return RequestGame(game_id);
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
@@ -228,21 +229,21 @@ void ServerProtocol::writeGameAppend(std::vector<char>& buf, const GameMetadata&
 int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
     try {
         Op type = COLLISION;
-        ID player_id = msg.getPlayerId();
-        float health = msg.getCarHealth();
+        ID player_id_BE = htonl(msg.getPlayerId());
+        uint32_t health_BE = encodeFloat100BE(msg.getCarHealth());
 
 
-        std::vector<char> buf(sizeof(Op) + sizeof(player_id) + sizeof(health));
+        std::vector<char> buf(sizeof(Op) + sizeof(ID) + sizeof(uint32_t));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
         offset += sizeof(Op);
 
-        memcpy(buf.data() + offset, &player_id, sizeof(player_id));
-        offset += sizeof(player_id);
+        memcpy(buf.data() + offset, &player_id_BE, sizeof(ID));
+        offset += sizeof(ID);
 
-        memcpy(buf.data() + offset, &health, sizeof(health));
-        offset += sizeof(health);
+        memcpy(buf.data() + offset, &health_BE, sizeof(uint32_t));
+        offset += sizeof(uint32_t);
 
         int n = peer.sendall(buf.data(), offset);
         return n;
@@ -255,21 +256,21 @@ int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
 int ServerProtocol::sendCheckpointHit(SrvCheckpointHitMsg& msg) {
     try {
         Op type = CHECKPOINT_HIT;
-        ID player_id = msg.getPlayerId();
-        ID checkpoint_id = msg.getCheckpointId();
+        ID player_id_BE = htonl(msg.getPlayerId());
+        ID checkpoint_id_BE = htonl(msg.getCheckpointId());
 
 
-        std::vector<char> buf(sizeof(Op) + sizeof(player_id) + sizeof(checkpoint_id));
+        std::vector<char> buf(sizeof(Op) + sizeof(ID) + sizeof(ID));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
         offset += sizeof(Op);
 
-        memcpy(buf.data() + offset, &player_id, sizeof(player_id));
-        offset += sizeof(player_id);
+        memcpy(buf.data() + offset, &player_id_BE, sizeof(ID));
+        offset += sizeof(ID);
 
-        memcpy(buf.data() + offset, &checkpoint_id, sizeof(checkpoint_id));
-        offset += sizeof(checkpoint_id);
+        memcpy(buf.data() + offset, &checkpoint_id_BE, sizeof(ID));
+        offset += sizeof(ID);
 
         int n = peer.sendall(buf.data(), offset);
         return n;
@@ -283,17 +284,17 @@ int ServerProtocol::sendCheckpointHit(SrvCheckpointHitMsg& msg) {
 int ServerProtocol::sendClientDisconnect(ClientDisconnect& msg) {
     try {
         Op type = Opcode::CLIENT_DISCONNECT;
-        ID player_id = msg.getPlayerId();
+        ID player_id_BE = htonl(msg.getPlayerId());
 
 
-        std::vector<char> buf(sizeof(Op) + sizeof(player_id));
+        std::vector<char> buf(sizeof(Op) + sizeof(ID));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
         offset += sizeof(Op);
 
-        memcpy(buf.data() + offset, &player_id, sizeof(player_id));
-        offset += sizeof(player_id);
+        memcpy(buf.data() + offset, &player_id_BE, sizeof(ID));
+        offset += sizeof(ID);
 
         int n = peer.sendall(buf.data(), offset);
         return n;
