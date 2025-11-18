@@ -34,7 +34,9 @@ struct HintDef {
 struct MapData {
     std::string city;
     std::vector<BuildingConfig> buildings;
-    std::vector<CheckpointConfig> checkpoints;
+    std::vector<CheckpointConfig> checkpoints; //la primera
+    // todos las recorridos
+    std::vector<std::vector<CheckpointConfig>> routes;
 };
 
 class MapParser {

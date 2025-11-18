@@ -4907,7 +4907,7 @@ route:
       angle: 0.0
 
 #proximamente el recorrido 1 ira aca y voy a ir leyendo todos
-routes:
+route_alt:
   - name: recorrido2
     checkpoints:
       - id: 1 #1
