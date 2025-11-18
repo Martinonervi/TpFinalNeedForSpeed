@@ -40,9 +40,7 @@ private:
     void disconnectHandler(ID id);
     void broadcastCarSnapshots();
     void sendCurrentInfo();
-
-
-
+    void sendPlayerStats();
 
     // box2D
     WorldManager worldManager;
@@ -67,6 +65,8 @@ private:
     uint8_t finishedCarsCount = 0;
     uint8_t totalCars = 0;
     uint8_t raceCarNumber = 0;
+
+    std::vector<ID> raceRanking;
 
     // loop
     Printer printer;

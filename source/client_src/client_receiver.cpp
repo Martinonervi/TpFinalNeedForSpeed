@@ -5,6 +5,7 @@
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
+#include "../common_src/srv_msg/playerstats.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -68,6 +69,7 @@ void ClientReceiver::run(){
                 << msg.getPlayerId()
                 << "\n";
                 receiverQueue.push(base);
+                break;
             }
             case Opcode::CURRENT_INFO: {
                 SrvCurrentInfo msg = protocol.recvCurrentInfo();
@@ -76,6 +78,17 @@ void ClientReceiver::run(){
                 receiverQueue.push(base);
                 break;
             }
+            case Opcode::STATS: {
+                PlayerStats msg = protocol.recvStats();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<PlayerStats>(std::move(msg)));
+                receiverQueue.push(base);
+                std::cout << "[client Receiver] STATAS, ranking: "
+                          << static_cast<int>(msg.getRacePosition())
+                          << " y tiempo: " << msg.getTimeSecToComplete() << "\n";
+                break;
+            }
+
             default: {
                 std::cout << "comando desconocido: " << op << "\n";
             }

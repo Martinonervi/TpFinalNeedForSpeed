@@ -412,10 +412,13 @@ void ClientProtocol::requestStats() {
 }
 
 PlayerStats ClientProtocol::recvStats() {
-    uint8_t checkpoints;
+    uint8_t racePosition;
+    uint32_t timeSecToComplete_BE;
+
     int n = 0;
     try {
-        n = peer.recvall(&checkpoints, sizeof(uint8_t));
+        n += peer.recvall(&racePosition, sizeof(racePosition));
+        n += peer.recvall(&timeSecToComplete_BE, sizeof(timeSecToComplete_BE));
 
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
@@ -423,5 +426,7 @@ PlayerStats ClientProtocol::recvStats() {
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
-    return PlayerStats(checkpoints);
+
+    float timeSecToComplete = decodeFloat100BE(timeSecToComplete_BE);
+    return PlayerStats(racePosition, timeSecToComplete);
 }

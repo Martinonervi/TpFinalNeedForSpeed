@@ -11,14 +11,15 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& cars,
                                        float& raceTimeSeconds,
                                        uint8_t& finishedCarsCount,
                                        uint8_t& totalCars,
-                                       bool& raceEnded)
+                                       bool& raceEnded,  std::vector<ID>& raceRanking)
         : cars(cars)
         , checkpoints(checkpoints)
         , registry(registry)
         , raceTimeSeconds(raceTimeSeconds)
         , finishedCarsCount(finishedCarsCount)
         , totalCars(totalCars)
-        , raceEnded(raceEnded) {}
+        , raceEnded(raceEnded)
+        ,raceRanking(raceRanking) {}
 
 
 void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
@@ -38,6 +39,7 @@ void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
     if (cp.getKind() == CheckpointKind::Finish and !car.isFinished()) {
         car.markFinished(raceTimeSeconds);
         finishedCarsCount++;
+        raceRanking.push_back(car.getClientId());
         if (finishedCarsCount == totalCars) {
             this->raceEnded = true;
         }

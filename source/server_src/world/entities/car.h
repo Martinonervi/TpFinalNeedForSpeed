@@ -38,6 +38,7 @@ public:
     }
     bool isFinished() const { return finished; }
     float getFinishTime() const { return finishTime; }
+    uint8_t getRanking() const { return ranking; }
 
 private:
     ID clientId;
@@ -46,6 +47,6 @@ private:
     ID actualCheckpoint = 0;
     bool finished = false;
     float finishTime = 0.0f;
-
+    uint8_t ranking = 0;
 };
 
