@@ -50,11 +50,6 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         const uint32_t x = encodeFloat100BE(ps.getX());
         const uint32_t y = encodeFloat100BE(ps.getY());
         const uint32_t angle  = encodeFloat100BE(ps.getAngleRad());
-        const ID nextCheckpointId = htonl(ps.getNextCheckpointId());
-        const uint32_t checkX = encodeFloat100BE(ps.getCheckX());
-        const uint32_t checkY = encodeFloat100BE(ps.getCheckY());
-        const uint32_t hintDirX = encodeFloat100BE(ps.getHintDirX());
-        const uint32_t hintDirY = encodeFloat100BE(ps.getHintDirY());
 
         std::vector<char> buf;
         buf.reserve(sizeof(type) + sizeof(pid) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t));
@@ -70,12 +65,6 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         append(&x,     sizeof(x));
         append(&y,     sizeof(y));
         append(&angle, sizeof(angle));
-
-        append(&nextCheckpointId, sizeof(nextCheckpointId));
-        append(&checkX, sizeof(checkX));
-        append(&checkY, sizeof(checkY));
-        append(&hintDirX, sizeof(hintDirX));
-        append(&hintDirY, sizeof(hintDirY));
 
         return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {

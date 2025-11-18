@@ -83,22 +83,12 @@ PlayerState ClientProtocol::recvSrvMsg() {
         uint32_t y_BE;
         uint32_t angleRad_BE;
 
-        ID nextCheckpointId_BE;
-        uint32_t checkX_BE;
-        uint32_t checkY_BE;
-        uint32_t hintDirX_BE;
-        uint32_t hintDirY_BE;
 
         peer.recvall(&player_id_BE, sizeof(uint16_t));
         peer.recvall(&x_BE, sizeof(uint32_t));
         peer.recvall(&y_BE, sizeof(uint32_t));
         peer.recvall(&angleRad_BE, sizeof(uint32_t));
 
-        peer.recvall(&nextCheckpointId_BE, sizeof(uint32_t));
-        peer.recvall(&checkX_BE, sizeof(uint32_t));
-        peer.recvall(&checkY_BE, sizeof(uint32_t));
-        peer.recvall(&hintDirX_BE, sizeof(uint32_t));
-        peer.recvall(&hintDirY_BE, sizeof(uint32_t));
 
         //endianess para los floats??
 
@@ -107,14 +97,8 @@ PlayerState ClientProtocol::recvSrvMsg() {
         float y = decodeFloat100BE(y_BE);
         float angleRad = decodeFloat100BE(angleRad_BE);
 
-        ID   nextCheckpointId = ntohl(nextCheckpointId_BE);  // ID no va x100 en el server
-        float checkX = decodeFloat100BE(checkX_BE);
-        float checkY = decodeFloat100BE(checkY_BE);
-        float hintDirX = decodeFloat100BE(hintDirX_BE);
-        float hintDirY = decodeFloat100BE(hintDirY_BE);
 
         PlayerState ps(player_id, x, y, angleRad);
-        ps.setCheckpointInfo(nextCheckpointId, checkX, checkY, hintDirX, hintDirY);
         return ps;
 
     } catch (const std::exception& e) {

@@ -234,30 +234,6 @@ void GameLoop::disconnectHandler(ID id) {
 void GameLoop::broadcastCarSnapshots() {
     for (auto& [id, car] : cars) {
         PlayerState ps = car.snapshotState();
-
-        ID actual = car.getActualCheckpoint();
-        ID next   = actual + 1;
-
-        float dirX = 0.f, dirY = 0.f;
-
-        auto itCp = checkpoints.find(next);
-        if (itCp == checkpoints.end()) return; //termino
-        const Checkpoint& cp = itCp->second;
-
-        b2BodyId body = car.getBody();
-        b2Vec2 pos = b2Body_GetPosition(body);
-
-        float vx = cp.getX() - pos.x;
-        float vy = cp.getY() - pos.y;
-
-        float len = std::sqrt(vx*vx + vy*vy);
-        if (len > 0.0001f) { //normalizo
-            dirX = vx / len;
-            dirY = vy / len;
-        }
-
-        ps.setCheckpointInfo(next, cp.getX(), cp.getY(), dirX, dirY);
-
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerState>(std::move(ps)));
         registry->broadcast(base);
