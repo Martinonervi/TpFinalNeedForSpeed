@@ -16,6 +16,8 @@ public:
             raceTimeSeconds(rct),
             raceNumber(rn) {}
 
+    Op type() const override { return Opcode::CURRENT_INFO; }
+
     float getSpeed() const { return this->speed; }
     float getRaceTimeSeconds() const { return this->raceTimeSeconds; }
     std::uint8_t getRaceNumber() const { return this->raceNumber; }

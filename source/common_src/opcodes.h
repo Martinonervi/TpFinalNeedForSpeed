@@ -16,6 +16,7 @@ enum Opcode : Op {
     CHECKPOINT_DEF = 0X07,
     CHECKPOINT_HIT = 0X08,
     CLIENT_DISCONNECT = 0X09,
+    CURRENT_INFO = 0X10
 };
 
 enum err_code : Op {

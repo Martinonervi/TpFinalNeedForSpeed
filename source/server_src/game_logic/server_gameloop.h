@@ -39,6 +39,7 @@ private:
     void initPlayerHandler(Cmd& cmd);
     void disconnectHandler(ID id);
     void broadcastCarSnapshots();
+    void sendCurrentInfo();
 
 
 
@@ -65,6 +66,7 @@ private:
     bool raceEnded   = false;
     int finishedCarsCount = 0;
     int totalCars = 0;
+    uint8_t raceCarNumber = 0;
 
     // loop
     Printer printer;
