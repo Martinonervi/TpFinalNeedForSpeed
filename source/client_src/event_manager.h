@@ -6,6 +6,8 @@
 #include <SDL2pp/SDL2pp.hh>
 #include <SDL2pp/Texture.hh>
 #include <SDL2pp/Window.hh>
+#include <SDL2/SDL.h>
+#include <unordered_map>
 
 #include "../common_src/cli_msg/move_Info.h"
 #include "../common_src/constants.h"
