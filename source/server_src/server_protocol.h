@@ -15,6 +15,7 @@
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
+#include "../common_src/srv_msg/srv_time_left.h"
 
 #include "server_types.h"
 
@@ -56,6 +57,7 @@ public:
 
     int sendPlayerStats(PlayerStats& msg);
 
+    int sendTimeLeft(TimeLeft& msg);
 private:
     Socket& peer;
 

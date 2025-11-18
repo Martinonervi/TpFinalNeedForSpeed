@@ -88,6 +88,12 @@ void ClientReceiver::run(){
                           << " y tiempo: " << msg.getTimeSecToComplete() << "\n";
                 break;
             }
+            case Opcode::TIME: {
+                TimeLeft msg = protocol.recvTimeLeft();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<TimeLeft>(std::move(msg)));
+                receiverQueue.push(base);
+            }
 
             default: {
                 std::cout << "comando desconocido: " << op << "\n";

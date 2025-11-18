@@ -29,6 +29,10 @@ void Sender::run() {
             int n;
 
             switch (msg->type()) {
+                case Opcode::TIME: {
+                    n = protocol.sendTimeLeft(dynamic_cast<TimeLeft&>(*msg));
+                    break;
+                }
                 case Opcode::STATS:{ // no esta testeado
                     n = protocol.sendPlayerStats(dynamic_cast<PlayerStats&>(*msg));
                     break;

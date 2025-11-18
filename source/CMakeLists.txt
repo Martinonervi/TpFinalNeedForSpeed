@@ -70,6 +70,7 @@ list(APPEND CLIENT_SOURCES "client_main.cpp")
 set(CLIENT_RESOURCES
         client_src/lobby/lobby_resources.qrc
         client_src/postgame/postgame_resources.qrc
+        common_src/srv_msg/srv_time_left.h
 )
 
 add_executable(client

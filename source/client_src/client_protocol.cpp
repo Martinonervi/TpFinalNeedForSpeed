@@ -430,3 +430,17 @@ PlayerStats ClientProtocol::recvStats() {
     float timeSecToComplete = decodeFloat100BE(timeSecToComplete_BE);
     return PlayerStats(racePosition, timeSecToComplete);
 }
+
+TimeLeft ClientProtocol::recvTimeLeft() {
+    uint8_t time;
+    int n = 0;
+    try {
+        n += peer.recvall(&time, sizeof(uint8_t));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return TimeLeft(time);
+}
