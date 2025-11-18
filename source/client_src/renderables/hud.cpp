@@ -15,7 +15,7 @@ Hud::Hud(SDL2pp::Renderer& renderer, TextureManager& tm, const MapType maptype)
 
 void Hud::drawOverlay(const int x, const int y,
                       std::unordered_map<ID, std::unique_ptr<Car>>& cars,
-                      const ID playerId) {
+                      const ID playerId) const {
 
     map.draw(x, 10, cars, playerId);
 
@@ -24,9 +24,10 @@ void Hud::drawOverlay(const int x, const int y,
 
     const Car& playerCar = *it->second;
     const float health = playerCar.getHealth();
+    float speed = playerCar.getSpeed();
 
     drawBars(renderer, x, health);
-    drawDial(renderer, 150.0f, x, y);
+    drawDial(renderer, speed, x, y);
 
     // Por ahora uso nums falsos
     drawRaceNumber(3, 5);

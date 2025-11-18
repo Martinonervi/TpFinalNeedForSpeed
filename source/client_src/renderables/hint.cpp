@@ -4,75 +4,45 @@
 Hint::Hint(SDL2pp::Renderer& renderer, TextureManager& tm, const float x,
                        const float y):
         Entity(renderer, tm, x, y), angle(0), distance(0) {}
-
 void Hint::draw(const Camera& camera, float cpX, float cpY) const {
     SDL2pp::Texture& tex = tm.getCities().getArrowTexture();
 
-    // Vector del auto al checkpoint
-    double dx = cpX - x;
-    double dy = cpY - y;
-    double distance = sqrt(dx*dx + dy*dy);
-
-    // Si está muy cerca, no dibujamos la flecha
-    const float disappearDistance = 150.0f;
-    if (distance < disappearDistance) return;
-
-    // Ángulo en grados
-    double angleDeg = atan2(dy, dx) * 180.0 / M_PI;
-
-    // Tamaño de pantalla
     int screenW = 1200;
     int screenH = 800;
 
-    // Punto de referencia inicial: borde de pantalla
-    float drawX = x;
-    float drawY = y;
+    // Posición del auto en pantalla
+    float carXscreen = x - camera.getX();
+    float carYscreen = y - camera.getY();
 
-    bool outOfScreen = cpX < 0 || cpX > screenW || cpY < 0 || cpY > screenH;
-    if (outOfScreen) {
-        // Línea desde el auto hasta el checkpoint
-        float t = 1.0f;
-        if (dx != 0) {
-            if (cpX < 0) t = (0 - x) / dx;
-            else if (cpX > screenW) t = (screenW - x) / dx;
-        }
-        if (dy != 0) {
-            float tY = 1.0f;
-            if (cpY < 0) tY = (0 - y) / dy;
-            else if (cpY > screenH) tY = (screenH - y) / dy;
-            if (tY < t) t = tY;
-        }
+    // Vector hacia el checkpoint
+    float dx = cpX - x;
+    float dy = cpY - y;
 
-        // Posición en borde
-        float borderX = x + dx * t;
-        float borderY = y + dy * t;
+    // Ángulo hacia el checkpoint
+    float angleRad = atan2(dy, dx);
+    float angleDeg = angle + 90.0f;
 
-        // Interpolamos según distancia (más cerca = flecha más cerca del auto)
-        const float maxDistance = 1000.0f; // distancia a la que la flecha empieza a alejarse al borde
-        float factor = std::min(static_cast<float>(distance / maxDistance), 1.0f);
-        drawX = borderX * factor + x * (1.0f - factor);
-        drawY = borderY * factor + y * (1.0f - factor);
-    } else {
-        // Si el checkpoint está en pantalla, dibujar normal
-        drawX = cpX;
-        drawY = cpY;
-    }
+    const float radius = 90.0f;
+    float drawX = carXscreen + cos(angleRad) * radius;
+    float drawY = carYscreen + sin(angleRad) * radius;
 
-    // Rect de destino
+    const float margin = 35.0f;
+    drawX = std::clamp(drawX, margin, screenW - margin);
+    drawY = std::clamp(drawY, margin, screenH - margin);
+
     SDL_Rect dstRect = {
-        static_cast<int>(drawX - tex.GetWidth()/2),
-        static_cast<int>(drawY - tex.GetHeight()/2),
+        int(drawX - tex.GetWidth() / 2),
+        int(drawY - tex.GetHeight() / 2),
         tex.GetWidth(),
         tex.GetHeight()
     };
-    SDL_Rect srcRect = {0, 0, tex.GetWidth(), tex.GetHeight()};
 
     renderer.Copy(
         tex,
-        srcRect,
+        SDL_Rect{0, 0, tex.GetWidth(), tex.GetHeight()},
         dstRect,
         angleDeg,
-        SDL2pp::Point(tex.GetWidth()/2, tex.GetHeight()/2)
+        SDL2pp::Point(tex.GetWidth() / 2, tex.GetHeight() / 2)
     );
 }
 
@@ -92,3 +62,89 @@ void Hint::setAngle(const float newAngle) {
 void Hint::setDistance(const float newDistance) {
     distance = newDistance;
 }
+
+
+/*
+ *
+ *void Hint::draw(const Camera& camera, float cpX, float cpY) const {
+    SDL2pp::Texture& tex = tm.getCities().getArrowTexture();
+
+    // No se dibuja si está muy cerca
+    const float disappearDistance = 150.0f;
+    if (distance < disappearDistance) return;
+
+    // Convertir posiciones a coordenadas de pantalla
+    float carXscreen = x - camera.getX();
+    float carYscreen = y - camera.getY();
+    float cpXscreen  = cpX - camera.getX();
+    float cpYscreen  = cpY - camera.getY();
+
+    int screenW = 1200;
+    int screenH = 800;
+
+    // Usamos TU ángulo (ya está en grados)
+    float angleDeg = angle;
+
+    // Si el checkpoint está en pantalla → dibujarlo donde está
+    if (cpXscreen >= 0 && cpXscreen <= screenW &&
+        cpYscreen >= 0 && cpYscreen <= screenH) {
+
+        SDL_Rect dstRect = {
+            int(cpXscreen - tex.GetWidth()/2),
+            int(cpYscreen - tex.GetHeight()/2),
+            tex.GetWidth(),
+            tex.GetHeight()
+        };
+
+        renderer.Copy(
+            tex,
+            SDL_Rect{0,0,tex.GetWidth(),tex.GetHeight()},
+            dstRect,
+            angleDeg,
+            SDL2pp::Point(tex.GetWidth()/2, tex.GetHeight()/2)
+        );
+        return;
+    }
+
+    // Si está fuera → mover la flecha al borde correcto
+    float dx = cpXscreen - carXscreen;
+    float dy = cpYscreen - carYscreen;
+
+    float t = 1.0f;
+
+    if (dx != 0) {
+        if (cpXscreen < 0) t = (0 - carXscreen) / dx;
+        else if (cpXscreen > screenW) t = (screenW - carXscreen) / dx;
+    }
+
+    if (dy != 0) {
+        float tY = 1.0f;
+        if (cpYscreen < 0) tY = (0 - carYscreen) / dy;
+        else if (cpYscreen > screenH) tY = (screenH - carYscreen) / dy;
+        if (tY < t) t = tY;
+    }
+
+    float drawX = carXscreen + dx * t;
+    float drawY = carYscreen + dy * t;
+
+    // Margen hacia adentro
+    const float margin = 35.0f;
+    float rad = angleDeg * M_PI / 180.0f;
+    drawX -= cos(rad) * margin;
+    drawY -= sin(rad) * margin;
+
+    SDL_Rect dstRect = {
+        int(drawX - tex.GetWidth()/2),
+        int(drawY - tex.GetHeight()/2),
+        tex.GetWidth(),
+        tex.GetHeight()
+    };
+
+    renderer.Copy(
+        tex,
+        SDL_Rect{0,0,tex.GetWidth(),tex.GetHeight()},
+        dstRect,
+        angleDeg,
+        SDL2pp::Point(tex.GetWidth()/2, tex.GetHeight()/2)
+    );
+}*/
