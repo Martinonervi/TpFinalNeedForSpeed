@@ -70,10 +70,15 @@ void GameLoop::waitingForPlayers() {
     while (true) {
         if (registry->size() >= MAX_PLAYERS) break;
         if (Clock::now() >= deadline) break;
+
         auto now = Clock::now();
-        float time = std::chrono::duration_cast<std::chrono::duration<float>>(
-                                    now - start
-                                    ).count();
+        float remaining_sec = std::chrono::duration_cast<std::chrono::duration<float>>(
+                                      deadline - now
+                                      ).count();
+
+        if (remaining_sec < 0.f) remaining_sec = 0.f;
+
+
         // FELI, AL NUEVO MSJ PASALE EL FLOAT
         loop.sleep_until_next_frame();
     }
