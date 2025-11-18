@@ -25,6 +25,9 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
 {}
 
 void EventManager::handleEvents() const {
+    SDL2pp::Rect motorButton   = {50, 50, 150, 50};
+    SDL2pp::Rect ruedasButton  = {50, 120, 150, 50};
+    SDL2pp::Rect nitroButton   = {50, 190, 150, 50};
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
@@ -39,7 +42,26 @@ void EventManager::handleEvents() const {
             } else if (event.key.keysym.sym == SDLK_m) {
                 showMap = !showMap;
             }
+        } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+            int x = event.button.x;
+            int y = event.button.y;
+
+            if (x >= motorButton.x && x <= motorButton.x + motorButton.w &&
+                y >= motorButton.y && y <= motorButton.y + motorButton.h) {
+                std::cout << "Mejorar motor!" << std::endl;
+                }
+
+            if (x >= ruedasButton.x && x <= ruedasButton.x + ruedasButton.w &&
+                y >= ruedasButton.y && y <= ruedasButton.y + ruedasButton.h) {
+                std::cout << "Mejorar ruedas!" << std::endl;
+                }
+
+            if (x >= nitroButton.x && x <= nitroButton.x + nitroButton.w &&
+                y >= nitroButton.y && y <= nitroButton.y + nitroButton.h) {
+                std::cout << "Activar nitro!" << std::endl;
+                }
         }
+
     }
 }
 

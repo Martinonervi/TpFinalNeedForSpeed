@@ -2,6 +2,7 @@
 
 #include "./renderables/checkpoint.h"
 #include "renderables/hint.h"
+#include "renderables/upgrade_screen.h"
 
 ClientWindow::ClientWindow(const int width, const int height, const std::string& title,
                            Queue<SrvMsgPtr>& receiverQueue, Queue<CliMsgPtr>& senderQueue):
@@ -23,6 +24,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
 bool ClientWindow::run() {
     Hud hud(renderer, tm, MAP_LIBERTY);
     Map map(renderer, tm, MAP_LIBERTY);
+    UpgradeScreen ups(tm, renderer, 500, 500);
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
@@ -75,6 +77,8 @@ bool ClientWindow::run() {
         }
         if (showMap)
             hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId);  // Por ahora asi
+
+        ups.renderPopUp(window.GetWidth(), window.GetHeight());
         renderer.Present();
     }
     TTF_Quit();
