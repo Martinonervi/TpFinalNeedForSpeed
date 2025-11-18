@@ -22,14 +22,13 @@ void Hint::draw(const Camera& camera) const {
     float carYscreen = y - camera.getY();
 
 
-    // Ángulo hacia el checkpoint
     float angleDeg = (angle * 180.0 / M_PI) + 90.0;
 
     const float radius = 90.0f;
     const float drawX = carXscreen + cos(angle) * radius;
     const float drawY = carYscreen + sin(angle) * radius;
 
-    SDL_Rect dstRect = {
+    SDL2pp::Rect dstRect = {
         static_cast<int>(drawX - tex.GetWidth() / 2),
         static_cast<int>(drawY - tex.GetHeight() / 2),
         tex.GetWidth(),
@@ -38,7 +37,7 @@ void Hint::draw(const Camera& camera) const {
 
     renderer.Copy(
         tex,
-        SDL_Rect{0, 0, tex.GetWidth(), tex.GetHeight()},
+        SDL2pp::Rect{0, 0, tex.GetWidth(), tex.GetHeight()},
         dstRect,
         angleDeg,
         SDL2pp::Point(tex.GetWidth() / 2, tex.GetHeight() / 2)
