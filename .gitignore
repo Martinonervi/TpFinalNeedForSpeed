@@ -39,3 +39,7 @@ source/CMakeCache.txt
 source/Makefile
 source/cmake_install.cmake
 source/cmake-build-debug
+Dockerfile*
+build/
+cmake-build-qtcreator/
+.qtcreator
