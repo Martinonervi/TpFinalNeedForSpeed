@@ -7,6 +7,9 @@
 #include "../../common_src/constants.h"
 #include "../renderables/car.h"
 #include "../textures/texture_manager.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+
 
 
 class Hud {
