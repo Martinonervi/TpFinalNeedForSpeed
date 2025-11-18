@@ -23,10 +23,14 @@
 Para compilar y ejecutar el proyecto, ejecutar los siguientes comandos:
 
 ```bash
-mkdir cmake-build-debug
-cd cmake-build-debug
-cmake ..
-make
+chmod +x installer.sh
+./installer.sh
+cd source/build-installer/
 ```
 
-Luego, se podrá ejecutar el binario generado dentro de `cmake-build-debug`.
+Luego, se podrá ejecutar el binario generado dentro de `source/build-installer/`.
+
+```bash
+./client localhost 5050
+./server 5050
+```
