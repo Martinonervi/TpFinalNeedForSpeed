@@ -19,6 +19,7 @@
 #include "renderables/hud.h"
 #include "renderables/map.h"
 #include "textures/texture_manager.h"
+#include <SDL2/SDL_ttf.h>
 
 #include "client_camera.h"
 #include "event_manager.h"
