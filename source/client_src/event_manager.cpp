@@ -137,7 +137,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
                 auto itCar = cars.find(myCarId);
                 if (itCar != cars.end() && itCar->second) {
                     hint.update(current.getAngleHint(),
-                                current.getDistanceToCheckpoint(),
+                                current.getDistanceToCheckpoint()*PIXELS_PER_METER,
                                 itCar->second->getX(),
                                 itCar->second->getY());
                     itCar->second->setSpeed(current.getSpeed());
