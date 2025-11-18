@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 
 #include "../common_src/cli_msg/requestgame.h"
+#include "../common_src/srv_msg/srv_time_left.h"
 
 ServerProtocol::ServerProtocol(Socket& peer): peer(peer) {}
 
@@ -373,6 +374,28 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
     } catch (const std::exception& e) {
     std::cerr << e.what() << '\n';
     throw std::runtime_error("Error sending");
+    }
+}
+
+int ServerProtocol::sendTimeLeft(TimeLeft& msg) {
+    try {
+        Op type = Opcode::TIME;
+        uint8_t time = msg.getTimeLeft();
+
+        std::vector<char> buf(sizeof(Op) + sizeof(uint8_t));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &time, sizeof(uint8_t));
+        offset += sizeof(uint8_t);
+
+        int n = peer.sendall(buf.data(), offset);
+        return n;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
     }
 }
 

@@ -1,6 +1,8 @@
 #include "client_window.h"
 
 #include "./renderables/checkpoint.h"
+#include "renderables/hint.h"
+#include "renderables/upgrade_screen.h"
 
 ClientWindow::ClientWindow(const int width, const int height, const std::string& title,
                            Queue<SrvMsgPtr>& receiverQueue, Queue<CliMsgPtr>& senderQueue):
@@ -12,19 +14,25 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         running(true),
         camera(width, height, 4640.0, 4672.0),  // Agregar consts
         myCarId(-1),
+        nextCheckpoint(-1),
         tm(renderer),
-        eventManager(myCarId, cars, renderer, senderQueue, tm, running, showMap, quit) {}
+        hint(renderer, tm, 0, 0),
+        eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue,
+            tm, checkpoints, hint, running, showMap, quit, playerStats) {}
 
 
-// Hay que manejar FPS, hay que tener en cuenta los autos que no estan en camara
-bool ClientWindow::run() {
+// Hay que manejar FPS
+std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
     Hud hud(renderer, tm, MAP_LIBERTY);
     Map map(renderer, tm, MAP_LIBERTY);
-    Checkpoint checkpoint(renderer, tm, 80, 520);
+    UpgradeScreen ups(tm, renderer, 500, 500);
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
             eventManager.handleServerMessage(srvMsg);
+        }
+        if (!running) {
+            break;
         }
 
         eventManager.handleEvents();
@@ -33,13 +41,18 @@ bool ClientWindow::run() {
         renderer.Clear();
         map.draw(camera);
 
-        // Aca podria hacer un dibuja tal capa
-
-        if (showMap) checkpoint.setInactive();
-        if (!showMap) checkpoint.setActive();
-        checkpoint.draw(camera);
-
+        if (nextCheckpoint != -1) {
+            auto it = checkpoints.find(nextCheckpoint);
+            if (it != checkpoints.end() && it->second) {
+                hint.draw(camera);
+            }
+        }
+        for (auto& [id, checkpoint] : checkpoints) {
+            if (!checkpoint) continue;
+            checkpoint->draw(camera);
+        }
         for (auto& [id, car]: cars) {
+            if (!car) continue;
             const auto carState = car->getState();
             if (id == myCarId) {
                 camera.follow(car->getX(), car->getY());
@@ -72,10 +85,12 @@ bool ClientWindow::run() {
         }
         if (showMap)
             hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId);  // Por ahora asi
+
+        //ups.renderPopUp(window.GetWidth(), window.GetHeight());
         renderer.Present();
     }
     TTF_Quit();
     SDL_Quit();
 
-    return quit;
+    return {quit, std::move(playerStats)};
 }

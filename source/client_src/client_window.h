@@ -3,18 +3,20 @@
 
 #include <string>
 
-#include <SDL2pp/SDL2pp.hh>
 #include <SDL2pp/Renderer.hh>
 #include <SDL2pp/SDL.hh>
+#include <SDL2pp/SDL2pp.hh>
 #include <SDL2pp/Window.hh>
 #include <unistd.h>
-#include "renderables/hud.h"
 
 #include "../common_src/cli_msg/move_Info.h"
 #include "../common_src/constants.h"
 #include "../common_src/queue.h"
 #include "../common_src/srv_msg/player_state.h"
+#include "../common_src/srv_msg/playerstats.h"
 #include "renderables/car.h"
+#include "renderables/checkpoint.h"
+#include "renderables/hud.h"
 #include "renderables/map.h"
 #include "textures/texture_manager.h"
 
@@ -30,7 +32,7 @@ public:
         Queue<CliMsgPtr>& senderQueue
         );
 
-    bool run();
+    std::pair<bool, std::unique_ptr<PlayerStats>> run();
 
 private:
     SDL2pp::SDL sdl;
@@ -39,9 +41,13 @@ private:
     TextureManager tm;
     Queue<SrvMsgPtr>& receiverQueue;
     std::unordered_map<ID, std::unique_ptr<Car>> cars;
+    std::unordered_map<ID, std::unique_ptr<Checkpoint>> checkpoints;
     Camera camera;
     ID myCarId;
+    ID nextCheckpoint;
+    Hint hint;
     EventManager eventManager;
+    std::unique_ptr<PlayerStats> playerStats = nullptr;
     bool running;
     bool quit = false;
     bool showMap = true;

@@ -56,7 +56,7 @@ void ClientReceiver::run(){
                 SrvCheckpointHitMsg msg = protocol.recvCheckpointHitEvent();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SrvCheckpointHitMsg>(std::move(msg)));
-                std::cout << "[client Receiver] CHECKPOINT_HIT, id:" << msg.getPlayerId()
+                std::cout << "[client Receiver] CHECKPOINT_HIT, id:" << msg.getCheckpointId()
                           << "\n";
                 receiverQueue.push(base);
                 break;
@@ -87,6 +87,12 @@ void ClientReceiver::run(){
                           << static_cast<int>(msg.getRacePosition())
                           << " y tiempo: " << msg.getTimeSecToComplete() << "\n";
                 break;
+            }
+            case Opcode::TIME: {
+                TimeLeft msg = protocol.recvTimeLeft();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<TimeLeft>(std::move(msg)));
+                receiverQueue.push(base);
             }
 
             default: {

@@ -15,6 +15,7 @@
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/srv_current_info.h"
+#include "../common_src/srv_msg/srv_time_left.h"
 
 #include "client_types.h"
 
@@ -45,9 +46,7 @@ public:
     void sendDisconnectReq(DisconnectReq& dr);
     void requestStats();
     PlayerStats recvStats();
-
-
-
+    TimeLeft recvTimeLeft();
 
 private:
     Socket& peer;

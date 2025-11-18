@@ -15,7 +15,7 @@ Hud::Hud(SDL2pp::Renderer& renderer, TextureManager& tm, const MapType maptype)
 
 void Hud::drawOverlay(const int x, const int y,
                       std::unordered_map<ID, std::unique_ptr<Car>>& cars,
-                      const ID playerId) {
+                      const ID playerId) const {
 
     map.draw(x, 10, cars, playerId);
 
@@ -24,13 +24,15 @@ void Hud::drawOverlay(const int x, const int y,
 
     const Car& playerCar = *it->second;
     const float health = playerCar.getHealth();
+    float speed = playerCar.getSpeed();
 
     drawBars(renderer, x, health);
-    drawDial(renderer, 150.0f, x, y);
+    drawDial(renderer, speed, x, y);
 
     // Por ahora uso nums falsos
     drawRaceNumber(3, 5);
     drawGameTime(523);
+    activeUpgrade(x);
 }
 
 
@@ -242,12 +244,15 @@ void Hud::drawText(const std::string& text, const int x, const int y, const SDL_
     SDL_DestroyTexture(texture);
 }
 
+void Hud::activeUpgrade(const int windowWidth) const {
+    SDL2pp::Texture& tex = tm.getHud().getUpgradeFrame();
+    SDL2pp::Rect src(0, 0, tex.GetWidth()*4, tex.GetHeight()*4);
+    const int x = windowWidth - 260 - src.w;
+    SDL2pp::Rect dst(x, 10, src.w, src.h);
 
-/*
-void Hud::activeUpgrade() {
-
+    renderer.Copy(tex, src, dst);
 }
-*/
+
 
 
 

@@ -24,9 +24,12 @@ public:
     CarState getState() const;
     float getAngle() const;
     float getHealth() const;
+    float getSpeed() const;
+    void setSpeed(float newSpeed);
 
 private:
     float health = 100.0f;
+    float speed;
     float angle;
     CarType carType;
     CarState carState;

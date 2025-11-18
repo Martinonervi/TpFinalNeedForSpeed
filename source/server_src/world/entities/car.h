@@ -32,9 +32,10 @@ public:
     void applyDamage(const float damage);
     bool isCarDestroy();
 
-    void markFinished(float t) {
+    void markFinished(float t, u_int8_t finishedCarsCount) {
         finished = true;
         finishTime = t;
+        ranking = finishedCarsCount;
     }
     bool isFinished() const { return finished; }
     float getFinishTime() const { return finishTime; }

@@ -8,7 +8,6 @@ public:
     Checkpoint(SDL2pp::Renderer& renderer, TextureManager& tm, float x, float y);
     void draw(const Camera& camera) override;
     void setInactive();
-    void setActive();
 
 private:
     int frame;

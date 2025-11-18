@@ -12,7 +12,7 @@
 class Hud {
 public:
     Hud(SDL2pp::Renderer& renderer, TextureManager& tm, MapType mapType);
-    void drawOverlay(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId);
+    void drawOverlay(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId) const;
 
 private:
     Minimap map;
@@ -33,6 +33,7 @@ private:
     void drawGameTime(int totalSeconds) const;
     void drawRaceNumber(int current, int total) const;
     void drawText(const std::string& text, int x, int y, SDL_Color color) const;
+    void activeUpgrade(int windowWidth) const;
 };
 
 

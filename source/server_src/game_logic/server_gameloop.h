@@ -72,6 +72,10 @@ private:
     Printer printer;
 
     WorldEventHandlers eventHandlers;
+
+    std::vector<SpawnPointConfig> spawnPoints;
+
+    void simulatePlayerSpawns(int numPlayers);
 };
 
 #endif
