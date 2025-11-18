@@ -50,11 +50,6 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         const uint32_t x = encodeFloat100BE(ps.getX());
         const uint32_t y = encodeFloat100BE(ps.getY());
         const uint32_t angle  = encodeFloat100BE(ps.getAngleRad());
-        const ID nextCheckpointId = htonl(ps.getNextCheckpointId());
-        const uint32_t checkX = encodeFloat100BE(ps.getCheckX());
-        const uint32_t checkY = encodeFloat100BE(ps.getCheckY());
-        const uint32_t hintDirX = encodeFloat100BE(ps.getHintDirX());
-        const uint32_t hintDirY = encodeFloat100BE(ps.getHintDirY());
 
         std::vector<char> buf;
         buf.reserve(sizeof(type) + sizeof(pid) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t));
@@ -70,12 +65,6 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
         append(&x,     sizeof(x));
         append(&y,     sizeof(y));
         append(&angle, sizeof(angle));
-
-        append(&nextCheckpointId, sizeof(nextCheckpointId));
-        append(&checkX, sizeof(checkX));
-        append(&checkY, sizeof(checkY));
-        append(&hintDirX, sizeof(hintDirX));
-        append(&hintDirY, sizeof(hintDirY));
 
         return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {
@@ -344,3 +333,43 @@ int ServerProtocol::sendPlayerStats(PlayerStats& msg) {
         throw("Error sending");
     }
 }
+
+
+int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
+    try {
+        const Op type = msg.type();
+        const uint32_t speed = encodeFloat100BE(msg.getSpeed());
+        const uint32_t raceTimeSeconds = encodeFloat100BE(msg.getRaceTimeSeconds());
+        const std::uint8_t raceNumber = msg.getRaceNumber();
+        const ID nextCheckpointId = htons(msg.getNextCheckpointId());
+        const uint32_t checkX = encodeFloat100BE(msg.getCheckX());
+        const uint32_t checkY = encodeFloat100BE(msg.getCheckY());
+        const uint32_t angleHint = encodeFloat100BE(msg.getAngleHint());
+        const uint32_t distanceToChekpoint = encodeFloat100BE(msg.getDistanceToCheckpoint());
+
+        std::vector<char> buf;
+        buf.reserve(sizeof(Op) + sizeof(uint8_t) + 7 * sizeof(uint32_t));
+
+        auto append = [&buf](const void* p, std::size_t n) {
+            const std::size_t old = buf.size();
+            buf.resize(old + n);
+            std::memcpy(buf.data() + old, p, n);
+        };
+
+        append(&type, sizeof(type));
+        append(&speed, sizeof(speed));
+        append(&raceTimeSeconds, sizeof(raceTimeSeconds));
+        append(&raceNumber, sizeof(raceNumber));
+        append(&nextCheckpointId, sizeof(ID));
+        append(&checkX, sizeof(checkX));
+        append(&checkY, sizeof(checkY));
+        append(&angleHint, sizeof(angleHint));
+        append(&distanceToChekpoint, sizeof(distanceToChekpoint));
+
+        return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
+    } catch (const std::exception& e) {
+    std::cerr << e.what() << '\n';
+    throw std::runtime_error("Error sending");
+    }
+}
+

@@ -17,8 +17,10 @@ public:
         CarType carType);
 
     void applyControlsToBody(const MoveMsg& in, float dt);
-    void applyControlsToBodyy(const MoveMsg& in, float dt);
-    void applyControlsToBodyyy(const MoveMsg& in, float dt);
+    void applyLongitudinalForces(float throttle, float brake);
+    void applySteering(float steer);
+    void applyDrift();
+
     PlayerState snapshotState();
 
     ID getClientId() const {return this->clientId; };

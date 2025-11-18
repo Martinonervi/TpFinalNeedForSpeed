@@ -84,22 +84,12 @@ PlayerState ClientProtocol::recvSrvMsg() {
         uint32_t y_BE;
         uint32_t angleRad_BE;
 
-        ID nextCheckpointId_BE;
-        uint32_t checkX_BE;
-        uint32_t checkY_BE;
-        uint32_t hintDirX_BE;
-        uint32_t hintDirY_BE;
 
         peer.recvall(&player_id_BE, sizeof(uint16_t));
         peer.recvall(&x_BE, sizeof(uint32_t));
         peer.recvall(&y_BE, sizeof(uint32_t));
         peer.recvall(&angleRad_BE, sizeof(uint32_t));
 
-        peer.recvall(&nextCheckpointId_BE, sizeof(uint32_t));
-        peer.recvall(&checkX_BE, sizeof(uint32_t));
-        peer.recvall(&checkY_BE, sizeof(uint32_t));
-        peer.recvall(&hintDirX_BE, sizeof(uint32_t));
-        peer.recvall(&hintDirY_BE, sizeof(uint32_t));
 
         //endianess para los floats??
 
@@ -108,14 +98,8 @@ PlayerState ClientProtocol::recvSrvMsg() {
         float y = decodeFloat100BE(y_BE);
         float angleRad = decodeFloat100BE(angleRad_BE);
 
-        ID   nextCheckpointId = ntohl(nextCheckpointId_BE);  // ID no va x100 en el server
-        float checkX = decodeFloat100BE(checkX_BE);
-        float checkY = decodeFloat100BE(checkY_BE);
-        float hintDirX = decodeFloat100BE(hintDirX_BE);
-        float hintDirY = decodeFloat100BE(hintDirY_BE);
 
         PlayerState ps(player_id, x, y, angleRad);
-        ps.setCheckpointInfo(nextCheckpointId, checkX, checkY, hintDirX, hintDirY);
         return ps;
 
     } catch (const std::exception& e) {
@@ -368,6 +352,46 @@ void ClientProtocol::sendDisconnectReq(DisconnectReq& dr) {
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
         throw("Error sending");
+    }
+}
+
+
+SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
+    try {
+        uint32_t speed_BE;
+        uint32_t raceTimeSeconds_BE;
+        std::uint8_t raceNumber;
+        ID nextCheckpointId_BE;
+        uint32_t checkX_BE;
+        uint32_t checkY_BE;
+        uint32_t angleHint_BE;
+        uint32_t distanceToChekpoint_BE;
+
+        peer.recvall(&speed_BE, sizeof(speed_BE));
+        peer.recvall(&raceTimeSeconds_BE, sizeof(raceTimeSeconds_BE));
+        peer.recvall(&raceNumber, sizeof(raceNumber));
+        peer.recvall(&nextCheckpointId_BE, sizeof(nextCheckpointId_BE));
+        peer.recvall(&checkX_BE, sizeof(checkX_BE));
+        peer.recvall(&checkY_BE, sizeof(checkY_BE));
+        peer.recvall(&angleHint_BE, sizeof(angleHint_BE));
+        peer.recvall(&distanceToChekpoint_BE, sizeof(distanceToChekpoint_BE));
+
+        float speed = decodeFloat100BE(speed_BE);
+        float raceTimeSecond = decodeFloat100BE(raceTimeSeconds_BE);
+        ID nextCheckpointID = ntohs(nextCheckpointId_BE);
+        float checkX = decodeFloat100BE(checkX_BE);
+        float checkY = decodeFloat100BE(checkY_BE);
+        float angleHint = decodeFloat100BE(angleHint_BE);
+        float distanceToheckpoint = decodeFloat100BE(distanceToChekpoint_BE);
+
+
+        SrvCurrentInfo ci(nextCheckpointID, checkX, checkY, angleHint,
+                          distanceToheckpoint, raceTimeSecond, raceNumber, speed);
+        return ci;
+
+    } catch (const std::exception& e) {
+        std::cerr << "client_main error: " << e.what() << "\n";
+        throw RETURN_FAILURE;
     }
 }
 

@@ -14,6 +14,7 @@
 #include "../common_src/srv_msg/send_player.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
+#include "../common_src/srv_msg/srv_current_info.h"
 
 #include "server_types.h"
 
@@ -44,6 +45,8 @@ public:
     int sendCheckpointHit(SrvCheckpointHitMsg& msg);
 
     int sendClientDisconnect(ClientDisconnect& msg);
+
+    int sendCurrentInfo(SrvCurrentInfo& msg);
 
     void append(std::vector<char>& buf, const void* p, std::size_t n);
 

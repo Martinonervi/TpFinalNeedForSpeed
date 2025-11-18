@@ -9,8 +9,8 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& cars,
                                        std::unordered_map<ID, Checkpoint>& checkpoints,
                                        ClientsRegistry& registry,
                                        float& raceTimeSeconds,
-                                       int& finishedCarsCount,
-                                       int& totalCars,
+                                       uint8_t& finishedCarsCount,
+                                       uint8_t& totalCars,
                                        bool& raceEnded)
         : cars(cars)
         , checkpoints(checkpoints)
@@ -101,7 +101,7 @@ void WorldEventHandlers::CarHitBuildingHandler(WorldEvent ev,
 
     auto baseCarA = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCarHitMsg>(car.getClientId(), car.getHealth()));
-    registry.sendTo(car.getClientId(), baseCarA);
+    registry.broadcast(baseCarA);
 }
 void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
                                 std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame){
@@ -163,9 +163,9 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
 
     auto baseCarA = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCarHitMsg>(carA.getClientId(), carA.getHealth()));
-    registry.sendTo(carA.getClientId(), baseCarA);
+    registry.broadcast(baseCarA);
 
     auto baseCarB = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCarHitMsg>(carB.getClientId(), carB.getHealth()));
-    registry.sendTo(carB.getClientId(), baseCarB);
+    registry.broadcast(baseCarB);
 }

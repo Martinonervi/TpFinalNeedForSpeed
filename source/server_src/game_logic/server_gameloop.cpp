@@ -13,6 +13,7 @@
 #include "../../common_src/srv_msg/send_player.h"
 #include "../../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../../common_src/srv_msg/srv_checkpoint_hit_msg.h"
+#include "../../common_src/srv_msg/srv_current_info.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
@@ -90,6 +91,7 @@ void GameLoop::run() {
 
             broadcastCarSnapshots();
             processWorldEvents();
+            sendCurrentInfo();
             loop.sleep_until_next_frame();
         }
 
@@ -152,6 +154,38 @@ void GameLoop::processWorldEvents() {
     }
 }
 
+//arreglar con fran
+void GameLoop::sendCurrentInfo() {
+    for (auto& [id, car] : cars) {
+        ID actual = car.getActualCheckpoint();
+        ID next   = actual + 1;
+
+        float dirX = 0.f, dirY = 0.f;
+
+        auto itCp = checkpoints.find(next);
+        if (itCp == checkpoints.end()) return; //termino
+        const Checkpoint& cp = itCp->second;
+
+        b2BodyId body = car.getBody();
+        b2Vec2 pos = b2Body_GetPosition(body);
+
+        float vx = cp.getX() - pos.x;
+        float vy = cp.getY() - pos.y;
+
+        float len = std::sqrt(vx*vx + vy*vy); //distancia del auto al checkpoint
+        float angle = std::atan2(vy, vx);
+
+        b2Vec2 vecVel = b2Body_GetLinearVelocity(body);
+        float speed = std::sqrt(vecVel.x*vecVel.x + vecVel.y*vecVel.y);
+
+        SrvCurrentInfo ci(cp.getId(), cp.getX(), cp.getY(), angle, len,
+                          raceTimeSeconds, raceCarNumber, speed);
+
+        auto base = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<SrvCurrentInfo>(std::move(ci)));
+        registry->sendTo(id, base);
+    }
+}
 
 void GameLoop::processCmds() {
     std::list<Cmd> to_process = emptyQueue();
@@ -234,30 +268,6 @@ void GameLoop::disconnectHandler(ID id) {
 void GameLoop::broadcastCarSnapshots() {
     for (auto& [id, car] : cars) {
         PlayerState ps = car.snapshotState();
-
-        ID actual = car.getActualCheckpoint();
-        ID next   = actual + 1;
-
-        float dirX = 0.f, dirY = 0.f;
-
-        auto itCp = checkpoints.find(next);
-        if (itCp == checkpoints.end()) return; //termino
-        const Checkpoint& cp = itCp->second;
-
-        b2BodyId body = car.getBody();
-        b2Vec2 pos = b2Body_GetPosition(body);
-
-        float vx = cp.getX() - pos.x;
-        float vy = cp.getY() - pos.y;
-
-        float len = std::sqrt(vx*vx + vy*vy);
-        if (len > 0.0001f) { //normalizo
-            dirX = vx / len;
-            dirY = vy / len;
-        }
-
-        ps.setCheckpointInfo(next, cp.getX(), cp.getY(), dirX, dirY);
-
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerState>(std::move(ps)));
         registry->broadcast(base);

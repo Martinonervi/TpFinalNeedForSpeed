@@ -4,6 +4,7 @@
 #include "../common_src/srv_msg/client_disconnect.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
+#include "../common_src/srv_msg/srv_current_info.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -19,7 +20,7 @@ void ClientReceiver::run(){
         }
 
         switch (op) {
-            case (Opcode::Movement): {
+            case Opcode::Movement: {
                 PlayerState ps = protocol.recvSrvMsg();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<PlayerState>(std::move(ps)));
@@ -27,7 +28,7 @@ void ClientReceiver::run(){
                 receiverQueue.push(base);
                 break;
             }
-            case (Opcode::INIT_PLAYER): {
+            case Opcode::INIT_PLAYER: {
                 SendPlayer sp = protocol.recvSendPlayer();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SendPlayer>(std::move(sp)));
@@ -35,7 +36,7 @@ void ClientReceiver::run(){
                 receiverQueue.push(base);
 
                 break;
-            } case (Opcode::NEW_PLAYER): {
+            } case Opcode::NEW_PLAYER: {
                 NewPlayer sp = protocol.recvNewPlayer();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<NewPlayer>(std::move(sp)));
@@ -43,21 +44,23 @@ void ClientReceiver::run(){
                 receiverQueue.push(base);
                 break;
             }
-            case (Opcode::COLLISION): {
+            case Opcode::COLLISION: {
                 SrvCarHitMsg msg = protocol.recvCollisionEvent();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SrvCarHitMsg>(std::move(msg)));
                 receiverQueue.push(base);
                 break;
             }
-            case (Opcode::CHECKPOINT_HIT): {
+            case Opcode::CHECKPOINT_HIT: {
                 SrvCheckpointHitMsg msg = protocol.recvCheckpointHitEvent();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SrvCheckpointHitMsg>(std::move(msg)));
+                std::cout << "[client Receiver] CHECKPOINT_HIT, id:" << msg.getPlayerId()
+                          << "\n";
                 receiverQueue.push(base);
                 break;
             }
-            case (Opcode::CLIENT_DISCONNECT): {
+            case Opcode::CLIENT_DISCONNECT: {
                 ClientDisconnect msg = protocol.recvClientDisconnect();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<ClientDisconnect>(std::move(msg)));
@@ -65,6 +68,13 @@ void ClientReceiver::run(){
                 << msg.getPlayerId()
                 << "\n";
                 receiverQueue.push(base);
+            }
+            case Opcode::CURRENT_INFO: {
+                SrvCurrentInfo msg = protocol.recvCurrentInfo();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<SrvCurrentInfo>(std::move(msg)));
+                receiverQueue.push(base);
+                break;
             }
             default: {
                 std::cout << "comando desconocido: " << op << "\n";
