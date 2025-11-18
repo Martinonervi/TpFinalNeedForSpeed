@@ -71,3 +71,6 @@ CarState Car::getState() const { return carState; }
 float Car::getAngle() const { return angle; }
 
 float Car::getHealth() const { return health; }
+
+float Car::getSpeed() const { return speed; }
+void Car::setSpeed(const float newSpeed) { speed=newSpeed; }

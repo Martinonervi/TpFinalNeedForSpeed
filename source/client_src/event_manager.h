@@ -11,6 +11,7 @@
 #include "../common_src/constants.h"
 #include "../common_src/srv_msg/new_player.h"
 #include "../common_src/srv_msg/player_state.h"
+#include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/send_player.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "renderables/car.h"
@@ -25,7 +26,8 @@ public:
                               Queue<CliMsgPtr>& senderQueue, TextureManager& textureManager,
                               std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                               Hint& hint,
-                              bool& running, bool& showMap, bool& quit);
+                              bool& running, bool& showMap, bool& quit,
+                              std::unique_ptr<PlayerStats>& playerStats);
 
     void handleEvents() const;
     void handleServerMessage(const SrvMsgPtr& msg) const;
@@ -42,7 +44,7 @@ private:
     bool& running;
     bool& showMap;
     bool& quit;
-
+    std::unique_ptr<PlayerStats>& playerStats;
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
             {SDLK_w, MoveMsg(1, 0, 0, 0)},  {SDLK_s, MoveMsg(2, 0, 0, 0)},

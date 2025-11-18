@@ -1,7 +1,9 @@
 #include "event_manager.h"
 
 #include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
+#include "../common_src/srv_msg/srv_current_info.h"
 
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
@@ -10,7 +12,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 TextureManager& textureManager,
                                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                                 Hint& hint,
-                                bool& running, bool& showMap, bool& quit)
+                                bool& running, bool& showMap, bool& quit, std::unique_ptr<PlayerStats>& playerStats)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
         cars(cars),
@@ -21,7 +23,8 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         hint(hint),
         running(running),
         showMap(showMap),
-        quit(quit)
+        quit(quit),
+        playerStats(playerStats)
 {}
 
 void EventManager::handleEvents() const {
@@ -32,7 +35,7 @@ void EventManager::handleEvents() const {
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             running = false;
-            quit = true;
+            quit = false;
         } else if (event.type == SDL_KEYDOWN && myCarId != -1) {
             auto it = keyToMove.find(event.key.keysym.sym);
             if (it != keyToMove.end()) {
@@ -97,15 +100,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
                     ps.getY()*PIXELS_PER_METER,
                     ps.getAngleRad());
             }
-            // Lo vamos a mover
-            if (!checkpoints.count(ps.getNextCheckpointId())) {
-                checkpoints[ps.getNextCheckpointId()] = std::make_unique<Checkpoint>(renderer, tm,
-                    ps.getCheckX()*PIXELS_PER_METER, ps.getCheckY()*PIXELS_PER_METER);
-            }
-            nextCheckpoint = ps.getNextCheckpointId();
-            hint.update(0, 0, cars[myCarId]->getX(), cars[myCarId]->getY());
-            //_______
-
             break;
         }
         case COLLISION: {
@@ -130,6 +124,39 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
             if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
                 checkpoints[nextCheckpoint]->setInactive();
             }
+            break;
+        }
+        case CURRENT_INFO: {
+            const auto current = dynamic_cast<const SrvCurrentInfo&>(*msg);
+            if (!checkpoints.count(current.getNextCheckpointId())) {
+                checkpoints[current.getNextCheckpointId()] = std::make_unique<Checkpoint>(renderer, tm,
+                    current.getCheckX()*PIXELS_PER_METER, current.getCheckY()*PIXELS_PER_METER);
+            }
+            nextCheckpoint = current.getNextCheckpointId();
+            if (myCarId != -1) {
+                auto itCar = cars.find(myCarId);
+                if (itCar != cars.end() && itCar->second) {
+                    hint.update(current.getAngleHint(),
+                                current.getDistanceToCheckpoint(),
+                                itCar->second->getX(),
+                                itCar->second->getY());
+                    itCar->second->setSpeed(current.getSpeed());
+                }
+            }
+
+            /*
+            current.getRaceTimeSeconds();
+            current.getRaceNumber();
+            */
+            break;
+        }
+        case STATS: {
+            std::cout << "Stats:" << std::endl;
+            running = false;
+            quit = true;
+            const auto* raw = dynamic_cast<const PlayerStats*>(msg.get());
+            playerStats = std::make_unique<PlayerStats>(*raw);
+            break;
         }
         default:
             break;

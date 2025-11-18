@@ -17,11 +17,12 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         nextCheckpoint(-1),
         tm(renderer),
         hint(renderer, tm, 0, 0),
-        eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue, tm, checkpoints, hint, running, showMap, quit) {}
+        eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue,
+            tm, checkpoints, hint, running, showMap, quit, playerStats) {}
 
 
-// Hay que manejar FPS, hay que tener en cuenta los autos que no estan en camara
-bool ClientWindow::run() {
+// Hay que manejar FPS
+std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
     Hud hud(renderer, tm, MAP_LIBERTY);
     Map map(renderer, tm, MAP_LIBERTY);
     UpgradeScreen ups(tm, renderer, 500, 500);
@@ -29,6 +30,9 @@ bool ClientWindow::run() {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
             eventManager.handleServerMessage(srvMsg);
+        }
+        if (!running) {
+            break;
         }
 
         eventManager.handleEvents();
@@ -38,16 +42,20 @@ bool ClientWindow::run() {
         map.draw(camera);
 
         if (nextCheckpoint != -1) {
-            hint.draw(camera, checkpoints[nextCheckpoint]->getX(), checkpoints[nextCheckpoint]->getY());
+            auto it = checkpoints.find(nextCheckpoint);
+            if (it != checkpoints.end() && it->second) {
+                hint.draw(camera, checkpoints[nextCheckpoint]->getX(), checkpoints[nextCheckpoint]->getY());
+            }
         }
         for (auto& [id, checkpoint] : checkpoints) {
+            if (!checkpoint) continue;
             checkpoint->draw(camera);
         }
         for (auto& [id, car]: cars) {
+            if (!car) continue;
             const auto carState = car->getState();
             if (id == myCarId) {
                 camera.follow(car->getX(), car->getY());
-                hint.update(10, 10, car->getX(), car->getY()); // Angulo y distancia
             }
             switch (carState) {
                 case ALIVE: {
@@ -78,11 +86,11 @@ bool ClientWindow::run() {
         if (showMap)
             hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId);  // Por ahora asi
 
-        ups.renderPopUp(window.GetWidth(), window.GetHeight());
+        //ups.renderPopUp(window.GetWidth(), window.GetHeight());
         renderer.Present();
     }
     TTF_Quit();
     SDL_Quit();
 
-    return quit;
+    return {quit, std::move(playerStats)};
 }

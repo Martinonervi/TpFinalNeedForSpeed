@@ -13,6 +13,7 @@
 #include "../common_src/constants.h"
 #include "../common_src/queue.h"
 #include "../common_src/srv_msg/player_state.h"
+#include "../common_src/srv_msg/playerstats.h"
 #include "renderables/car.h"
 #include "renderables/checkpoint.h"
 #include "renderables/hud.h"
@@ -31,7 +32,7 @@ public:
         Queue<CliMsgPtr>& senderQueue
         );
 
-    bool run();
+    std::pair<bool, std::unique_ptr<PlayerStats>> run();
 
 private:
     SDL2pp::SDL sdl;
@@ -46,6 +47,7 @@ private:
     ID nextCheckpoint;
     Hint hint;
     EventManager eventManager;
+    std::unique_ptr<PlayerStats> playerStats = nullptr;
     bool running;
     bool quit = false;
     bool showMap = true;

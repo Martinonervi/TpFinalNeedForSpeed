@@ -51,12 +51,13 @@ void Client::run() {
         senderQueue
     );
 
-    client_window.run();
+    auto [quit, playerStatsPtr] = client_window.run();
+    if (quit) {
+        PlayerStats stats(playerStatsPtr->getRacePosition(), playerStatsPtr->getTimeSecToComplete()); // por ahora es un placeholder para llamar a la funcion solamente
+        postGame(stats);
+    }
     stop();
     join();
-
-    PlayerStats stats(3, 2.5); // por ahora es un placeholder para llamar a la funcion solamente
-    postGame(stats);
 }
 
 bool Client::lobbyState() {

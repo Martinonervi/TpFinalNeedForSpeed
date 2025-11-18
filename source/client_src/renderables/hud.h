@@ -12,7 +12,7 @@
 class Hud {
 public:
     Hud(SDL2pp::Renderer& renderer, TextureManager& tm, MapType mapType);
-    void drawOverlay(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId);
+    void drawOverlay(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId) const;
 
 private:
     Minimap map;
