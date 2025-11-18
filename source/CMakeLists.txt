@@ -69,6 +69,7 @@ file(GLOB_RECURSE CLIENT_SOURCES "client_src/*.cpp")
 list(APPEND CLIENT_SOURCES "client_main.cpp")
 set(CLIENT_RESOURCES
         client_src/lobby/lobby_resources.qrc
+        client_src/postgame/postgame_resources.qrc
 )
 
 add_executable(client
