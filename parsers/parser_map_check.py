@@ -1,13 +1,12 @@
 import json
 import yaml
 
-INPUT = "checkpoints1_tiled.tmj"
-OUTPUT = "map_full.yaml"
+INPUT = "checkpoints2_tiled.tmj"
+OUTPUT = "checkpoint_ruta_2.yaml"
 
 CITY_NAME = "Liberty City"
 
-CHECKPOINTS_LAYER = "checkpoints1CLibertyCity"
-
+CHECKPOINTS_LAYER = "checkPoint2CLibertyCity"
 with open(INPUT, "r", encoding="utf-8") as f:
     mapa = json.load(f)
 

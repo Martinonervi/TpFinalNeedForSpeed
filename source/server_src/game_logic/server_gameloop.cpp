@@ -55,6 +55,7 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
                         )
         );
     }
+    this-> spawnPoints = data.spawn;
 }
 
 
@@ -64,10 +65,21 @@ void GameLoop::waitingForPlayers() {
     const int MAX_PLAYERS = 8;
     const double LOBBY_TIMEOUT_SEC = 5.0;
 
+    auto start = Clock::now();
     const auto deadline = Clock::now() + std::chrono::duration<double>(LOBBY_TIMEOUT_SEC);
     while (true) {
         if (registry->size() >= MAX_PLAYERS) break;
         if (Clock::now() >= deadline) break;
+
+        auto now = Clock::now();
+        float remaining_sec = std::chrono::duration_cast<std::chrono::duration<float>>(
+                                      deadline - now
+                                      ).count();
+
+        if (remaining_sec < 0.f) remaining_sec = 0.f;
+
+
+        // FELI, AL NUEVO MSJ PASALE EL FLOAT
         loop.sleep_until_next_frame();
     }
     this->raceStarted = true;
@@ -88,6 +100,17 @@ void GameLoop::run() {
                 auto now = Clock::now();
                 std::chrono::duration<float> elapsed = now - raceStartTime;
                 raceTimeSeconds = elapsed.count();
+
+                const float MAX_RACE_TIME_SECONDS = 300.0f;
+                if (raceTimeSeconds >= MAX_RACE_TIME_SECONDS) {
+                    this->raceEnded = true;
+                    // asignar ranking?
+                    break;
+                }
+            }
+
+            if (this->raceEnded) {
+                break;
             }
 
             broadcastCarSnapshots();
@@ -221,13 +244,32 @@ void GameLoop::processCmds() {
     }
 }
 
+//para testear spawn
+void GameLoop::simulatePlayerSpawns(int numPlayers) {
+    if (spawnPoints.empty()) {
+        std::cerr << "ERROR: No hay puntos de spawn cargados para la simulación.\n";
+        return;
+    }
+
+    for (ID playerId = 2; playerId <= numPlayers; ++playerId) {
+        auto base = std::static_pointer_cast<CliMsg>(
+        std::make_shared<InitPlayer>("hola", CarType::CAR_GREEN));
+
+        Cmd cmd;
+        cmd.client_id = playerId;
+        cmd.msg = std::move(base);
+
+        this->queue->push(cmd);
+    }
+}
 
 
 void GameLoop::initPlayerHandler(Cmd& cmd){
     const InitPlayer ip = dynamic_cast<const InitPlayer&>(*cmd.msg);
-
-    b2Vec2 spawn = { 7.0f, 15.0f };
-    cars.emplace(cmd.client_id, Car(this->worldManager, cmd.client_id, spawn, 0, ip.getCarType()));
+    const auto& spawn = spawnPoints[totalCars];
+    b2Vec2 spawnVec = { spawn.x, spawn.y };
+    cars.emplace(cmd.client_id, Car(this->worldManager, cmd.client_id, spawnVec, spawn.angle,
+                                    ip.getCarType()));
     totalCars++;
 
     auto base = std::static_pointer_cast<SrvMsg>(

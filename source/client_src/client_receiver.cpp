@@ -56,7 +56,7 @@ void ClientReceiver::run(){
                 SrvCheckpointHitMsg msg = protocol.recvCheckpointHitEvent();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SrvCheckpointHitMsg>(std::move(msg)));
-                std::cout << "[client Receiver] CHECKPOINT_HIT, id:" << msg.getPlayerId()
+                std::cout << "[client Receiver] CHECKPOINT_HIT, id:" << msg.getCheckpointId()
                           << "\n";
                 receiverQueue.push(base);
                 break;
