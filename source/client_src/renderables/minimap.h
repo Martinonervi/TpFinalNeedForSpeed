@@ -4,6 +4,7 @@
 #include "../textures/texture_manager.h"
 #include <SDL2pp/SDL2pp.hh>
 #include "../renderables/car.h"
+#include <SDL2/SDL.h>
 
 class Minimap {
 public:
