@@ -2,8 +2,8 @@
 
 #include "ui_postgamewindow.h"
 
-postgamewindow::postgamewindow(ClientProtocol& protocol,QWidget* parent)
-    :protocol(protocol), QWidget(parent), ui(new Ui::postgamewindow) {
+postgamewindow::postgamewindow(PlayerStats& stats,QWidget* parent)
+    :stats(stats), QWidget(parent), ui(new Ui::postgamewindow) {
     ui->setupUi(this);
 }
 

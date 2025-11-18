@@ -5,10 +5,11 @@
 #include <QMainWindow>
 #include <vector>
 
-#include "../client_protocol.h"
 #include <QVector>
 #include <QString>
 #include <QPixmap>
+#include "../../common_src/constants.h"
+#include "../../common_src/srv_msg/playerstats.h"
 
 namespace Ui {
 class postgamewindow;
@@ -18,12 +19,12 @@ class postgamewindow: public QWidget {
     Q_OBJECT
 
 public:
-    explicit postgamewindow(ClientProtocol& protocol, QWidget* parent = nullptr);
+    explicit postgamewindow(PlayerStats& stats, QWidget* parent = nullptr);
     ~postgamewindow();
 
 private:
     Ui::postgamewindow* ui;
-    ClientProtocol& protocol;
+    PlayerStats& stats;
 };
 
 #endif  // POSTGAMEWINDOW_H
