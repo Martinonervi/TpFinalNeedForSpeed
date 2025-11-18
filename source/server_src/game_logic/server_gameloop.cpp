@@ -65,10 +65,16 @@ void GameLoop::waitingForPlayers() {
     const int MAX_PLAYERS = 8;
     const double LOBBY_TIMEOUT_SEC = 5.0;
 
+    auto start = Clock::now();
     const auto deadline = Clock::now() + std::chrono::duration<double>(LOBBY_TIMEOUT_SEC);
     while (true) {
         if (registry->size() >= MAX_PLAYERS) break;
         if (Clock::now() >= deadline) break;
+        auto now = Clock::now();
+        float time = std::chrono::duration_cast<std::chrono::duration<float>>(
+                                    now - start
+                                    ).count();
+        // FELI, AL NUEVO MSJ PASALE EL FLOAT
         loop.sleep_until_next_frame();
     }
     this->raceStarted = true;
