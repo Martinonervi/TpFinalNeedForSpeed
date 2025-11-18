@@ -1,38 +1,150 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>postgamewindow</class>
- <widget class="QWidget" name="postgamewindow">
+ <class>PostGameWindow</class>
+ <widget class="QWidget" name="PostGameWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>501</width>
-    <height>533</height>
+    <width>500</width>
+    <height>531</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="widget" native="true">
+  <property name="styleSheet">
+   <string notr="true">        QWidget#PostGameWindow {
+            background-image: url(:/postgame/lobby_bg.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: black; /* fallback */
+        }
+
+        QFrame#panel {
+          background: rgba(10,14,18,230);
+          border: 2px solid #0f2236;
+          border-radius: 16px;
+        }
+
+        QLabel#titleLabel { color:#F3F0D0; font-size:32px; font-weight:900; letter-spacing:1px; }
+        QLabel#subtitleLabel { color:#C8D0D8; font-size:16px; margin-bottom:6px; }
+
+        QFrame#divider { background: rgba(255,255,255,0.10); max-height:1px; min-height:1px; }
+
+        QLabel { color:#E6EDF3; font-size:20px; }
+        QLineEdit {
+          background: rgba(255,255,255,0.06);
+          border: 2px solid rgba(255,255,255,0.10);
+          border-radius: 8px;
+          color:#E6EDF3; padding:6px 10px;
+        }
+
+        QPushButton#closeButton {
+          min-height:48px; min-width:220px;
+          background:#E74C3C; border:3px solid #7A1E18;
+          color:white; font-weight:900; font-size:20px;
+          border-radius:12px; padding:10px 24px;
+        }
+        QPushButton#closeButton:hover   { background:#FF5E4F; }
+        QPushButton#closeButton:pressed { background:#C83A2C; }</string>
+  </property>
+  <widget class="QFrame" name="panel">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>501</width>
-     <height>531</height>
+     <x>40</x>
+     <y>80</y>
+     <width>421</width>
+     <height>371</height>
     </rect>
    </property>
-   <widget class="QStackedWidget" name="stackedWidget">
+   <property name="frameShape">
+    <enum>QFrame::Shape::Box</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Shadow::Raised</enum>
+   </property>
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>501</width>
-      <height>531</height>
+      <width>421</width>
+      <height>371</height>
      </rect>
     </property>
-    <widget class="QWidget" name="page"/>
-    <widget class="QWidget" name="page_2"/>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>16</number>
+     </property>
+     <property name="leftMargin">
+      <number>24</number>
+     </property>
+     <property name="topMargin">
+      <number>24</number>
+     </property>
+     <property name="rightMargin">
+      <number>24</number>
+     </property>
+     <property name="bottomMargin">
+      <number>24</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="titleLabel">
+       <property name="text">
+        <string>ESTADÍSTICAS</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="subtitleLabel">
+       <property name="text">
+        <string>Resumen de la carrera</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QFrame" name="divider">
+       <property name="frameShape">
+        <enum>QFrame::Shape::HLine</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Raised</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="posicionLabel">
+         <property name="text">
+          <string>Posicion</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="posEdit"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="tiempoLabel">
+         <property name="text">
+          <string>Tiempo</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="timeEdit"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text">
+        <string>Cerrar</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
  </widget>

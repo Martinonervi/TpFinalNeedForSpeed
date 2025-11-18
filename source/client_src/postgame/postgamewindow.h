@@ -12,18 +12,24 @@
 #include "../../common_src/srv_msg/playerstats.h"
 
 namespace Ui {
-class postgamewindow;
+class PostGameWindow;
 }
 
-class postgamewindow: public QWidget {
+class PostGameWindow: public QWidget {
     Q_OBJECT
 
 public:
-    explicit postgamewindow(PlayerStats& stats, QWidget* parent = nullptr);
-    ~postgamewindow();
+    explicit PostGameWindow(PlayerStats& stats, QWidget* parent = nullptr);
+    ~PostGameWindow();
+
+    void setStats(const QString& pos, const QString& time, const QString& bestLap);
+    void applyStyles();
+
+signals:
+    void closeRequested();
 
 private:
-    Ui::postgamewindow* ui;
+    Ui::PostGameWindow* ui;
     PlayerStats& stats;
 };
 

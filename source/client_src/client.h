@@ -13,8 +13,9 @@ public:
 private:
     void close();  // cierra el socket (por si hiciera falta cerrar más cosas)antes de irse
                    // ordenadamente
-    bool lobbyState(); // lógica disparadora de QT, devuelve true
+    bool lobbyState(); // lógica disparadora de QT (lobby), devuelve true
                        // si el cliente nunca entró en partida
+    void postGame(PlayerStats& stats);  // lógica disparadora de QT (estadísticas)
     void sendRequest(int game_id);
     void recvGame();
     void stop();

@@ -5,6 +5,7 @@
 #include "../common_src/cli_msg/requestgame.h"
 #include "../common_src/srv_msg/joingame.h"
 #include "lobby/lobbywindow.h"
+#include "postgame/postgamewindow.h"
 
 #include "client_window.h"
 
@@ -12,50 +13,6 @@ Client::Client(const char* host, const char* service)
     : peer(host, service), protocol(peer),
 receiver(protocol, receiverQueue), sender(protocol, senderQueue)
 {}
-
-bool Client::lobbyState() {
-    int argc = 0;
-    char** argv = nullptr;
-    QApplication app(argc, argv);
-    bool was_closed = false;
-
-    LobbyWindow window(protocol, was_closed);
-
-    window.show();
-
-    app.exec();   // event loop de Qt
-
-    /*  por si quieren probar algo sin qt
-    std::string line;
-    while (!in_game && std::getline(std::cin, line)) {
-        int game_id = std::stoi(line);
-        sendRequest(game_id);
-        recvGame();
-    }
-    */
-    return was_closed;
-}
-
-void Client::recvGame() { // solo para probar cosas
-    Op op = protocol.readActionByte();
-    if (op != JOIN_GAME) {
-        throw("em...");
-    }
-    JoinGame game_info = protocol.recvGameInfo();
-    if (game_info.couldJoin()) {
-        in_game = true;
-    } else if (game_info.getExitStatus() == FULL_GAME) {
-        std::cout << "GAME FULL" << std::endl;
-    } else if (game_info.getExitStatus() == INEXISTENT_GAME) {
-        std::cout << "INEXISTENT GAME" << std::endl;
-    }
-}
-
-void Client::sendRequest(int game_id) { // solo para probar cosas
-    auto rq = std::make_shared<RequestGame>(static_cast<ID>(game_id));
-    CliMsgPtr base = rq;
-    protocol.sendRequestGame(*rq);
-}
 
 void Client::run() {
 
@@ -97,6 +54,64 @@ void Client::run() {
     client_window.run();
     stop();
     join();
+
+    PlayerStats stats(1); // por ahora es un placeholder para llamar a la funcion solamente
+    postGame(stats);
+}
+
+bool Client::lobbyState() {
+    int argc = 0;
+    char** argv = nullptr;
+    QApplication app(argc, argv);
+    bool was_closed = false;
+
+    LobbyWindow window(protocol, was_closed);
+
+    window.show();
+
+    app.exec();   // event loop de Qt
+
+    /*  por si quieren probar algo sin qt
+    std::string line;
+    while (!in_game && std::getline(std::cin, line)) {
+        int game_id = std::stoi(line);
+        sendRequest(game_id);
+        recvGame();
+    }
+    */
+    return was_closed;
+}
+
+void Client::postGame(PlayerStats& player_stats) {
+    int argc = 0;
+    char** argv = nullptr;
+    QApplication app(argc, argv);
+
+    PostGameWindow win(player_stats);  // tu constructor recibe PlayerStats&
+    win.show();
+
+    app.exec();  // loop de eventos de la pantalla de estadísticas
+}
+
+void Client::recvGame() { // solo para probar cosas
+    Op op = protocol.readActionByte();
+    if (op != JOIN_GAME) {
+        throw("em...");
+    }
+    JoinGame game_info = protocol.recvGameInfo();
+    if (game_info.couldJoin()) {
+        in_game = true;
+    } else if (game_info.getExitStatus() == FULL_GAME) {
+        std::cout << "GAME FULL" << std::endl;
+    } else if (game_info.getExitStatus() == INEXISTENT_GAME) {
+        std::cout << "INEXISTENT GAME" << std::endl;
+    }
+}
+
+void Client::sendRequest(int game_id) { // solo para probar cosas
+    auto rq = std::make_shared<RequestGame>(static_cast<ID>(game_id));
+    CliMsgPtr base = rq;
+    protocol.sendRequestGame(*rq);
 }
 
 void Client::stop(){
