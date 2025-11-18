@@ -67,9 +67,6 @@ file(GLOB COMMON_SOURCES "common_src/*.cpp")
 
 add_library(common STATIC
         ${COMMON_SOURCES}
-        common_src/requestgame.h
-        common_src/joingame.h
-        common_src/metadatagames.h
 )
 
 target_link_libraries(common
@@ -103,11 +100,12 @@ target_link_libraries(client
         common
         ${SDL2PP_LIBRARY}
         ${SDL2_LIBRARIES}
+        SDL2_ttf
 )
 
 # --- Servidor ---
 
-file(GLOB SERVER_SOURCES "server_src/*.cpp")
+file(GLOB_RECURSE SERVER_SOURCES "server_src/*.cpp")
 list(APPEND SERVER_SOURCES "server_main.cpp")
 
 add_executable(server ${SERVER_SOURCES})
