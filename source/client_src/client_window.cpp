@@ -44,7 +44,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
         if (nextCheckpoint != -1) {
             auto it = checkpoints.find(nextCheckpoint);
             if (it != checkpoints.end() && it->second) {
-                hint.draw(camera, checkpoints[nextCheckpoint]->getX(), checkpoints[nextCheckpoint]->getY());
+                hint.draw(camera);
             }
         }
         for (auto& [id, checkpoint] : checkpoints) {
