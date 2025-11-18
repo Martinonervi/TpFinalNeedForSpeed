@@ -9,9 +9,11 @@
 TextureManager::TextureManager(SDL2pp::Renderer& renderer)
 {
     flagTexture.emplace(renderer, CHECKPOINT_PATH);
+    arrowTexture.emplace(renderer, "../assets/extras/arrow.png");
     barsTexture.emplace(renderer, BARS_PATH);
+    upgradeFrameTexture.emplace(renderer, "../assets/extras/item-frame.png");
 
-    hudManager.emplace(*barsTexture);
+    hudManager.emplace(*barsTexture, *upgradeFrameTexture);
 
     speedometerTexture.emplace(loadWithColorKey(renderer, SPEEDOMETER_PATH, 221, 221, 56));
     carsTexture.emplace(loadWithColorKey(renderer, CARS_PATH, 163, 163, 13));
@@ -23,7 +25,7 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer)
     cityLibertyTexture.emplace(renderer, SDL2pp::Surface(LIBERTY_CITY_PATH));
     citySanAndreasTexture.emplace(renderer, SDL2pp::Surface(SAN_ANDREAS_PATH));
     cityViceCityTexture.emplace(renderer, SDL2pp::Surface(VICE_CITY_PATH));
-    cityManager.emplace(*cityLibertyTexture, *citySanAndreasTexture, *cityViceCityTexture, *flagTexture);
+    cityManager.emplace(*cityLibertyTexture, *citySanAndreasTexture, *cityViceCityTexture, *flagTexture, *arrowTexture);
 
     explosionTextures.emplace(renderer, SDL2pp::Surface(EXPLOSION_PATH));
     effectsManager.emplace(*explosionTextures);

@@ -33,6 +33,7 @@ private:
     void drawGameTime(int totalSeconds) const;
     void drawRaceNumber(int current, int total) const;
     void drawText(const std::string& text, int x, int y, SDL_Color color) const;
+    void activeUpgrade(int windowWidth) const;
 };
 
 

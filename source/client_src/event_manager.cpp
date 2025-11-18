@@ -1,24 +1,33 @@
 #include "event_manager.h"
 
 #include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 
-EventManager::EventManager( ID& myCarId,
+EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                                 SDL2pp::Renderer& renderer,
                                 Queue<CliMsgPtr>& senderQueue,
                                 TextureManager& textureManager,
+                                std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
+                                Hint& hint,
                                 bool& running, bool& showMap, bool& quit)
 :       myCarId(myCarId),
+        nextCheckpoint(nextCheckpoint),
         cars(cars),
+        checkpoints(checkpoints),
         renderer(renderer),
         senderQueue(senderQueue),
         tm(textureManager),
+        hint(hint),
         running(running),
         showMap(showMap),
         quit(quit)
 {}
 
 void EventManager::handleEvents() const {
+    SDL2pp::Rect motorButton   = {50, 50, 150, 50};
+    SDL2pp::Rect ruedasButton  = {50, 120, 150, 50};
+    SDL2pp::Rect nitroButton   = {50, 190, 150, 50};
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
@@ -33,7 +42,26 @@ void EventManager::handleEvents() const {
             } else if (event.key.keysym.sym == SDLK_m) {
                 showMap = !showMap;
             }
+        } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+            int x = event.button.x;
+            int y = event.button.y;
+
+            if (x >= motorButton.x && x <= motorButton.x + motorButton.w &&
+                y >= motorButton.y && y <= motorButton.y + motorButton.h) {
+                std::cout << "Mejorar motor!" << std::endl;
+                }
+
+            if (x >= ruedasButton.x && x <= ruedasButton.x + ruedasButton.w &&
+                y >= ruedasButton.y && y <= ruedasButton.y + ruedasButton.h) {
+                std::cout << "Mejorar ruedas!" << std::endl;
+                }
+
+            if (x >= nitroButton.x && x <= nitroButton.x + nitroButton.w &&
+                y >= nitroButton.y && y <= nitroButton.y + nitroButton.h) {
+                std::cout << "Activar nitro!" << std::endl;
+                }
         }
+
     }
 }
 
@@ -69,6 +97,15 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
                     ps.getY()*PIXELS_PER_METER,
                     ps.getAngleRad());
             }
+            // Lo vamos a mover
+            if (!checkpoints.count(ps.getNextCheckpointId())) {
+                checkpoints[ps.getNextCheckpointId()] = std::make_unique<Checkpoint>(renderer, tm,
+                    ps.getCheckX()*PIXELS_PER_METER, ps.getCheckY()*PIXELS_PER_METER);
+            }
+            nextCheckpoint = ps.getNextCheckpointId();
+            hint.update(0, 0, cars[myCarId]->getX(), cars[myCarId]->getY());
+            //_______
+
             break;
         }
         case COLLISION: {
@@ -87,6 +124,12 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
                 running = false;
             }
             break;
+        }
+        case CHECKPOINT_HIT: {
+            const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
+            if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
+                checkpoints[nextCheckpoint]->setInactive();
+            }
         }
         default:
             break;
