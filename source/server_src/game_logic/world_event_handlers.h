@@ -15,7 +15,8 @@ public:
                        float& raceTimeSeconds,
                        uint8_t& finishedCarsCount,
                        uint8_t& totalCars,
-                       bool& raceEnded);
+                       bool& raceEnded,
+                       std::vector<ID>& raceRanking);
 
 
     void CarHitCheckpointHandler(WorldEvent ev);
@@ -31,6 +32,7 @@ private:
     uint8_t& finishedCarsCount;
     uint8_t& totalCars;
     bool& raceEnded;
+    std::vector<ID>& raceRanking;
 };
 
 

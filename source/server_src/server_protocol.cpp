@@ -314,17 +314,20 @@ DisconnectReq ServerProtocol::recvDisconnectReq() {
 int ServerProtocol::sendPlayerStats(PlayerStats& msg) {
     try {
         Op type = Opcode::STATS;
-        uint8_t checkpoints = msg.getCheckpoints();
+        uint8_t racePosition = msg.getRacePosition();
+        const uint32_t timeSecToComplete_BE = encodeFloat100BE(msg.getTimeSecToComplete());
 
-
-        std::vector<char> buf(sizeof(uint8_t));
+        std::vector<char> buf(sizeof(Op) + sizeof(racePosition) + sizeof(timeSecToComplete_BE));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
         offset += sizeof(Op);
 
-        memcpy(buf.data() + offset, &checkpoints, sizeof(uint8_t));
-        offset += sizeof(uint8_t);
+        memcpy(buf.data() + offset, &racePosition, sizeof(racePosition));
+        offset += sizeof(racePosition);
+
+        memcpy(buf.data() + offset, &timeSecToComplete_BE, sizeof(timeSecToComplete_BE));
+        offset += sizeof(timeSecToComplete_BE);
 
         int n = peer.sendall(buf.data(), offset);
         return n;

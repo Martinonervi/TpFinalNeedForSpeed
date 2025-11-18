@@ -14,6 +14,7 @@
 #include "../../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../../common_src/srv_msg/srv_current_info.h"
+#include "../../common_src/srv_msg/playerstats.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
@@ -22,7 +23,7 @@
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(cars, checkpoints, *this->registry,
-            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded)  {
+            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking)  {
     loadMapFromYaml(FILE_YAML_PATH);
 }
 
@@ -100,6 +101,18 @@ void GameLoop::run() {
     } catch (...) {
         std::cerr << "[GameLoop] fatal: unknown\n";
     }
+    sendPlayerStats();
+}
+
+void GameLoop::sendPlayerStats(){
+    for (auto& [id, car] : cars) {
+        // los que no terminaron tienen sus valores en cero
+        PlayerStats ps(car.getRanking(), car.getFinishTime());
+        auto msg = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<PlayerStats>(std::move(ps)));
+        registry->sendTo(id, msg);
+    }
+
 }
 
 void GameLoop::checkPlayersStatus() {
@@ -154,13 +167,10 @@ void GameLoop::processWorldEvents() {
     }
 }
 
-//arreglar con fran
 void GameLoop::sendCurrentInfo() {
     for (auto& [id, car] : cars) {
         ID actual = car.getActualCheckpoint();
         ID next   = actual + 1;
-
-        float dirX = 0.f, dirY = 0.f;
 
         auto itCp = checkpoints.find(next);
         if (itCp == checkpoints.end()) return; //termino

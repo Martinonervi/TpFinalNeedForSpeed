@@ -30,7 +30,7 @@ void Sender::run() {
 
             switch (msg->type()) {
                 case Opcode::STATS:{ // no esta testeado
-                    protocol.sendPlayerStats(dynamic_cast<PlayerStats&>(*msg));
+                    n = protocol.sendPlayerStats(dynamic_cast<PlayerStats&>(*msg));
                     break;
                 }
                 case Opcode::REQUEST_GAMES:{
