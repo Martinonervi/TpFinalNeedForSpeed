@@ -4836,7 +4836,7 @@ buildings:
 route:
   checkpoints:
     - id: 1
-      kind: Start
+      kind: Normal
       x: 84.6534238538261
       y: 830.609337021205
       w: 79.624507585282
@@ -4905,6 +4905,34 @@ route:
       w: 76.0469722693824
       h: 67.9117147707975
       angle: 0.0
+
+  spawn_points:
+    - x: 70.0
+      y: 88.0
+      angle: 0.0
+    - x: 97.0
+      y: 88
+      angle: 0.0
+    - x: 70.0
+      y: 128.0
+      angle: 0.0
+    - x: 97.0
+      y: 128
+      angle: 0.0
+    - x: 70.0
+      y: 168.0
+      angle: 0.0
+    - x: 97.0
+      y: 168
+      angle: 0.0
+    - x: 70.0
+      y: 208.0
+      angle: 0.0
+    - x: 97.0
+      y: 208
+      angle: 0.0
+
+
 
 #proximamente el recorrido 1 ira aca y voy a ir leyendo todos
 route_alt:
@@ -4979,6 +5007,11 @@ route_alt:
         y: 1511.0353355566408
         w: 76.4417131936898
         h: 73.8187132311614
+        angle: 0.0
+
+    spawn_points:
+      - x: 4500.0 # valores random
+        y: 2700.0
         angle: 0.0
 
 

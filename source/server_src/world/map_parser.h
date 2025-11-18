@@ -24,19 +24,27 @@ struct CheckpointConfig {
     float angle;
 };
 
+struct SpawnPointConfig {
+    float x; // en metros
+    float y; // en metros
+    float angle; // en radianes
+};
 
-struct HintDef {
-    uint8_t id;
-    float x, y;
-    float dirX, dirY;
+struct RouteConfig {
+    std::string nameCity;
+    std::string nameRoute;
+
+    std::vector<CheckpointConfig> checkpoints;
+    std::vector<SpawnPointConfig> spawnPoints;
 };
 
 struct MapData {
     std::string city;
     std::vector<BuildingConfig> buildings;
     std::vector<CheckpointConfig> checkpoints; //la primera
+    std::vector<SpawnPointConfig> spawn;
     // todos las recorridos
-    std::vector<std::vector<CheckpointConfig>> routes;
+    std::vector<RouteConfig> routes;
 };
 
 class MapParser {

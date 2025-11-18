@@ -144,28 +144,74 @@ MapData MapParser::load(const std::string& path) {
         }
     };
 
+    auto parseSpawnPoints = [&](YAML::Node spList, std::vector<SpawnPointConfig>& out) {
+        if (!spList || !spList.IsSequence()) {
+            return;
+        }
+
+        for (auto spNode : spList) {
+            if (!spNode["x"] || !spNode["y"]) {
+                continue;
+            }
+
+            SpawnPointConfig sp{};
+            float x_px, y_px, ang = 0.0f;
+
+            try {
+                x_px = spNode["x"].as<float>();
+                y_px = spNode["y"].as<float>();
+                if (spNode["angle"]) {
+                    ang = spNode["angle"].as<float>();
+                }
+            } catch (...) {
+                continue;
+            }
+
+            if (!std::isfinite(x_px) || !std::isfinite(y_px)) {
+                continue;
+            }
+
+            sp.x = x_px * PIXEL_TO_METER;
+            sp.y = y_px * PIXEL_TO_METER;
+            sp.angle = ang;
+
+            out.push_back(sp);
+        }
+    };
+
+
     if (root["routes"] && root["routes"].IsSequence()) {
         for (auto routeNode : root["routes"]) {
-            if (!routeNode["checkpoints"]) continue;
 
-            std::vector<CheckpointConfig> routeCfg;
-            parseCheckpointList(routeNode["checkpoints"], routeCfg);
+            RouteConfig currentRoute;
 
-            if (!routeCfg.empty()) {
-                data.routes.push_back(std::move(routeCfg));
+            if (routeNode["checkpoints"]) {
+                parseCheckpointList(routeNode["checkpoints"], currentRoute.checkpoints);
+            }
+
+            if (routeNode["spawn_points"]) {
+                parseSpawnPoints(routeNode["spawn_points"], currentRoute.spawnPoints);
+            }
+
+            if (routeNode["name"]) {
+                currentRoute.nameRoute = routeNode["name"].as<std::string>();
+            }
+
+            if (!currentRoute.checkpoints.empty() || !currentRoute.spawnPoints.empty()) {
+                data.routes.push_back(std::move(currentRoute));
             }
         }
     }
-
 
     // la primera ruta
     if (root["route"] && root["route"]["checkpoints"]) {
         std::vector<CheckpointConfig> routeMain;
         parseCheckpointList(root["route"]["checkpoints"], routeMain);
+        data.checkpoints = routeMain;
 
-        if (!routeMain.empty()) {
-            data.checkpoints = routeMain;
-        }
+        std::vector<SpawnPointConfig> spawn;
+        parseSpawnPoints(root["route"]["spawn_points"], spawn);
+        data.spawn = spawn;
     }
 
     return data;

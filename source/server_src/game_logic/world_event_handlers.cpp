@@ -37,8 +37,8 @@ void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
     auto& cp = itCheck->second;
 
     if (cp.getKind() == CheckpointKind::Finish and !car.isFinished()) {
-        car.markFinished(raceTimeSeconds);
         finishedCarsCount++;
+        car.markFinished(raceTimeSeconds, finishedCarsCount);
         raceRanking.push_back(car.getClientId());
         if (finishedCarsCount == totalCars) {
             this->raceEnded = true;
