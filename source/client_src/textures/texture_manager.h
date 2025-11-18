@@ -8,6 +8,7 @@
 #include "effects_texture.h"
 #include "hud_texture.h"
 #include "people_texture.h"
+#include <optional>
 
 class TextureManager {
 public:
