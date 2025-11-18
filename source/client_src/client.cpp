@@ -55,7 +55,7 @@ void Client::run() {
     stop();
     join();
 
-    PlayerStats stats(1); // por ahora es un placeholder para llamar a la funcion solamente
+    PlayerStats stats(3, 2.5); // por ahora es un placeholder para llamar a la funcion solamente
     postGame(stats);
 }
 

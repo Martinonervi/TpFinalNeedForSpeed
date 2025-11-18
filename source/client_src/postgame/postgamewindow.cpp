@@ -3,13 +3,26 @@
 #include "ui_postgamewindow.h"
 #include <QGraphicsDropShadowEffect>
 
+static QString formatRaceTime(float seconds) {
+    int totalMs = qRound(seconds * 1000.0f);
+    int minutes = totalMs / 60000;
+    int secs = (totalMs % 60000) / 1000;
+    int centi = (totalMs % 1000) / 10;
+    return QString("%1:%2.%3")
+            .arg(minutes, 2, 10, QChar('0'))
+            .arg(secs,    2, 10, QChar('0'))
+            .arg(centi,   2, 10, QChar('0'));
+}
+
 PostGameWindow::PostGameWindow(PlayerStats& stats,QWidget* parent)
     :QWidget(parent), stats(stats), ui(new Ui::PostGameWindow) {
     ui->setupUi(this);
     applyStyles();
 
-    connect(ui->closeButton, &QPushButton::clicked,
-            this, &PostGameWindow::closeRequested);
+    const QString pos = QString::number(static_cast<int>(stats.getRacePosition()));
+    const QString time = formatRaceTime(stats.getTimeSecToComplete());
+
+    setStats(pos, time);
 
     auto* sh = new QGraphicsDropShadowEffect(ui->panel);
     sh->setBlurRadius(28);
@@ -26,7 +39,6 @@ void PostGameWindow::setStats(const QString& pos, const QString& time, const QSt
 }
 
 void PostGameWindow::applyStyles() {
-    // fondo transparente (tu fondo global lo pone LobbyWindow)
     this->setAttribute(Qt::WA_StyledBackground, true);
 
     this->setObjectName("PostGameWindow");
@@ -79,4 +91,16 @@ void PostGameWindow::applyStyles() {
         QPushButton#closeButton:pressed { background: #C83A2C; }
     )CSS";
     this->setStyleSheet(css);
+}
+
+void PostGameWindow::setStats(const QString& pos,
+                              const QString& time) {
+    ui->posEdit->setText(pos);
+    ui->timeEdit->setText(time);
+    ui->posEdit->setReadOnly(true);
+    ui->timeEdit->setReadOnly(true);
+}
+
+void PostGameWindow::on_closeButton_clicked() {
+    close();
 }

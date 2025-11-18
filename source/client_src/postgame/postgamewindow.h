@@ -3,9 +3,7 @@
 
 #include <QWidget>
 #include <QMainWindow>
-#include <vector>
 
-#include <QVector>
 #include <QString>
 #include <QPixmap>
 #include "../../common_src/constants.h"
@@ -25,10 +23,11 @@ public:
     void setStats(const QString& pos, const QString& time, const QString& bestLap);
     void applyStyles();
 
-signals:
-    void closeRequested();
+private slots:
+    void on_closeButton_clicked();
 
 private:
+    void setStats(const QString& pos, const QString& time);
     Ui::PostGameWindow* ui;
     PlayerStats& stats;
 };
