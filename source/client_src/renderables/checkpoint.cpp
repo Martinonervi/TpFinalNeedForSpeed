@@ -49,4 +49,3 @@ void Checkpoint::draw(const Camera& camera) {
 }
 
 void Checkpoint::setInactive() { active = false; }
-void Checkpoint::setActive() { active = true; }

@@ -3,8 +3,9 @@
 CityTexture::CityTexture(SDL2pp::Texture& liberty,
                                        SDL2pp::Texture& sanAndreas,
                                        SDL2pp::Texture& vice,
-                                       SDL2pp::Texture& checkpointTexture) :
-checkpointTexture(checkpointTexture)
+                                       SDL2pp::Texture& checkpointTexture,
+                                        SDL2pp::Texture& arrowTexture) :
+checkpointTexture(checkpointTexture), arrowTexture(arrowTexture)
 {
     cityTextures[MAP_LIBERTY] = &liberty;
     cityTextures[MAP_SAN_ANDREAS] = &sanAndreas;
@@ -29,4 +30,9 @@ SDL2pp::Rect CityTexture::getCheckpointFrame(const int frame) const {
 
     return SDL2pp::Rect(x, y, FRAME_WIDTH, FRAME_HEIGHT);
 }
+
+SDL2pp::Texture& CityTexture::getArrowTexture() const {
+    return arrowTexture;
+}
+
 

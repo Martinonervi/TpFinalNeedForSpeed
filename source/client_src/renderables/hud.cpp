@@ -31,6 +31,7 @@ void Hud::drawOverlay(const int x, const int y,
     // Por ahora uso nums falsos
     drawRaceNumber(3, 5);
     drawGameTime(523);
+    activeUpgrade(x);
 }
 
 
@@ -242,12 +243,15 @@ void Hud::drawText(const std::string& text, const int x, const int y, const SDL_
     SDL_DestroyTexture(texture);
 }
 
+void Hud::activeUpgrade(const int windowWidth) const {
+    SDL2pp::Texture& tex = tm.getHud().getUpgradeFrame();
+    SDL2pp::Rect src(0, 0, tex.GetWidth()*4, tex.GetHeight()*4);
+    const int x = windowWidth - 260 - src.w;
+    SDL2pp::Rect dst(x, 10, src.w, src.h);
 
-/*
-void Hud::activeUpgrade() {
-
+    renderer.Copy(tex, src, dst);
 }
-*/
+
 
 
 

@@ -29,6 +29,8 @@ private:
     std::optional<SDL2pp::Texture> explosionTextures;
     std::optional<SDL2pp::Texture> barsTexture;
     std::optional<SDL2pp::Texture> flagTexture;
+    std::optional<SDL2pp::Texture> arrowTexture;
+    std::optional<SDL2pp::Texture> upgradeFrameTexture;
 
     std::optional<CarTexture> carManager;
     std::optional<PeopleTexture> peopleManager;
