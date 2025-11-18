@@ -13,8 +13,8 @@ public:
                        std::unordered_map<ID, Checkpoint>& checkpoints,
                        ClientsRegistry& registry,
                        float& raceTimeSeconds,
-                       int& finishedCarsCount,
-                       int& totalCars,
+                       uint8_t& finishedCarsCount,
+                       uint8_t& totalCars,
                        bool& raceEnded);
 
 
@@ -28,8 +28,8 @@ private:
     ClientsRegistry& registry;
 
     float& raceTimeSeconds;
-    int& finishedCarsCount;
-    int& totalCars;
+    uint8_t& finishedCarsCount;
+    uint8_t& totalCars;
     bool& raceEnded;
 };
 

@@ -13,6 +13,7 @@
 #include "../common_src/srv_msg/send_player.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
+#include "../common_src/srv_msg/srv_current_info.h"
 
 #include "client_types.h"
 
@@ -33,6 +34,7 @@ public:
     SendPlayer recvSendPlayer();
     NewPlayer recvNewPlayer();
     JoinGame recvGameInfo();
+    SrvCurrentInfo recvCurrentInfo();
     void requestGames();
     MetadataGames getMetadata();
     GameMetadata readOneGame();
@@ -40,6 +42,8 @@ public:
     SrvCheckpointHitMsg recvCheckpointHitEvent();
     ClientDisconnect recvClientDisconnect();
     void sendDisconnectReq(DisconnectReq& dr);
+
+
 
 
 private:

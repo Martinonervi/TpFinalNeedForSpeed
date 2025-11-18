@@ -9,8 +9,8 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& cars,
                                        std::unordered_map<ID, Checkpoint>& checkpoints,
                                        ClientsRegistry& registry,
                                        float& raceTimeSeconds,
-                                       int& finishedCarsCount,
-                                       int& totalCars,
+                                       uint8_t& finishedCarsCount,
+                                       uint8_t& totalCars,
                                        bool& raceEnded)
         : cars(cars)
         , checkpoints(checkpoints)

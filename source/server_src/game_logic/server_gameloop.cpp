@@ -91,7 +91,7 @@ void GameLoop::run() {
 
             broadcastCarSnapshots();
             processWorldEvents();
-            //sendCurrentInfo();
+            sendCurrentInfo();
             loop.sleep_until_next_frame();
         }
 
@@ -172,13 +172,15 @@ void GameLoop::sendCurrentInfo() {
         float vx = cp.getX() - pos.x;
         float vy = cp.getY() - pos.y;
 
-        float len = std::sqrt(vx*vx + vy*vy);
-        if (len > 0.0001f) { //normalizo
-            dirX = vx / len;
-            dirY = vy / len;
-        }
-        SrvCurrentInfo ci(cp.getId(), cp.getX(), cp.getY(), dirX, dirY,
-                          raceTimeSeconds, raceCarNumber);
+        float len = std::sqrt(vx*vx + vy*vy); //distancia del auto al checkpoint
+        float angle = std::atan2(vy, vx);
+
+        b2Vec2 vecVel = b2Body_GetLinearVelocity(body);
+        float speed = std::sqrt(vecVel.x*vecVel.x + vecVel.y*vecVel.y);
+
+        SrvCurrentInfo ci(cp.getId(), cp.getX(), cp.getY(), angle, len,
+                          raceTimeSeconds, raceCarNumber, speed);
+
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<SrvCurrentInfo>(std::move(ci)));
         registry->sendTo(id, base);

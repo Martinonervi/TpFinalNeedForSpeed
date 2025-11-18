@@ -310,3 +310,43 @@ DisconnectReq ServerProtocol::recvDisconnectReq() {
     ID id = static_cast<ID>(ntohl(ID_BE));
     return DisconnectReq(id);
 }
+
+
+int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
+    try {
+        const Op type = msg.type();
+        const uint32_t speed = encodeFloat100BE(msg.getSpeed());
+        const uint32_t raceTimeSeconds = encodeFloat100BE(msg.getRaceTimeSeconds());
+        const std::uint8_t raceNumber = msg.getRaceNumber();
+        const ID nextCheckpointId = htons(msg.getNextCheckpointId());
+        const uint32_t checkX = encodeFloat100BE(msg.getCheckX());
+        const uint32_t checkY = encodeFloat100BE(msg.getCheckY());
+        const uint32_t angleHint = encodeFloat100BE(msg.getAngleHint());
+        const uint32_t distanceToChekpoint = encodeFloat100BE(msg.getDistanceToCheckpoint());
+
+        std::vector<char> buf;
+        buf.reserve(sizeof(Op) + sizeof(uint8_t) + 7 * sizeof(uint32_t));
+
+        auto append = [&buf](const void* p, std::size_t n) {
+            const std::size_t old = buf.size();
+            buf.resize(old + n);
+            std::memcpy(buf.data() + old, p, n);
+        };
+
+        append(&type, sizeof(type));
+        append(&speed, sizeof(speed));
+        append(&raceTimeSeconds, sizeof(raceTimeSeconds));
+        append(&raceNumber, sizeof(raceNumber));
+        append(&nextCheckpointId, sizeof(ID));
+        append(&checkX, sizeof(checkX));
+        append(&checkY, sizeof(checkY));
+        append(&angleHint, sizeof(angleHint));
+        append(&distanceToChekpoint, sizeof(distanceToChekpoint));
+
+        return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
+    } catch (const std::exception& e) {
+    std::cerr << e.what() << '\n';
+    throw std::runtime_error("Error sending");
+    }
+}
+

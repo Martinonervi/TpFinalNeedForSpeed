@@ -353,3 +353,43 @@ void ClientProtocol::sendDisconnectReq(DisconnectReq& dr) {
         throw("Error sending");
     }
 }
+
+
+SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
+    try {
+        uint32_t speed_BE;
+        uint32_t raceTimeSeconds_BE;
+        std::uint8_t raceNumber;
+        ID nextCheckpointId_BE;
+        uint32_t checkX_BE;
+        uint32_t checkY_BE;
+        uint32_t angleHint_BE;
+        uint32_t distanceToChekpoint_BE;
+
+        peer.recvall(&speed_BE, sizeof(speed_BE));
+        peer.recvall(&raceTimeSeconds_BE, sizeof(raceTimeSeconds_BE));
+        peer.recvall(&raceNumber, sizeof(raceNumber));
+        peer.recvall(&nextCheckpointId_BE, sizeof(nextCheckpointId_BE));
+        peer.recvall(&checkX_BE, sizeof(checkX_BE));
+        peer.recvall(&checkY_BE, sizeof(checkY_BE));
+        peer.recvall(&angleHint_BE, sizeof(angleHint_BE));
+        peer.recvall(&distanceToChekpoint_BE, sizeof(distanceToChekpoint_BE));
+
+        float speed = decodeFloat100BE(speed_BE);
+        float raceTimeSecond = decodeFloat100BE(raceTimeSeconds_BE);
+        ID nextCheckpointID = ntohs(nextCheckpointId_BE);
+        float checkX = decodeFloat100BE(checkX_BE);
+        float checkY = decodeFloat100BE(checkY_BE);
+        float angleHint = decodeFloat100BE(angleHint_BE);
+        float distanceToheckpoint = decodeFloat100BE(distanceToChekpoint_BE);
+
+
+        SrvCurrentInfo ci(nextCheckpointID, checkX, checkY, angleHint,
+                          distanceToheckpoint, raceTimeSecond, raceNumber, speed);
+        return ci;
+
+    } catch (const std::exception& e) {
+        std::cerr << "client_main error: " << e.what() << "\n";
+        throw RETURN_FAILURE;
+    }
+}

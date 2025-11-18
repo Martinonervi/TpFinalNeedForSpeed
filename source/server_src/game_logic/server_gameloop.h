@@ -64,8 +64,8 @@ private:
     std::chrono::steady_clock::time_point raceStartTime;
     bool raceStarted = false;
     bool raceEnded   = false;
-    int finishedCarsCount = 0;
-    int totalCars = 0;
+    uint8_t finishedCarsCount = 0;
+    uint8_t totalCars = 0;
     uint8_t raceCarNumber = 0;
 
     // loop
