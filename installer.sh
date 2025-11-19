@@ -127,21 +127,23 @@ rm -rf "$TMP_DIR"
 # 3) Usar SIEMPRE ./source como carpeta de código
 # ---------------------------------------------------------------------
 
-SRC_DIR="$SCRIPT_DIR/source"
-
-if [ ! -d "$SRC_DIR" ]; then
-  echo -e "${RED}No existe la carpeta 'source' en ${SCRIPT_DIR}.${NC}"
-  exit 1
+INSTALL_DIR="$SCRIPT_DIR/need-for-speed-tp"
+if [ ! -d "$INSTALL_DIR" ]; then
+    echo -e "${BLUE}Clonando rama 'entrega' en ${INSTALL_DIR}...${NC}"
+    git clone --branch entrega https://github.com/Martinonervi/TpFinalNeedForSpeed.git "$INSTALL_DIR"
 fi
 
+
+SRC_DIR="$INSTALL_DIR/source"
+
 if [ ! -f "$SRC_DIR/CMakeLists.txt" ]; then
-  echo -e "${RED}No se encontró CMakeLists.txt en ${SRC_DIR}.${NC}"
-  exit 1
+    echo -e "${RED}No se encontró CMakeLists.txt en la raíz del repo (${SRC_DIR}).${NC}"
+    exit 1
 fi
 
 echo -e "${BLUE}Usando carpeta de código fuente: ${SRC_DIR}${NC}"
-
 BUILD_DIR="$SRC_DIR/build-installer"
+
 
 # ---------------------------------------------------------------------
 # 4) Compilar tu proyecto con CMake
