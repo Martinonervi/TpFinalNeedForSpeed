@@ -39,7 +39,7 @@
 #define EXPLOSION_PATH "../assets/effects/explosion.png"
 #define SPEEDOMETER_PATH "../assets/cars/speedometer.png"
 #define CHECKPOINT_PATH "../assets/extras/checkpoint.png"
-#define BARS_PATH "../assets/extras/bars.png"
+#define HEALTH_NITRO_PATH "../assets/extras/health-and-nitro.png"
 
 
 using ID = std::uint32_t;
