@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <thread>
-
+#include <cmath>
 #include "../../common_src/cli_msg/init_player.h"
 #include "../../common_src/cli_msg/move_Info.h"
 #include "../../common_src/constant_rate_loop.h"
@@ -15,6 +15,7 @@
 #include "../../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../../common_src/srv_msg/srv_current_info.h"
 #include "../../common_src/srv_msg/playerstats.h"
+#include "../../common_src/srv_msg/srv_time_left.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
@@ -203,7 +204,12 @@ void GameLoop::waitingForPlayers() {
         if (remaining_sec < 0.f) remaining_sec = 0.f;
 
 
-        // mandar mensaje a interfaz de los segundos que faltan
+        // (2.9 → 2, 2.1 → 2, 1.9 → 1)
+        uint8_t timeToSend = static_cast<uint8_t>(std::floor(remaining_sec));
+
+        auto msg = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<TimeLeft>(timeToSend));
+        registry->broadcast(msg);
 
         loop.sleep_until_next_frame();
     }
