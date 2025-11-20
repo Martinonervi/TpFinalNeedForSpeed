@@ -75,6 +75,10 @@ void Sender::run() {
                     n = protocol.sendCurrentInfo(dynamic_cast<SrvCurrentInfo&>(*msg));
                     break;
                 }
+                case Opcode::UPGRADE_SEND: {
+                    n = protocol.sendUpgrade(dynamic_cast<SendUpgrade&>(*msg));
+                    break;
+                }
                 default: {
                     std::cout << "cmd desconocido: " << msg->type() << "\n";
                     n = 0; //quiero salir

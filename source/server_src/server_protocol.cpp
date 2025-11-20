@@ -399,3 +399,42 @@ int ServerProtocol::sendTimeLeft(TimeLeft& msg) {
     }
 }
 
+RequestUpgrade ServerProtocol::recvUpgradeReq() {
+    Upgrade upgrade;
+    int n = 0;
+    try {
+        n += peer.recvall(&upgrade, sizeof(Op));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+
+    return RequestUpgrade(upgrade);
+}
+
+int ServerProtocol::sendUpgrade(SendUpgrade& up) {
+    try{
+        Op opcode = up.type();
+        Upgrade upgrade = up.getUpgrade();
+        bool success = up.couldBuy();
+
+        std::vector<char> buf(sizeof(Op) + sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &upgrade, sizeof(Upgrade));
+        offset += sizeof(Upgrade);
+
+        memcpy(buf.data() + offset, &success, sizeof(bool));
+        offset += sizeof(bool);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}

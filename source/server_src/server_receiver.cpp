@@ -27,6 +27,12 @@ void Receiver::run() {
                 break;
             }
             switch (op) {
+                case Opcode::UPGRADE_REQUEST:{
+
+                    //ACA ME BUGIE TINO completalo vos
+
+                    break;
+                }
                 case Opcode::CLIENT_DISCONNECT: {
                     DisconnectReq req = protocol.recvDisconnectReq();
                     if (joined_game_id != 0) {

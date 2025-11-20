@@ -5,6 +5,8 @@
 #include "../common_src/cli_msg/move_Info.h"
 #include "../common_src/cli_msg/requestgame.h"
 #include "../common_src/cli_msg/disconnect_request.h"
+#include "../common_src/cli_msg/cli_request_upgrade.h"
+#include "../common_src/srv_msg/srv_send_upgrade.h"
 #include "../common_src/srv_msg/client_disconnect.h"
 #include "../common_src/srv_msg/joingame.h"
 #include "../common_src/srv_msg/metadatagames.h"
@@ -47,6 +49,8 @@ public:
     void requestStats();
     PlayerStats recvStats();
     TimeLeft recvTimeLeft();
+    void sendRequestUpgrade(RequestUpgrade& up);
+    SendUpgrade recvUpgrade();
 
 private:
     Socket& peer;

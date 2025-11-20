@@ -12,7 +12,6 @@ public:
     Upgrade getUpgrade() const { return upgrade; }
 private:
     Upgrade& upgrade;
-    bool success;
 };
 
 

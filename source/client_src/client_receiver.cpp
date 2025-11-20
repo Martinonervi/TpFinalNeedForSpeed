@@ -93,6 +93,14 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                             std::make_shared<TimeLeft>(std::move(msg)));
                 receiverQueue.push(base);
+                break;
+            }
+            case Opcode::UPGRADE_SEND: {
+                SendUpgrade msg = protocol.recvUpgrade();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<SendUpgrade>(std::move(msg)));
+                receiverQueue.push(base);
+                break;
             }
 
             default: {

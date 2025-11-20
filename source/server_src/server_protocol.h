@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 
+#include "../common_src/cli_msg/cli_request_upgrade.h"
 #include "../common_src/cli_msg/disconnect_request.h"
 #include "../common_src/cli_msg/init_player.h"
 #include "../common_src/cli_msg/move_Info.h"
@@ -15,6 +16,7 @@
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
+#include "../common_src/srv_msg/srv_send_upgrade.h"
 #include "../common_src/srv_msg/srv_time_left.h"
 
 #include "server_types.h"
@@ -58,6 +60,10 @@ public:
     int sendPlayerStats(PlayerStats& msg);
 
     int sendTimeLeft(TimeLeft& msg);
+
+    RequestUpgrade recvUpgradeReq();
+
+    int sendUpgrade(SendUpgrade& up);
 private:
     Socket& peer;
 

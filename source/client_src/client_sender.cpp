@@ -12,6 +12,10 @@ void ClientSender::run(){
         try{
             CliMsgPtr cliMsg = senderQueue.pop();
             switch (cliMsg->type()) {
+                case (Opcode::UPGRADE_REQUEST): {
+                    protocol.sendRequestUpgrade(dynamic_cast<RequestUpgrade&>(*cliMsg));
+                    break;
+                }
                 case (Opcode::JOIN_GAME): { // sacar, ya moví la lógica de lugar
                     protocol.sendRequestGame(dynamic_cast<RequestGame&>(*cliMsg));
                     break;

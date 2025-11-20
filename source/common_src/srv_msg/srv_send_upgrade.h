@@ -6,11 +6,13 @@
 
 class SendUpgrade: public SrvMsg {
 public:
-    SendUpgrade(Upgrade& upgrade): upgrade(upgrade) {};
+    SendUpgrade(Upgrade& upgrade, bool success): upgrade(upgrade), success(success) {};
     Op type() const override { return Opcode::UPGRADE_SEND; }
     Upgrade getUpgrade() const { return upgrade; }
+    bool couldBuy() const {return success;}
 private:
     Upgrade& upgrade;
+    bool success;
 };
 
 #endif
