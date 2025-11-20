@@ -2,25 +2,26 @@
 #define UPGRADE_SCREEN_H
 
 #include <SDL2pp/SDL2pp.hh>
+
 #include "../textures/texture_manager.h"
 
+#include "sdl_drawer.h"
 
 class UpgradeScreen {
 public:
-    UpgradeScreen(TextureManager& tm, SDL2pp::Renderer& renderer, int width, int height);
+    UpgradeScreen(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, int width, int height);
     void renderPopUp(int windowWidth, int windowHeight);
-
-    // Tipo de dato retornar eleccion
+    void handleMouseMotion(int mouseX, int mouseY);
+    bool handleMouseClick(int mouseX, int mouseY, std::string& clickedButton);
 
 private:
-    TextureManager& tm;
     SDL2pp::Renderer& renderer;
+    SdlDrawer& drawer;
+    TextureManager& tm;
+    Button buttons[3];
 
     int width;
     int height;
-
-    // Upgrades
-
 };
 
 

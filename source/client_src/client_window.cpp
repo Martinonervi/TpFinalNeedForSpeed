@@ -10,6 +10,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
                SDL_WINDOW_SHOWN),
         renderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        drawer(renderer),
         receiverQueue(receiverQueue),
         running(true),
         camera(width, height, 4640.0, 4672.0),  // Agregar consts
@@ -17,15 +18,16 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         nextCheckpoint(-1),
         tm(renderer),
         hint(renderer, tm, 0, 0),
-        eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue,
-            tm, checkpoints, hint, running, showMap, quit, playerStats) {}
+        ups(renderer, drawer, tm, 500, 500),
+        eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue, drawer,
+            tm, checkpoints, hint, ups, showUpgradeMenu,running, showMap, quit, playerStats) {}
 
 
 // Hay que manejar FPS
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
-    Hud hud(renderer, tm, MAP_LIBERTY);
+    Hud hud(renderer, drawer, tm, MAP_LIBERTY);
     Map map(renderer, tm, MAP_LIBERTY);
-    UpgradeScreen ups(tm, renderer, 500, 500);
+
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
@@ -34,6 +36,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
         if (!running) {
             break;
         }
+
 
         eventManager.handleEvents();
 
@@ -86,6 +89,9 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
         if (showMap)
             hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId);  // Por ahora asi
 
+        if (showUpgradeMenu) {
+            ups.renderPopUp(window.GetWidth(), window.GetHeight());
+        }
         //ups.renderPopUp(window.GetWidth(), window.GetHeight());
         renderer.Present();
     }

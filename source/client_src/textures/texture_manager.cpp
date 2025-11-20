@@ -10,7 +10,7 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer)
 {
     flagTexture.emplace(renderer, CHECKPOINT_PATH);
     arrowTexture.emplace(renderer, "../assets/extras/arrow.png");
-    barsTexture.emplace(renderer, BARS_PATH);
+    barsTexture.emplace(renderer, HEALTH_NITRO_PATH);
     upgradeFrameTexture.emplace(renderer, "../assets/extras/item-frame.png");
 
     hudManager.emplace(*barsTexture, *upgradeFrameTexture);
