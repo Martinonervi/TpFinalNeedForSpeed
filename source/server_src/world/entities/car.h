@@ -41,9 +41,14 @@ public:
     float getFinishTime() const { return finishTime; }
     uint8_t getRanking() const { return ranking; }
 
+    void resetForNewRace(float x, float y, float angleDeg);
+
+
+
 private:
     ID clientId;
     CarType carType;
+
     float health = 100.0f;
     ID actualCheckpoint = 0;
     bool finished = false;

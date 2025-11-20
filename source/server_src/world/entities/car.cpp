@@ -167,3 +167,24 @@ PlayerState Car::snapshotState(){
     b2Transform xf = b2Body_GetTransform(body);
     return PlayerState(clientId, xf.p.x, xf.p.y, b2Rot_GetAngle(xf.q));
 }
+
+
+void Car::resetForNewRace(float x, float y, float angleDeg) {
+    b2BodyId body = this->body;
+
+    float angleRad = angleDeg * (M_PI/ 180.0f);  // en el yaml estan en grados creo
+
+    b2Vec2 pos{ x, y };
+    b2Rot rot = b2MakeRot(angleRad);
+
+    b2Body_SetTransform(body, pos, rot);
+    b2Body_SetLinearVelocity(body, {0.f, 0.f});
+    b2Body_SetAngularVelocity(body, 0.f);
+
+    health = 100.0f;
+    actualCheckpoint = 0;
+    finished         = false;
+    finishTime       = 0.f;
+    ranking          = 0;
+    //multa = 0
+}

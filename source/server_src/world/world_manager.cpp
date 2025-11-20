@@ -4,7 +4,6 @@ WorldManager::WorldManager(std::queue<WorldEvent>& worldEvents): worldContactHan
     b2WorldDef worldDef = b2DefaultWorldDef();
     worldDef.gravity = (b2Vec2){0.0f, 0.0f};
     this->world = b2CreateWorld(&worldDef);
-    mapLimits();
     worldContactHandler.init(world);
 }
 
@@ -23,9 +22,9 @@ static inline void destroyBodyAndUserData(b2BodyId body) {
     if (!body.index1) return;
     void* raw = b2Body_GetUserData(body);
     if (raw) {
-        b2Body_SetUserData(body, nullptr);   // por seguridad para Box2D
+        b2Body_SetUserData(body, nullptr);
         auto* ud = static_cast<PhysicsUserData*>(raw);
-        delete ud;                            // ← este era el leak (16 bytes c/u)
+        delete ud;
     }
     b2DestroyBody(body);
 }
@@ -47,109 +46,6 @@ WorldManager::~WorldManager() {
         this->world = {0};
     }
 }
-
-void WorldManager::mapLimits() {
-    const float MAP_W_PIXELES = 4640.0f;
-    const float MAP_H_PIXELES = 4672.0f;
-
-    const float MAP_W = MAP_W_PIXELES * PIXEL_TO_METER;
-    const float MAP_H = MAP_H_PIXELES * PIXEL_TO_METER;
-
-    const float T = 1.0f; // grosor de la pared
-
-    // pared de arriba
-    {
-        b2BodyDef bd = b2DefaultBodyDef();
-        bd.type = b2_staticBody;
-        bd.position = (b2Vec2){ MAP_W * 0.5f, -T };
-        b2BodyId body = b2CreateBody(this->world, &bd);
-
-        b2Polygon box = b2MakeBox(MAP_W * 0.5f, T);
-        b2ShapeDef sd = b2DefaultShapeDef();
-        b2CreatePolygonShape(body, &sd, &box);
-
-        EntityId eid = nextId++;
-        physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Building };
-
-        auto* ud = new PhysicsUserData{
-            .type = PhysicsType::Building,
-            .id   = eid
-        };
-        b2Body_SetUserData(body, ud);
-        b2Body_EnableContactEvents(body, true);
-        b2Body_EnableHitEvents(body, true);
-    }
-
-    // pared de abajo
-    {
-        b2BodyDef bd = b2DefaultBodyDef();
-        bd.type = b2_staticBody;
-        bd.position = (b2Vec2){ MAP_W * 0.5f, MAP_H + T };
-        b2BodyId body = b2CreateBody(this->world, &bd);
-
-        b2Polygon box = b2MakeBox(MAP_W * 0.5f, T);
-        b2ShapeDef sd = b2DefaultShapeDef();
-        b2CreatePolygonShape(body, &sd, &box);
-
-        EntityId eid = nextId++;
-        physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Building };
-
-        auto* ud = new PhysicsUserData{
-            .type = PhysicsType::Building,
-            .id   = eid
-        };
-        b2Body_SetUserData(body, ud);
-        b2Body_EnableContactEvents(body, true);
-        b2Body_EnableHitEvents(body, true);
-    }
-
-    // pared izquierda
-    {
-        b2BodyDef bd = b2DefaultBodyDef();
-        bd.type = b2_staticBody;
-        bd.position = (b2Vec2){ -T, MAP_H * 0.5f };
-        b2BodyId body = b2CreateBody(this->world, &bd);
-
-        b2Polygon box = b2MakeBox(T, MAP_H * 0.5f);
-        b2ShapeDef sd = b2DefaultShapeDef();
-        b2CreatePolygonShape(body, &sd, &box);
-
-        EntityId eid = nextId++;
-        physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Building };
-
-        auto* ud = new PhysicsUserData{
-            .type = PhysicsType::Building,
-            .id   = eid
-        };
-        b2Body_SetUserData(body, ud);
-        b2Body_EnableContactEvents(body, true);
-        b2Body_EnableHitEvents(body, true);
-    }
-
-    // pared derecha
-    {
-        b2BodyDef bd = b2DefaultBodyDef();
-        bd.type = b2_staticBody;
-        bd.position = (b2Vec2){ MAP_W + T, MAP_H * 0.5f };
-        b2BodyId body = b2CreateBody(this->world, &bd);
-
-        b2Polygon box = b2MakeBox(T, MAP_H * 0.5f);
-        b2ShapeDef sd = b2DefaultShapeDef();
-        b2CreatePolygonShape(body, &sd, &box);
-
-        EntityId eid = nextId++;
-        physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Building };
-
-        auto* ud = new PhysicsUserData{
-            .type = PhysicsType::Building,
-            .id   = eid
-        };
-        b2Body_SetUserData(body, ud);
-        b2Body_EnableContactEvents(body, true);
-        b2Body_EnableHitEvents(body, true);
-    }
-}
-
 
 
 EntityId WorldManager::createCarBody(b2Vec2 pos, float angleRad) {
@@ -235,4 +131,11 @@ EntityId WorldManager::createBuilding(float x, float y,
     physics[eid] = PhysicsEntity{ body, PhysicsEntity::Kind::Building };
     return eid;
 
+}
+
+
+void WorldManager::resetCheckpoints(std::unordered_map<ID, Checkpoint>& checkpoints) {
+    for (auto& [id, cp] : checkpoints) {
+        destroyEntity(cp.getPhysicsId());
+    }
 }

@@ -41,9 +41,6 @@ struct RouteConfig {
 struct MapData {
     std::string city;
     std::vector<BuildingConfig> buildings;
-    std::vector<CheckpointConfig> checkpoints; //la primera
-    std::vector<SpawnPointConfig> spawn;
-    // todos las recorridos
     std::vector<RouteConfig> routes;
 };
 

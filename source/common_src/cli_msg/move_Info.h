@@ -18,7 +18,6 @@ public:
     uint8_t getBrake() const { return this->brake; };
     int8_t getSteer() const { return this->steer; };
     uint8_t getNitro() const { return this->nitro; };
-    //void serialize(ClientProtocol& p) const override;
 
 
 private:

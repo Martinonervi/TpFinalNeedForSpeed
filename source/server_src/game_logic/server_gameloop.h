@@ -31,33 +31,45 @@ protected:
 
 private:
     void loadMapFromYaml(const std::string& path);
+    void runSingleRace();
+
+    void waitingForPlayers();
+
+    // race loop
+    void checkPlayersStatus();
     void processCmds();
+    void broadcastCarSnapshots();
+    void processWorldEvents();
+    void sendCurrentInfo();
 
+    // stats race
+    void sendPlayerStats();
+
+    //  processCmds()
     std::list<Cmd> emptyQueue();
-
     void movementHandler(Cmd& cmd);
     void initPlayerHandler(Cmd& cmd);
+
     void disconnectHandler(ID id);
-    void broadcastCarSnapshots();
-    void sendCurrentInfo();
-    void sendPlayerStats();
+    bool isConnected(ID id) const;
+
+    void resetRaceState();
+    void setupRoute();
+
+
+    std::shared_ptr<gameLoopQueue> queue;
+    std::shared_ptr<ClientsRegistry> registry;
+    std::queue<WorldEvent> worldEvents;
+    WorldEventHandlers eventHandlers;
 
     // box2D
     WorldManager worldManager;
     std::unordered_map<ID, Car> cars;
     std::unordered_map<ID,Checkpoint> checkpoints;
     std::vector<std::unique_ptr<Building>> buildings;
+    std::vector<SpawnPointConfig> spawnPoints;
 
-    std::shared_ptr<gameLoopQueue> queue;
-    std::shared_ptr<ClientsRegistry> registry;
-    std::queue<WorldEvent> worldEvents;
-    void processWorldEvents();
-
-    void checkPlayersStatus();
-    void waitingForPlayers();
-    bool isConnected(ID id) const;
-
-    //tiempo de la carrera
+    // race flags
     float raceTimeSeconds = 0.0f;
     std::chrono::steady_clock::time_point raceStartTime;
     bool raceStarted = false;
@@ -65,16 +77,14 @@ private:
     uint8_t finishedCarsCount = 0;
     uint8_t totalCars = 0;
     uint8_t raceCarNumber = 0;
-
     std::vector<ID> raceRanking;
+
+    MapData mapData;
+
+    uint8_t raceIndex = 0;
 
     // loop
     Printer printer;
-
-    WorldEventHandlers eventHandlers;
-
-    std::vector<SpawnPointConfig> spawnPoints;
-
     void simulatePlayerSpawns(int numPlayers);
 };
 

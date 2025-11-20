@@ -28,7 +28,8 @@ registry(std::move(registry)), eventHandlers(cars, checkpoints, *this->registry,
 }
 
 
-
+// crea mapa con edificios y guarda la demas info
+// parsea todos los recorridos del yaml
 void GameLoop::loadMapFromYaml(const std::string& path) {
     MapParser parser;
     MapData data = parser.load(path);
@@ -42,8 +43,47 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
         );
         buildings.push_back(std::move(building));
     }
+    this->mapData = data;
+}
 
-    for (const auto& cpCfg : data.checkpoints) {
+void GameLoop::run() {
+    waitingForPlayers();
+    const int racesToPlay = 1;
+    //const int racesToPlay = mapData.routes.size();
+
+    while (raceIndex < racesToPlay && should_keep_running()) {
+        resetRaceState();
+        runSingleRace();
+        //storeRaceResult(raceIndex);
+        raceIndex += 1;
+
+        if (raceIndex < racesToPlay && should_keep_running()) {
+            raceStarted = false;
+            waitingForPlayers();
+        }
+    }
+
+    sendPlayerStats();
+}
+
+void GameLoop::setupRoute() {
+    auto routeIndex = raceIndex;
+    if (mapData.routes.empty()) {
+        std::cerr << "[GameLoop] setupRoute: el mapa no tiene rutas definidas\n";
+        return;
+    }
+    if (routeIndex < 0 || routeIndex >= static_cast<int>(mapData.routes.size())) {
+        std::cerr << "[GameLoop] setupRoute: routeIndex fuera de rango: "
+                  << routeIndex << " (hay " << mapData.routes.size() << " rutas)\n";
+        return;
+    }
+
+    const RouteConfig& routeCfg = mapData.routes[routeIndex];
+
+    checkpoints.clear();
+    spawnPoints.clear();
+
+    for (const auto& cpCfg : routeCfg.checkpoints) {
         checkpoints.emplace(
                 cpCfg.id,
                 Checkpoint(
@@ -51,42 +91,56 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
                         cpCfg.id,
                         cpCfg.kind,
                         cpCfg.x, cpCfg.y,
-                        cpCfg.w, cpCfg.h, cpCfg.angle
+                        cpCfg.w, cpCfg.h,
+                        cpCfg.angle
                         )
         );
     }
-    this-> spawnPoints = data.spawn;
+
+    spawnPoints = routeCfg.spawnPoints;
+
+    std::cout << "[GameLoop] setupRoute: usando ruta '"
+              << routeCfg.nameRoute
+              << "' (index=" << routeIndex
+              << "), checkpoints=" << checkpoints.size()
+              << ", spawns=" << spawnPoints.size()
+              << "\n";
 }
+
+
+void GameLoop::resetRaceState() {
+    worldManager.resetCheckpoints(checkpoints);
+    setupRoute();
+
+    uint8_t i = 0;
+    for (auto& [id, car] : cars) {
+        const auto& sp = spawnPoints[i % spawnPoints.size()];
+        car.resetForNewRace(sp.x, sp.y, sp.angle);
+        i++;
+    }
+
+    // reseteo variables
+    raceTimeSeconds    = 0.f;
+    finishedCarsCount  = 0;
+    totalCars          = static_cast<int>(cars.size());
+    raceEnded          = false;
+    raceRanking.clear();
+
+    // vaciar queues
+    while (!worldEvents.empty()) {
+        worldEvents.pop();
+    }
+    if (raceIndex > 0) {
+        Cmd cmd_aux;
+        while (queue->try_pop(cmd_aux)) {}
+    }
+
+}
+
 
 
 using Clock = std::chrono::steady_clock;
-void GameLoop::waitingForPlayers() {
-    ConstantRateLoop loop(5.0);
-    const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 5.0;
-
-    auto start = Clock::now();
-    const auto deadline = Clock::now() + std::chrono::duration<double>(LOBBY_TIMEOUT_SEC);
-    while (true) {
-        if (registry->size() >= MAX_PLAYERS) break;
-        if (Clock::now() >= deadline) break;
-
-        auto now = Clock::now();
-        float remaining_sec = std::chrono::duration_cast<std::chrono::duration<float>>(
-                                      deadline - now
-                                      ).count();
-
-        if (remaining_sec < 0.f) remaining_sec = 0.f;
-
-
-        // FELI, AL NUEVO MSJ PASALE EL FLOAT
-        loop.sleep_until_next_frame();
-    }
-    this->raceStarted = true;
-}
-
-void GameLoop::run() {
-    waitingForPlayers();
+void GameLoop::runSingleRace() {
     raceStartTime = Clock::now();
     try {
         ConstantRateLoop loop(60.0);
@@ -105,16 +159,15 @@ void GameLoop::run() {
                 if (raceTimeSeconds >= MAX_RACE_TIME_SECONDS) {
                     this->raceEnded = true;
                     // asignar ranking?
-                    break;
                 }
             }
 
-            if (this->raceEnded) {
-                break;
-            }
+            processWorldEvents();
+
+            if (raceEnded) break;
 
             broadcastCarSnapshots();
-            processWorldEvents();
+
             sendCurrentInfo();
             loop.sleep_until_next_frame();
         }
@@ -124,8 +177,39 @@ void GameLoop::run() {
     } catch (...) {
         std::cerr << "[GameLoop] fatal: unknown\n";
     }
-    sendPlayerStats();
 }
+
+
+void GameLoop::waitingForPlayers() {
+    ConstantRateLoop loop(5.0);
+    const int MAX_PLAYERS = 8;
+    const double LOBBY_TIMEOUT_SEC = 5.0;
+    const double BETWEEN_RACES_SEC    = 3.0;
+
+    auto start = Clock::now();
+    double timeout = (raceIndex == 0) ? LOBBY_TIMEOUT_SEC
+                                        : BETWEEN_RACES_SEC;
+
+    const auto deadline = start + std::chrono::duration<double>(timeout);
+    while (true) {
+        if (raceIndex == 0 && registry->size() >= MAX_PLAYERS) break;
+        if (Clock::now() >= deadline) break;
+
+        auto now = Clock::now();
+        float remaining_sec = std::chrono::duration_cast<std::chrono::duration<float>>(
+                                      deadline - now
+                                      ).count();
+
+        if (remaining_sec < 0.f) remaining_sec = 0.f;
+
+
+        // mandar mensaje a interfaz de los segundos que faltan
+
+        loop.sleep_until_next_frame();
+    }
+    this->raceStarted = true;
+}
+
 
 void GameLoop::sendPlayerStats(){
     for (auto& [id, car] : cars) {
@@ -304,7 +388,6 @@ void GameLoop::movementHandler(Cmd& cmd) {
     if (it->second.isCarDestroy()) return;
 
     const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
-
     it->second.applyControlsToBody(mv, TIME_STEP);
 
 }
@@ -313,6 +396,21 @@ void GameLoop::movementHandler(Cmd& cmd) {
 void GameLoop::disconnectHandler(ID id) {
     auto it = cars.find(id);
     if (it == cars.end()) return;
+
+    if (!it->second.isFinished()) {
+        if (totalCars > 0) {
+            totalCars--;
+        }
+
+        if (totalCars > 0 && finishedCarsCount >= totalCars) {
+            raceEnded = true;
+        }
+
+        if (totalCars == 0) {
+            raceEnded = true;
+        }
+    }
+
     worldManager.destroyEntity(it->second.getPhysicsId());
     cars.erase(id);
 }
