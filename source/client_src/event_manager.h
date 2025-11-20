@@ -17,15 +17,17 @@
 #include "renderables/car.h"
 #include "renderables/checkpoint.h"
 #include "renderables/hint.h"
+#include "renderables/upgrade_screen.h"
 
 class EventManager {
 public:
     EventManager(ID& myCarId, ID& nextCheckpoint,
     std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                               SDL2pp::Renderer& renderer,
-                              Queue<CliMsgPtr>& senderQueue, TextureManager& textureManager,
+                              Queue<CliMsgPtr>& senderQueue, SdlDrawer& drawer,
+                              TextureManager& textureManager,
                               std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
-                              Hint& hint,
+                              Hint& hint, UpgradeScreen& ups, bool& showUpgradeMenu,
                               bool& running, bool& showMap, bool& quit,
                               std::unique_ptr<PlayerStats>& playerStats);
 
@@ -39,8 +41,11 @@ private:
     std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints;
     SDL2pp::Renderer& renderer;
     Queue<CliMsgPtr>& senderQueue;
+    SdlDrawer& drawer;
     TextureManager& tm;
     Hint& hint;
+    UpgradeScreen& ups;
+    bool& showUpgradeMenu;
     bool& running;
     bool& showMap;
     bool& quit;

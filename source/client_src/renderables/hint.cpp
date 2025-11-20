@@ -14,35 +14,35 @@ void Hint::draw(const Camera& camera) const {
 
     SDL2pp::Texture& tex = tm.getCities().getArrowTexture();
 
-
-
-
-    // En realidad habria q tener en cuenta tmb el tamaño
     float carXscreen = x - camera.getX();
     float carYscreen = y - camera.getY();
 
+    const float angleDeg = (angle * 180.0 / M_PI) + 90.0;
 
-    // Ángulo hacia el checkpoint
-    float angleDeg = (angle * 180.0 / M_PI) + 90.0;
-
-    const float radius = 90.0f;
+    constexpr float radius = 90.0f;
     const float drawX = carXscreen + cos(angle) * radius;
     const float drawY = carYscreen + sin(angle) * radius;
 
+    int w = tex.GetWidth() / 2;
+    int h = tex.GetHeight() / 2;
+
     SDL_Rect dstRect = {
-        static_cast<int>(drawX - tex.GetWidth() / 2),
-        static_cast<int>(drawY - tex.GetHeight() / 2),
-        tex.GetWidth(),
-        tex.GetHeight()
+        static_cast<int>(drawX - w / 2),
+        static_cast<int>(drawY - h / 2),
+        w,
+        h
     };
+
+    SDL2pp::Point center(w / 2, h / 2);
 
     renderer.Copy(
         tex,
         SDL_Rect{0, 0, tex.GetWidth(), tex.GetHeight()},
         dstRect,
         angleDeg,
-        SDL2pp::Point(tex.GetWidth() / 2, tex.GetHeight() / 2)
+        center
     );
+
 }
 
 void Hint::update(const float newAngle, const float newDistance, const float carX, const float carY) {

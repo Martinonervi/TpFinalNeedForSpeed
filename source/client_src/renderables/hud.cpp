@@ -6,11 +6,9 @@
 #define SIZE_OF_DIAL 150
 #define DIAL_MARGIN 40
 
-Hud::Hud(SDL2pp::Renderer& renderer, TextureManager& tm, const MapType maptype)
-    : map(maptype, renderer, tm), renderer(renderer), tm(tm)
-{
-    loadFont();
-}
+Hud::Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, const MapType maptype)
+    : map(maptype, renderer, tm), renderer(renderer), drawer(drawer), tm(tm)
+{}
 
 
 void Hud::drawOverlay(const int x, const int y,
@@ -34,25 +32,6 @@ void Hud::drawOverlay(const int x, const int y,
     drawGameTime(523);
     activeUpgrade(x);
 }
-
-
-void Hud::loadFont() {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
-    }
-
-    if (TTF_Init() == -1) {
-        std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
-    }
-
-    font = TTF_OpenFont("../assets/fonts/pixel_font.ttf", 24);
-    if (!font) {
-        std::cerr << "Error cargando fuente: " << TTF_GetError() << std::endl;
-    } else {
-        std::cout << "Fuente cargada correctamente." << std::endl;
-    }
-}
-
 
 void Hud::drawDial(SDL2pp::Renderer& renderer, const float speed, const int windowWidth,
                     const int windowHeight) const {
@@ -116,7 +95,7 @@ void Hud::drawSpeedText(const float clampedSpeed,
     int textX = static_cast<int>(x - 50);
     int textY = dstRectDial.y + dstRectDial.h;
 
-    drawText(speedText, textX, textY, white);
+    drawer.drawText(speedText, textX, textY, white);
 }
 
 void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const float health) const {
@@ -152,9 +131,9 @@ void Hud::drawHealthFill(SDL2pp::Renderer& renderer, const float health, SDL2pp:
 {
     int startFillX = 14 * scale;
     int startFillY = 4 * scale;
-    int filledW =  (healthDst.w - startFillX - scale) * (health/100.0f);
+    int filledW = (healthDst.w - startFillX - scale) * (health / 100.0f);
 
-    SDL2pp::Rect dst = {
+    const SDL2pp::Rect dst = {
         healthDst.x + startFillX,
         startFillY + healthDst.y,
         filledW,
@@ -206,42 +185,14 @@ void Hud::drawGameTime(int totalSeconds) const {
     snprintf(buffer, sizeof(buffer), "%02d:%02d:%02d", hours, minutes, seconds);
 
     SDL_Color yellow = {255, 255, 0, 255};
-    drawText(buffer, 20, 65, yellow);
+    drawer.drawText(buffer, 20, 65, yellow);
 }
 
 void Hud::drawRaceNumber(int current, int total) const {
     std::string txt = "Race " + std::to_string(current) + "/" + std::to_string(total);
     SDL_Color white = {255, 255, 255, 255};
 
-    drawText(txt, 20, 35, white);
-}
-
-
-void Hud::drawText(const std::string& text, const int x, const int y, const SDL_Color color) const {
-    if (!font) return; // seguridad: fuente válida
-    // Obtener surface
-    SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), color);
-    if (!surface) {
-        std::cerr << "TTF_RenderText_Blended falló: " << TTF_GetError() << std::endl;
-        return;
-    }
-
-    // Guardamos ancho/alto antes de liberar la surface
-    int w = surface->w;
-    int h = surface->h;
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer.Get(), surface);
-    // Ya no necesitamos la surface
-    SDL_FreeSurface(surface);
-
-    if (!texture) {
-        std::cerr << "SDL_CreateTextureFromSurface falló: " << SDL_GetError() << std::endl;
-        return;
-    }
-
-    SDL_Rect textRect { x, y, w, h };
-    SDL_RenderCopy(renderer.Get(), texture, nullptr, &textRect);
-    SDL_DestroyTexture(texture);
+    drawer.drawText(txt, 20, 35, white);
 }
 
 void Hud::activeUpgrade(const int windowWidth) const {
