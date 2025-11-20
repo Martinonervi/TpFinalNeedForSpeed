@@ -27,10 +27,12 @@ private:
     std::optional<SDL2pp::Texture> citySanAndreasTexture;
     std::optional<SDL2pp::Texture> cityViceCityTexture;
     std::optional<SDL2pp::Texture> explosionTextures;
-    std::optional<SDL2pp::Texture> barsTexture;
+    std::optional<SDL2pp::Texture> healthNitroTexture;
+    std::optional<SDL2pp::Texture> swordShieldTexture;
     std::optional<SDL2pp::Texture> flagTexture;
     std::optional<SDL2pp::Texture> arrowTexture;
     std::optional<SDL2pp::Texture> upgradeFrameTexture;
+    std::optional<SDL2pp::Texture> upgradeTexture;
 
     std::optional<CarTexture> carManager;
     std::optional<PeopleTexture> peopleManager;

@@ -10,10 +10,12 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer)
 {
     flagTexture.emplace(renderer, CHECKPOINT_PATH);
     arrowTexture.emplace(renderer, "../assets/extras/arrow.png");
-    barsTexture.emplace(renderer, HEALTH_NITRO_PATH);
+    healthNitroTexture.emplace(renderer, HEALTH_NITRO_PATH);
+    swordShieldTexture.emplace(renderer, SWORD_SHIELD_PATH);
     upgradeFrameTexture.emplace(renderer, "../assets/extras/item-frame.png");
+    upgradeTexture.emplace(renderer, UPGRADES_PATH);
 
-    hudManager.emplace(*barsTexture, *upgradeFrameTexture);
+    hudManager.emplace(*healthNitroTexture, *swordShieldTexture, *upgradeFrameTexture, *upgradeTexture);
 
     speedometerTexture.emplace(loadWithColorKey(renderer, SPEEDOMETER_PATH, 221, 221, 56));
     carsTexture.emplace(loadWithColorKey(renderer, CARS_PATH, 163, 163, 13));

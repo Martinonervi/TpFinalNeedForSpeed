@@ -19,7 +19,7 @@ void ClientReceiver::run(){
             peerClosed = true;
             break;
         }
-
+        std::cout << static_cast<int>(op) << std::endl;
         switch (op) {
             case Opcode::Movement: {
                 PlayerState ps = protocol.recvSrvMsg();

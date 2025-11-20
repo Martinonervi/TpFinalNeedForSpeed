@@ -20,8 +20,8 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         hint(renderer, tm, 0, 0),
         ups(renderer, drawer, tm, 500, 500),
         eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue, drawer,
-            tm, checkpoints, hint, ups, showUpgradeMenu,running, showMap, quit, playerStats) {}
-
+            tm, checkpoints, hint, ups, showUpgradeMenu,running, showMap, quit,
+            raceTime, raceNumber, playerStats) {}
 
 // Hay que manejar FPS
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
@@ -87,7 +87,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
             }
         }
         if (showMap)
-            hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId);  // Por ahora asi
+            hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId, raceTime, raceNumber);  // Por ahora asi
 
         if (showUpgradeMenu) {
             ups.renderPopUp(window.GetWidth(), window.GetHeight());
