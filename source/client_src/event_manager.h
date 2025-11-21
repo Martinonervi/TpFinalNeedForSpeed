@@ -29,6 +29,7 @@ public:
                               std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                               Hint& hint, UpgradeScreen& ups, bool& showUpgradeMenu,
                               bool& running, bool& showMap, bool& quit,
+                              float& raceTime, int& raceNumber,
                               std::unique_ptr<PlayerStats>& playerStats);
 
     void handleEvents() const;
@@ -50,6 +51,8 @@ private:
     bool& showMap;
     bool& quit;
     std::unique_ptr<PlayerStats>& playerStats;
+    float& raceTime;
+    int& raceNumber;
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
             {SDLK_w, MoveMsg(1, 0, 0, 0)},  {SDLK_s, MoveMsg(2, 0, 0, 0)},

@@ -13,7 +13,9 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 TextureManager& textureManager,
                                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                                 Hint& hint, UpgradeScreen& ups, bool& showUpgradeMenu,
-                                bool& running, bool& showMap, bool& quit, std::unique_ptr<PlayerStats>& playerStats)
+                                bool& running, bool& showMap, bool& quit,
+                                float& raceTime, int& raceNumber,
+                                std::unique_ptr<PlayerStats>& playerStats)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
         cars(cars),
@@ -28,6 +30,8 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         running(running),
         showMap(showMap),
         quit(quit),
+        raceTime(raceTime),
+        raceNumber(raceNumber),
         playerStats(playerStats)
 {}
 
@@ -141,10 +145,10 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
                 }
             }
 
-            /*
-            current.getRaceTimeSeconds();
-            current.getRaceNumber();
-            */
+
+            raceTime = current.getRaceTimeSeconds();
+            raceNumber = current.getRaceNumber();
+
             break;
         }
         case STATS: {

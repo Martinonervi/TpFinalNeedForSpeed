@@ -1,13 +1,13 @@
 // path: common/constants.h
 #pragma once
 
+#include <cmath>
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-#include <cstdint>
-#include <cmath>
+
 #include <arpa/inet.h>
 
 #include "cli_msg/client_msg.h"
@@ -40,6 +40,9 @@
 #define SPEEDOMETER_PATH "../assets/cars/speedometer.png"
 #define CHECKPOINT_PATH "../assets/extras/checkpoint.png"
 #define HEALTH_NITRO_PATH "../assets/extras/health-and-nitro.png"
+#define SWORD_SHIELD_PATH "../assets/extras/sword-and-shield.png"
+#define UPGRADES_PATH "../assets/extras/upgrades.png"
+#define LIBERTY_OVER_PATH "../assets/cities/liberty_city_over.png"
 
 
 using ID = std::uint32_t;

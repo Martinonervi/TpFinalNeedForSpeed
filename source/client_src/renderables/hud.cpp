@@ -13,7 +13,7 @@ Hud::Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, cons
 
 void Hud::drawOverlay(const int x, const int y,
                       std::unordered_map<ID, std::unique_ptr<Car>>& cars,
-                      const ID playerId) const {
+                      const ID playerId, const float raceTime, const int raceNumber) const {
 
     map.draw(x, 10, cars, playerId);
 
@@ -28,8 +28,8 @@ void Hud::drawOverlay(const int x, const int y,
     drawDial(renderer, speed, x, y);
 
     // Por ahora uso nums falsos
-    drawRaceNumber(3, 5);
-    drawGameTime(523);
+    drawRaceNumber(raceNumber, raceNumber);
+    drawGameTime(raceTime);
     activeUpgrade(x);
 }
 
