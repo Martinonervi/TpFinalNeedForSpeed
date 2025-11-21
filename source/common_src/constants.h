@@ -42,6 +42,7 @@
 #define HEALTH_NITRO_PATH "../assets/extras/health-and-nitro.png"
 #define SWORD_SHIELD_PATH "../assets/extras/sword-and-shield.png"
 #define UPGRADES_PATH "../assets/extras/upgrades.png"
+#define LIBERTY_OVER_PATH "../assets/cities/liberty_city_over.png"
 
 
 using ID = std::uint32_t;

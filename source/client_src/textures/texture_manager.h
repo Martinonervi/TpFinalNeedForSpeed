@@ -24,6 +24,7 @@ private:
     std::optional<SDL2pp::Texture> speedometerTexture;
     std::optional<SDL2pp::Texture> peopleTexture;
     std::optional<SDL2pp::Texture> cityLibertyTexture;
+    std::optional<SDL2pp::Texture> cityLibertyOverTexture;
     std::optional<SDL2pp::Texture> citySanAndreasTexture;
     std::optional<SDL2pp::Texture> cityViceCityTexture;
     std::optional<SDL2pp::Texture> explosionTextures;

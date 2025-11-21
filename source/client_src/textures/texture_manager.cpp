@@ -25,9 +25,11 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer)
     peopleManager.emplace(*peopleTexture);
 
     cityLibertyTexture.emplace(renderer, SDL2pp::Surface(LIBERTY_CITY_PATH));
+    cityLibertyOverTexture.emplace(renderer, SDL2pp::Surface(LIBERTY_OVER_PATH));
+
     citySanAndreasTexture.emplace(renderer, SDL2pp::Surface(SAN_ANDREAS_PATH));
     cityViceCityTexture.emplace(renderer, SDL2pp::Surface(VICE_CITY_PATH));
-    cityManager.emplace(*cityLibertyTexture, *citySanAndreasTexture, *cityViceCityTexture, *flagTexture, *arrowTexture);
+    cityManager.emplace(*cityLibertyTexture, *cityLibertyOverTexture, *citySanAndreasTexture, *cityViceCityTexture, *flagTexture, *arrowTexture);
 
     explosionTextures.emplace(renderer, SDL2pp::Surface(EXPLOSION_PATH));
     effectsManager.emplace(*explosionTextures);

@@ -93,6 +93,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
             ups.renderPopUp(window.GetWidth(), window.GetHeight());
         }
         //ups.renderPopUp(window.GetWidth(), window.GetHeight());
+        map.drawOver(camera);
         renderer.Present();
     }
     TTF_Quit();
