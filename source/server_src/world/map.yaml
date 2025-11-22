@@ -4908,28 +4908,36 @@ routes:
         angle: 0.0
 
     spawn_points:
-      - x: 70.0
+      - id: 1
+        x: 70.0
         y: 88.0
         angle: 0.0
-      - x: 97.0
+      - id: 2
+        x: 97.0
         y: 88
         angle: 0.0
-      - x: 70.0
+      - id: 3
+        x: 70.0
         y: 128.0
         angle: 0.0
-      - x: 97.0
+      - id: 4
+        x: 97.0
         y: 128
         angle: 0.0
-      - x: 70.0
+      - id: 5
+        x: 70.0
         y: 168.0
         angle: 0.0
-      - x: 97.0
+      - id: 6
+        x: 97.0
         y: 168
         angle: 0.0
-      - x: 70.0
+      - id: 7
+        x: 70.0
         y: 208.0
         angle: 0.0
-      - x: 97.0
+      - id: 8
+        x: 97.0
         y: 208
         angle: 0.0
   - name: recorrido2
@@ -5006,7 +5014,8 @@ routes:
         angle: 0.0
 
     spawn_points:
-      - x: 4518.0 # valores random
+      - id: 1
+        x: 4518.0 # valores random
         y: 2725.0
         angle: 0.0
 

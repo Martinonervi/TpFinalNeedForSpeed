@@ -15,7 +15,10 @@
 #include "../world/map_parser.h"
 #include "../world/world_manager.h"
 #include "world_event_handlers.h"
-#include "chrono"
+#include <chrono>
+#include "player_manager.h"
+
+
 
 class GameLoop: public Thread {
 
@@ -32,29 +35,21 @@ protected:
 private:
     void loadMapFromYaml(const std::string& path);
     void runSingleRace();
-
+    void setupRoute();
+    void resetRaceState();
+    void processLobbyCmds();
     void waitingForPlayers();
 
     // race loop
     void checkPlayersStatus();
     void processCmds();
-    void broadcastCarSnapshots();
     void processWorldEvents();
     void sendCurrentInfo();
 
-    // stats race
-    void sendPlayerStats();
-
-    //  processCmds()
+    // others
     std::list<Cmd> emptyQueue();
-    void movementHandler(Cmd& cmd);
-    void initPlayerHandler(Cmd& cmd);
-
     void disconnectHandler(ID id);
     bool isConnected(ID id) const;
-
-    void resetRaceState();
-    void setupRoute();
 
 
     std::shared_ptr<gameLoopQueue> queue;
@@ -69,6 +64,8 @@ private:
     std::vector<std::unique_ptr<Building>> buildings;
     std::vector<SpawnPointConfig> spawnPoints;
 
+    PlayerManager playerManager;
+
     // race flags
     float raceTimeSeconds = 0.0f;
     std::chrono::steady_clock::time_point raceStartTime;
@@ -76,16 +73,32 @@ private:
     bool raceEnded   = false;
     uint8_t finishedCarsCount = 0;
     uint8_t totalCars = 0;
-    uint8_t raceCarNumber = 0;
     std::vector<ID> raceRanking;
-
+    uint8_t totalRaces = 0;
     MapData mapData;
 
+    bool startRequested = false;
     uint8_t raceIndex = 0;
 
-    // loop
+
     Printer printer;
     void simulatePlayerSpawns(int numPlayers);
+
+
+    std::vector<UpgradeDef> upgrades = {
+            { Upgrade::EngineForce, 1.3f, 2.0f },
+    };
+
+    const UpgradeDef& findUpgradeDef(Upgrade type) const {
+        for (const auto& u : upgrades) {
+            if (u.type == type)
+                return u;
+        }
+        throw std::runtime_error("UpgradeType desconocido");
+    }
+
 };
+
+
 
 #endif

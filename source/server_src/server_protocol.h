@@ -20,6 +20,7 @@
 #include "../common_src/srv_msg/srv_time_left.h"
 
 #include "server_types.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
 
 class ServerProtocol {
 public:
@@ -50,6 +51,8 @@ public:
     int sendClientDisconnect(ClientDisconnect& msg);
 
     int sendCurrentInfo(SrvCurrentInfo& msg);
+
+    int sendUpgradeLogic(UpgradeLogic& ul);
 
     void append(std::vector<char>& buf, const void* p, std::size_t n);
 

@@ -6,11 +6,11 @@
 
 class UpgradeLogic: public SrvMsg {
 public:
-    UpgradeLogic(std::vector<Upgrade>& upgrades): upgrades(upgrades) {};
+    UpgradeLogic(std::vector<UpgradeDef> upgrades): upgrades(std::move(upgrades)) {};
     Op type() const override { return Opcode::UPGRADE_LOGIC; }
-    std::vector<Upgrade> getUpgrades() const { return upgrades; }
+    std::vector<UpgradeDef> getUpgrades() const { return upgrades; }
 private:
-    std::vector<Upgrade>& upgrades;
+    std::vector<UpgradeDef> upgrades;
 };
 
 #endif

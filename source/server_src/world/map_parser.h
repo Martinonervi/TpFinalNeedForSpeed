@@ -25,6 +25,7 @@ struct CheckpointConfig {
 };
 
 struct SpawnPointConfig {
+    ID spawnId;
     float x; // en metros
     float y; // en metros
     float angle; // en radianes

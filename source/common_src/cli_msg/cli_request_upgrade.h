@@ -7,11 +7,11 @@
 class RequestUpgrade : public CliMsg {
 
 public:
-    RequestUpgrade(Upgrade& upgrade): upgrade(upgrade) {};
+    RequestUpgrade(Upgrade upgrade): upgrade(upgrade) {};
     Op type() const override { return Opcode::UPGRADE_REQUEST; }
     Upgrade getUpgrade() const { return upgrade; }
 private:
-    Upgrade& upgrade;
+    Upgrade upgrade;
 };
 
 

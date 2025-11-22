@@ -30,123 +30,82 @@ Car::Car(WorldManager& world,
     b2Body_SetUserData(this->body, ud);
 }
 
-static inline float clampf(float x, float a, float b){ return std::max(a, std::min(b, x)); }
+// longitudinal
+const float MAX_FWD_SPEED  = 50.0f;
+const float MAX_BCK_SPEED  = -10.0f;
+const float ENGINE_IMPULSE = 800.0f;
 
-static inline float lerp(float a, float b, float t) {
-    t = clampf(t, 0.f, 1.f);
-    return a + (b - a) * t;
-}
-
-namespace {
-constexpr float ENGINE_FWD  = 1500.f;
-constexpr float ENGINE_REV  = 1200.f;
-constexpr float BRAKE_FORCE = 3600.f;
-constexpr float DRAG_K      = 10.f;
-
-constexpr float VMAX_FWD    = 26.f;
-constexpr float VMAX_REV    = 9.f;
-
-constexpr float SPEED_REF   = 25.f;
-constexpr float MAX_TORQUE  = 140.f;
-}
-
-void Car::applyControlsToBody(const MoveMsg& in, float /*dt*/) {
-    const uint8_t acc = in.getAccelerate();
-    const float throttle = (acc == 1) ? 1.f : (acc == 2) ? -1.f : 0.f;
-    const float brake    = in.getBrake() ? 1.f : 0.f;
-    float steer          = in.getSteer();
-
-    applyLongitudinalForces(throttle, brake);
-    applySteering(steer);
-    applyDrift();
-}
+// lateral
+const float BRAKE_ACCEL    = 100.0f;
+const float MAX_ANGULAR_VEL = 2.5f; // podria probar 2.5–3.5
+const float LATERAL_DAMP    = 9.0f; // probá 6–12
 
 
-void Car::applyLongitudinalForces(float throttle, float brake) {
-    b2Rot  rot = b2Body_GetRotation(body);
-    b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
-    b2Vec2 vel = b2Body_GetLinearVelocity(body);
+void Car::applyControlsToBody(const MoveMsg& in, float dt) {
+    float t = in.getAccelerate();
+    float throttle = t;
+    if (t == 2) throttle = -1;
+    float steer    = in.getSteer();
+    float brake    = in.getBrake();
 
-    float v_long = vel.x * fwd.x + vel.y * fwd.y;
+    b2Rot rot = b2Body_GetRotation(body);
+    b2Vec2 fwd   = b2RotateVector(rot, (b2Vec2){0.f, 1.f});
+    b2Vec2 vel   = b2Body_GetLinearVelocity(body);
 
-    float vmax = (v_long >= 0.f) ? VMAX_FWD : VMAX_REV;
+    float vLong = vel.x * fwd.x + vel.y * fwd.y;
 
-    b2Vec2 F{0.f, 0.f};
 
-    if (throttle != 0.f) {
-        float Eng = (throttle > 0.f) ? ENGINE_FWD : ENGINE_REV;
-        float engine_cap = 1.f - clampf(std::fabs(v_long) / vmax, 0.f, 1.f);
-        F += (Eng * throttle * engine_cap) * fwd;
+    if (throttle > 0.0f && vLong < (MAX_FWD_SPEED * maxSpeedFactor)) {
+        b2Vec2 j = { fwd.x * (ENGINE_IMPULSE * engineFactor) * dt, fwd.y * ENGINE_IMPULSE * dt };
+        b2Body_ApplyLinearImpulseToCenter(body, j, true);
+    }
+    if (throttle < 0.0f && vLong > MAX_BCK_SPEED) {
+        b2Vec2 j = { -fwd.x * ENGINE_IMPULSE * dt, -fwd.y * ENGINE_IMPULSE * dt };
+        b2Body_ApplyLinearImpulseToCenter(body, j, true);
     }
 
-    if (brake > 0.f) {
-        float dir = (v_long >= 0.f) ? -1.f : 1.f;
-        F += dir * (BRAKE_FORCE * brake) * fwd;
+    if (brake > 0.0f) {
+        b2Vec2 curVel = b2Body_GetLinearVelocity(body);
+
+        float speed = std::sqrt(curVel.x * curVel.x + curVel.y * curVel.y);
+        if (speed > 0.0f) {
+
+            float dv = BRAKE_ACCEL * brake * dt;      // cuánto quiero bajar la speed este frame
+            float newSpeed = std::max(0.0f, speed - dv);
+            float factor = newSpeed / speed;          // entre 0 y 1
+
+            curVel.x *= factor;
+            curVel.y *= factor;
+            b2Body_SetLinearVelocity(body, curVel);
+        }
     }
 
-    F += (-DRAG_K * v_long) * fwd;
+    // giro
+    float targetAV = steer * MAX_ANGULAR_VEL;
+    b2Body_SetAngularVelocity(body, targetAV);
 
-    b2Body_ApplyForceToCenter(body, F, true);
-}
+    // freno lateral para q derrape todo
+    b2Rot rot2 = b2Body_GetRotation(body);
+    b2Vec2 fwd2   = b2RotateVector(rot2, (b2Vec2){0.f, 1.f});
+    b2Vec2 right2 = b2RotateVector(rot2, (b2Vec2){1.f, 0.f});
+    b2Vec2 v      = b2Body_GetLinearVelocity(body);
 
+    float vLong2 = v.x * fwd2.x   + v.y * fwd2.y;
+    float vLat   = v.x * right2.x + v.y * right2.y;
 
-namespace {
-constexpr float TURN_SPEED = 2.8f;   // rad/s, qué tan rápido gira a fondo
-constexpr float STEER_SMOOTH = 0.25f; // cuánto “suavizás” el cambio de omega (0–1)
-}
+    // frenamos laterlamente casi todo
+    float factor = std::max(0.0f, 1.0f - LATERAL_DAMP * dt);
+    float vLatNew = vLat * factor;
 
-void Car::applySteering(float steer) {
-    // steer ∈ {-1, 0, 1} o [-1,1], da igual
-    if (steer == 0.f) {
-        // si querés que deje de girar cuando soltás
-        float currentOmega = b2Body_GetAngularVelocity(body);
-        float newOmega = lerp(currentOmega, 0.f, STEER_SMOOTH);
-        b2Body_SetAngularVelocity(body, newOmega);
-        return;
+    // para q el auto no quede temblando
+    if (std::fabs(vLatNew) < 0.1f) {
+        vLatNew = 0.0f;
     }
 
-    float steerNorm = clampf(steer, -1.f, 1.f);
-
-    float targetOmega = steerNorm * TURN_SPEED;
-    float currentOmega = b2Body_GetAngularVelocity(body);
-
-    // suavizo el cambio para que no sea brusco
-    float newOmega = lerp(currentOmega, targetOmega, STEER_SMOOTH);
-
-    b2Body_SetAngularVelocity(body, newOmega);
-}
-
-namespace {
-constexpr float DRIFT_SPEED_REF = 25.f; // a partir de acá decimos "va rápido"
-constexpr float LATERAL_K_SLOW  = 0.8f; // cuánto mato la vel. lateral cuando va lento
-constexpr float LATERAL_K_FAST  = 0.4f; // cuánto mato la vel. lateral cuando va rápido
-}
-
-void Car::applyDrift() {
-    b2Vec2 vel = b2Body_GetLinearVelocity(body);
-    float speed = std::sqrt(vel.x * vel.x + vel.y * vel.y);
-
-    if (speed < 0.1f) return;
-
-    b2Rot  rot = b2Body_GetRotation(body);
-    b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
-    b2Vec2 right{ fwd.y, -fwd.x }; // perpendicular
-
-
-    float v_fwd    = vel.x * fwd.x   + vel.y * fwd.y;
-    float v_lat    = vel.x * right.x + vel.y * right.y;
-
-    // cuánto quiero matar v_lat según la velocidad
-    float speedFactor = clampf(speed / DRIFT_SPEED_REF, 0.f, 1.f);
-    float k = lerp(LATERAL_K_SLOW, LATERAL_K_FAST, speedFactor);
-    // k ~ 0.8 en lento (mato casi todo), k ~ 0.4 en rápido (dejo más drift)
-
-    float v_lat_new = v_lat * (1.f - k); // reduzco la parte lateral
-
-    // reconstruyo la velocidad
-    b2Vec2 newVel =
-            v_fwd * fwd +
-            v_lat_new * right;
+    b2Vec2 newVel = {
+            fwd2.x * vLong2 + right2.x * vLatNew,
+            fwd2.y * vLong2 + right2.y * vLatNew
+    };
 
     b2Body_SetLinearVelocity(body, newVel);
 }
@@ -187,4 +146,17 @@ void Car::resetForNewRace(float x, float y, float angleDeg) {
     finishTime       = 0.f;
     ranking          = 0;
     //multa = 0
+}
+
+void Car::applyUpgrade(const UpgradeDef& up) {
+    switch (up.type) {
+        case Upgrade::EngineForce: {
+            engineFactor   = up.value;
+            upgradePenalty = up.penaltySec;
+            break;
+        }
+        case Upgrade::NONE: {
+            break;
+        }
+    }
 }

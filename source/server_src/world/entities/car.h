@@ -17,11 +17,9 @@ public:
         CarType carType);
 
     void applyControlsToBody(const MoveMsg& in, float dt);
-    void applyLongitudinalForces(float throttle, float brake);
-    void applySteering(float steer);
-    void applyDrift();
 
     PlayerState snapshotState();
+    void applyUpgrade(const UpgradeDef& up);
 
     ID getClientId() const {return this->clientId; };
     CarType getCarType() const {return this->carType; }
@@ -43,6 +41,9 @@ public:
 
     void resetForNewRace(float x, float y, float angleDeg);
 
+    ID getSpawnId() const { return spawnId; }
+    bool hasUpgrade() const { return upgrade == NONE; }
+
 
 
 private:
@@ -54,5 +55,15 @@ private:
     bool finished = false;
     float finishTime = 0.0f;
     uint8_t ranking = 0;
+    ID spawnId = 0;
+    float speed = 0;
+
+    // logica de mejoras
+    // factores de mejora (empiezan en 1.0 = sin mejora)
+    float upgradePenalty = 0.f;
+    Upgrade upgrade = NONE;
+    float engineFactor     = 1.0f;
+    float maxSpeedFactor   = 1.0f;
+
 };
 

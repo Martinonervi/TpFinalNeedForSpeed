@@ -18,6 +18,7 @@
 #include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/srv_current_info.h"
 #include "../common_src/srv_msg/srv_time_left.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
 
 #include "client_types.h"
 
@@ -39,6 +40,7 @@ public:
     NewPlayer recvNewPlayer();
     JoinGame recvGameInfo();
     SrvCurrentInfo recvCurrentInfo();
+    UpgradeLogic recvUpgradeLogic();
     void requestGames();
     MetadataGames getMetadata();
     GameMetadata readOneGame();

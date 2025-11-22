@@ -8,6 +8,7 @@
 #include "../common_src/srv_msg/send_player.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
 
 Sender::Sender(Socket& peer_socket, SendQPtr queue):
         peer(peer_socket), msg_queue(std::move(queue)), protocol(peer) {}
@@ -77,6 +78,10 @@ void Sender::run() {
                 }
                 case Opcode::UPGRADE_SEND: {
                     n = protocol.sendUpgrade(dynamic_cast<SendUpgrade&>(*msg));
+                    break;
+                }
+                case Opcode::UPGRADE_LOGIC: {
+                    n = protocol.sendUpgradeLogic(dynamic_cast<UpgradeLogic&>(*msg));
                     break;
                 }
                 default: {

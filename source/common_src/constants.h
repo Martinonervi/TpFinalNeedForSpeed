@@ -49,6 +49,12 @@ using SrvMsgPtr = std::shared_ptr<SrvMsg>;
 
 constexpr float PIXEL_TO_METER = 1.0f / 10.0f;   // 10 px = 1 m
 
+struct UpgradeDef {
+    Upgrade type;
+    float value;
+    float penaltySec;
+};
+
 //no veo ganancia en que Cmd sea una clase, cumple su funcion perfecta como struct
 struct Cmd {
     ID client_id;

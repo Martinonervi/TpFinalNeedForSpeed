@@ -6,6 +6,7 @@
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
 #include "../common_src/srv_msg/playerstats.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -99,6 +100,13 @@ void ClientReceiver::run(){
                 SendUpgrade msg = protocol.recvUpgrade();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                             std::make_shared<SendUpgrade>(std::move(msg)));
+                receiverQueue.push(base);
+                break;
+            }
+            case Opcode::UPGRADE_LOGIC: {
+                UpgradeLogic msg = protocol.recvUpgradeLogic();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<UpgradeLogic>(std::move(msg)));
                 receiverQueue.push(base);
                 break;
             }

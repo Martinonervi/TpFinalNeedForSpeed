@@ -28,9 +28,10 @@ void Receiver::run() {
             }
             switch (op) {
                 case Opcode::UPGRADE_REQUEST:{
-
-                    //ACA ME BUGIE TINO completalo vos
-
+                    RequestUpgrade ru = protocol.recvUpgradeReq();
+                    auto msg = std::static_pointer_cast<CliMsg>(
+                            std::make_shared<RequestUpgrade>(std::move(ru)));
+                    cmdQueue->push(Cmd{id, msg});
                     break;
                 }
                 case Opcode::CLIENT_DISCONNECT: {

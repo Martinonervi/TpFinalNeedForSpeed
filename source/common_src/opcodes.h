@@ -21,7 +21,8 @@ enum Opcode : Op {
     TIME = 0x12,
     UPGRADE_LOGIC = 0X13,
     UPGRADE_REQUEST = 0x14,
-    UPGRADE_SEND = 0x15
+    UPGRADE_SEND = 0x15,
+    START_GAME      = 0x16,
 };
 
 enum err_code : Op {
@@ -32,7 +33,8 @@ enum err_code : Op {
 };
 
 enum Upgrade : Op {
-    NITRO = 0x01,
+    NONE = 0x01,
+    EngineForce = 0x02,
 };
 
 #endif

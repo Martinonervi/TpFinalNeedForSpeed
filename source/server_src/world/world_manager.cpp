@@ -55,7 +55,7 @@ EntityId WorldManager::createCarBody(b2Vec2 pos, float angleRad) {
     bd.type = b2_dynamicBody;
     bd.position = pos;
     bd.rotation = b2MakeRot(angleRad);
-    bd.linearDamping = 0.25f;
+    bd.linearDamping = 0.6f; // [0.8, 1.2]
     bd.angularDamping = 3.f; //reduce velocidad anguar (mientras +alto)
 
     // creo body
@@ -65,7 +65,7 @@ EntityId WorldManager::createCarBody(b2Vec2 pos, float angleRad) {
     b2ShapeDef sd = b2DefaultShapeDef();
     sd.density = 1.0f; //Masa = densidad * área de la figura
     // aceleracion = F / masa
-    sd.material.friction = 0.9f; // afecta mas en vel lateral cuando doblas o derrapas
+    sd.material.friction = 1.1f; // afecta mas en vel lateral cuando doblas o derrapas
     sd.material.restitution = 0.08f;
     b2Polygon box = b2MakeBox(1.0f, 2.0f); //rectangulo 2x4
 

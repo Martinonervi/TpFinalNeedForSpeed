@@ -58,7 +58,8 @@ MapData MapParser::load(const std::string& path) {
 
             cfg.w = w_m;
             cfg.h = h_m;
-            cfg.angle = ang;
+            float angleRad = ang * M_PI / 180.0f;
+            cfg.angle = angleRad;
 
             if (cfg.w <= 0.f || cfg.h <= 0.f) {
                 continue;
@@ -134,7 +135,8 @@ MapData MapParser::load(const std::string& path) {
 
             cp.w = w_m;
             cp.h = h_m;
-            cp.angle = ang;
+            float angleRad = ang * M_PI / 180.0f;
+            cp.angle = angleRad;
 
             if (cp.w <= 0.f || cp.h <= 0.f) {
                 continue;
@@ -158,6 +160,7 @@ MapData MapParser::load(const std::string& path) {
             float x_px, y_px, ang = 0.0f;
 
             try {
+                sp.spawnId = spNode["id"].as<ID>();
                 x_px = spNode["x"].as<float>();
                 y_px = spNode["y"].as<float>();
                 if (spNode["angle"]) {
@@ -173,7 +176,8 @@ MapData MapParser::load(const std::string& path) {
 
             sp.x = x_px * PIXEL_TO_METER;
             sp.y = y_px * PIXEL_TO_METER;
-            sp.angle = ang;
+            float angleRad = ang * M_PI / 180.0f;
+            sp.angle = angleRad;
 
             out.push_back(sp);
         }

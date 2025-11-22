@@ -344,15 +344,16 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         const Op type = msg.type();
         const uint32_t speed = encodeFloat100BE(msg.getSpeed());
         const uint32_t raceTimeSeconds = encodeFloat100BE(msg.getRaceTimeSeconds());
-        const std::uint8_t raceNumber = msg.getRaceNumber();
+        const uint8_t raceNumber = msg.getRaceNumber();
         const ID nextCheckpointId = htons(msg.getNextCheckpointId());
         const uint32_t checkX = encodeFloat100BE(msg.getCheckX());
         const uint32_t checkY = encodeFloat100BE(msg.getCheckY());
         const uint32_t angleHint = encodeFloat100BE(msg.getAngleHint());
         const uint32_t distanceToChekpoint = encodeFloat100BE(msg.getDistanceToCheckpoint());
+        const uint8_t totalRaces = msg.getTotalRaces();
 
         std::vector<char> buf;
-        buf.reserve(sizeof(Op) + sizeof(uint8_t) + 7 * sizeof(uint32_t));
+        buf.reserve(sizeof(Op) + 2*sizeof(uint8_t) + 7 * sizeof(uint32_t));
 
         auto append = [&buf](const void* p, std::size_t n) {
             const std::size_t old = buf.size();
@@ -369,6 +370,7 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         append(&checkY, sizeof(checkY));
         append(&angleHint, sizeof(angleHint));
         append(&distanceToChekpoint, sizeof(distanceToChekpoint));
+        append(&totalRaces, sizeof(totalRaces));
 
         return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {
@@ -429,8 +431,56 @@ int ServerProtocol::sendUpgrade(SendUpgrade& up) {
         memcpy(buf.data() + offset, &upgrade, sizeof(Upgrade));
         offset += sizeof(Upgrade);
 
+        // martino: los bool se mandan bien asi nomas? asumo q se castea a uint*, igual sino
+        // nosotros podriamos usar directamente un uint8 como booleano
         memcpy(buf.data() + offset, &success, sizeof(bool));
         offset += sizeof(bool);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+
+int ServerProtocol::sendUpgradeLogic(UpgradeLogic& ul) {
+    try{
+        Op opcode = ul.type();
+        const std::vector<UpgradeDef>& ups = ul.getUpgrades();
+        uint8_t size = static_cast<uint8_t>(ups.size());
+
+        const size_t upgradeDefSize =
+                sizeof(uint8_t)   // type
+                + sizeof(uint32_t)  // value (float codificado)
+                + sizeof(uint32_t);  // penalty
+
+        std::vector<char> buf(sizeof(Op) + sizeof(size)
+                              + size * upgradeDefSize);
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &size, sizeof(size));
+        offset += sizeof(size);
+
+        for (const auto& upgradeDef : ups) {
+            // type -> uint8 (de tipo Op)
+            uint8_t t = static_cast<uint8_t>(upgradeDef.type);
+            memcpy(buf.data() + offset, &t, sizeof(t));
+            offset += sizeof(t);
+
+            const uint32_t value = encodeFloat100BE(upgradeDef.value);
+            // value (float)
+            memcpy(buf.data() + offset, &value, sizeof(value));
+            offset += sizeof(value);
+
+            // penalty (float)
+            uint32_t penalty = encodeFloat100BE(upgradeDef.penaltySec);
+            memcpy(buf.data() + offset, &penalty, sizeof(penalty));
+            offset += sizeof(penalty);
+        }
 
         return peer.sendall(buf.data(), offset);
     } catch (const std::exception& e) {

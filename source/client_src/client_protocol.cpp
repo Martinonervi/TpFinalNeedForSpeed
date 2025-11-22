@@ -360,12 +360,13 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
     try {
         uint32_t speed_BE;
         uint32_t raceTimeSeconds_BE;
-        std::uint8_t raceNumber;
+        uint8_t raceNumber;
         ID nextCheckpointId_BE;
         uint32_t checkX_BE;
         uint32_t checkY_BE;
         uint32_t angleHint_BE;
         uint32_t distanceToChekpoint_BE;
+        uint8_t totalRaces;
 
         peer.recvall(&speed_BE, sizeof(speed_BE));
         peer.recvall(&raceTimeSeconds_BE, sizeof(raceTimeSeconds_BE));
@@ -375,6 +376,7 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
         peer.recvall(&checkY_BE, sizeof(checkY_BE));
         peer.recvall(&angleHint_BE, sizeof(angleHint_BE));
         peer.recvall(&distanceToChekpoint_BE, sizeof(distanceToChekpoint_BE));
+        peer.recvall(&totalRaces, sizeof(totalRaces));
 
         float speed = decodeFloat100BE(speed_BE);
         float raceTimeSecond = decodeFloat100BE(raceTimeSeconds_BE);
@@ -385,9 +387,8 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
         float distanceToheckpoint = decodeFloat100BE(distanceToChekpoint_BE);
 
 
-        SrvCurrentInfo ci(nextCheckpointID, checkX, checkY, angleHint,
-                          distanceToheckpoint, raceTimeSecond, raceNumber, speed);
-        return ci;
+        return SrvCurrentInfo(nextCheckpointID, checkX, checkY, angleHint,
+                          distanceToheckpoint, raceTimeSecond, raceNumber, speed, totalRaces);
 
     } catch (const std::exception& e) {
         std::cerr << "client_main error: " << e.what() << "\n";
@@ -481,4 +482,40 @@ SendUpgrade ClientProtocol::recvUpgrade() {
     }
 
     return SendUpgrade(upgrade, success);
+}
+
+
+
+UpgradeLogic ClientProtocol::recvUpgradeLogic() {
+    uint8_t size;
+    std::vector<UpgradeDef> uds;
+
+    int n = 0;
+    try {
+        n += peer.recvall(&size, sizeof(size));
+        uds.reserve(size);
+        for (uint8_t i = 0; i < size; i++) {
+            UpgradeDef ud;
+
+            uint8_t t;
+            n += peer.recvall(&t, sizeof(t));
+            ud.type = static_cast<Upgrade>(t);
+
+            uint32_t encodedValue;
+            n += peer.recvall(&encodedValue, sizeof(encodedValue));
+            ud.value = decodeFloat100BE(encodedValue);
+
+            uint32_t encodedPenalty;
+            n += peer.recvall(&encodedPenalty, sizeof(encodedPenalty));
+            ud.penaltySec = decodeFloat100BE(encodedPenalty);
+
+            uds.push_back(std::move(ud));
+        }
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return UpgradeLogic(std::move(uds));
 }

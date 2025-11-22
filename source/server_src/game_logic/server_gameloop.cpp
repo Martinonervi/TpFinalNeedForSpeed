@@ -1,5 +1,4 @@
 #include "server_gameloop.h"
-
 #include <chrono>
 #include <thread>
 #include <cmath>
@@ -16,15 +15,19 @@
 #include "../../common_src/srv_msg/srv_current_info.h"
 #include "../../common_src/srv_msg/playerstats.h"
 #include "../../common_src/srv_msg/srv_time_left.h"
+#include "../../common_src/srv_msg/srv_send_upgrade.h"
+#include "../../common_src/cli_msg/cli_request_upgrade.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
 #define FILE_YAML_PATH "../server_src/world/map.yaml"
+using Clock = std::chrono::steady_clock;
 
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(cars, checkpoints, *this->registry,
-            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking)  {
+            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking),
+        playerManager(worldManager, *this->registry, cars, spawnPoints)  {
     loadMapFromYaml(FILE_YAML_PATH);
 }
 
@@ -47,26 +50,29 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
     this->mapData = data;
 }
 
+// loop principal de distinas carreras
 void GameLoop::run() {
-    waitingForPlayers();
+    setupRoute();
     const int racesToPlay = 1;
+    this->totalRaces = mapData.routes.size(); // seria el raceToPlay,
+                                              // se lo paso para ver si le llega bien a fran
     //const int racesToPlay = mapData.routes.size();
 
     while (raceIndex < racesToPlay && should_keep_running()) {
-        resetRaceState();
+        waitingForPlayers();
         runSingleRace();
         //storeRaceResult(raceIndex);
-        raceIndex += 1;
 
-        if (raceIndex < racesToPlay && should_keep_running()) {
-            raceStarted = false;
-            waitingForPlayers();
+        raceIndex += 1;
+        if (raceIndex < racesToPlay) { //no termino la ultima
+            resetRaceState();
         }
     }
 
-    sendPlayerStats();
+    playerManager.sendPlayerStats();
 }
 
+//setea el proximo recorrido
 void GameLoop::setupRoute() {
     auto routeIndex = raceIndex;
     if (mapData.routes.empty()) {
@@ -108,6 +114,46 @@ void GameLoop::setupRoute() {
               << "\n";
 }
 
+void GameLoop::waitingForPlayers() {
+    ConstantRateLoop loop(5.0);
+    const int MAX_PLAYERS = 8;
+    const double LOBBY_TIMEOUT_SEC = 5.0;
+    const double BETWEEN_RACES_SEC    = 3.0;
+
+    startRequested = false;
+    raceStarted    = false;
+
+    auto start = Clock::now();
+    double timeout = (raceIndex == 0) ? LOBBY_TIMEOUT_SEC
+                                        : BETWEEN_RACES_SEC;
+
+    const auto deadline = start + std::chrono::duration<double>(timeout);
+    while (should_keep_running()) {
+        processLobbyCmds();
+
+        if (startRequested) break;
+        //if (raceIndex == 0 && registry->size() >= MAX_PLAYERS) break;
+        if (Clock::now() >= deadline) break;
+
+        auto now = Clock::now();
+        float remaining_sec = std::chrono::duration_cast<std::chrono::duration<float>>(
+                                      deadline - now
+                                      ).count();
+
+        if (remaining_sec < 0.f) remaining_sec = 0.f;
+
+
+        // (2.9 → 2, 2.1 → 2, 1.9 → 1)
+        uint8_t timeToSend = static_cast<uint8_t>(std::floor(remaining_sec));
+
+        auto msg = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<TimeLeft>(timeToSend));
+        registry->broadcast(msg);
+
+        loop.sleep_until_next_frame();
+    }
+    this->raceStarted = true;
+}
 
 void GameLoop::resetRaceState() {
     worldManager.resetCheckpoints(checkpoints);
@@ -135,12 +181,10 @@ void GameLoop::resetRaceState() {
         Cmd cmd_aux;
         while (queue->try_pop(cmd_aux)) {}
     }
-
 }
 
 
 
-using Clock = std::chrono::steady_clock;
 void GameLoop::runSingleRace() {
     raceStartTime = Clock::now();
     try {
@@ -164,11 +208,8 @@ void GameLoop::runSingleRace() {
             }
 
             processWorldEvents();
-
             if (raceEnded) break;
-
-            broadcastCarSnapshots();
-
+            playerManager.broadcastSnapshots();
             sendCurrentInfo();
             loop.sleep_until_next_frame();
         }
@@ -180,53 +221,6 @@ void GameLoop::runSingleRace() {
     }
 }
 
-
-void GameLoop::waitingForPlayers() {
-    ConstantRateLoop loop(5.0);
-    const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 5.0;
-    const double BETWEEN_RACES_SEC    = 3.0;
-
-    auto start = Clock::now();
-    double timeout = (raceIndex == 0) ? LOBBY_TIMEOUT_SEC
-                                        : BETWEEN_RACES_SEC;
-
-    const auto deadline = start + std::chrono::duration<double>(timeout);
-    while (true) {
-        if (raceIndex == 0 && registry->size() >= MAX_PLAYERS) break;
-        if (Clock::now() >= deadline) break;
-
-        auto now = Clock::now();
-        float remaining_sec = std::chrono::duration_cast<std::chrono::duration<float>>(
-                                      deadline - now
-                                      ).count();
-
-        if (remaining_sec < 0.f) remaining_sec = 0.f;
-
-
-        // (2.9 → 2, 2.1 → 2, 1.9 → 1)
-        uint8_t timeToSend = static_cast<uint8_t>(std::floor(remaining_sec));
-
-        auto msg = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<TimeLeft>(timeToSend));
-        registry->broadcast(msg);
-
-        loop.sleep_until_next_frame();
-    }
-    this->raceStarted = true;
-}
-
-
-void GameLoop::sendPlayerStats(){
-    for (auto& [id, car] : cars) {
-        // los que no terminaron tienen sus valores en cero
-        PlayerStats ps(car.getRanking(), car.getFinishTime());
-        auto msg = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<PlayerStats>(std::move(ps)));
-        registry->sendTo(id, msg);
-    }
-
-}
 
 void GameLoop::checkPlayersStatus() {
     std::vector<ID> ids;
@@ -244,13 +238,111 @@ void GameLoop::checkPlayersStatus() {
     }
 }
 
-
 bool GameLoop::isRaceStarted() const {
     return this->raceStarted;
 }
 
 bool GameLoop::isConnected(ID id) const {
     return registry->contains(id);
+}
+
+void GameLoop::sendCurrentInfo() {
+    for (auto& [id, car] : cars) {
+        ID actual = car.getActualCheckpoint();
+        ID next   = actual + 1;
+
+        auto itCp = checkpoints.find(next);
+        if (itCp == checkpoints.end()) continue; //termino
+        const Checkpoint& cp = itCp->second;
+
+        b2BodyId body = car.getBody();
+        b2Vec2 pos = b2Body_GetPosition(body);
+
+        float vx = cp.getX() - pos.x;
+        float vy = cp.getY() - pos.y;
+
+        float len = std::sqrt(vx*vx + vy*vy); //distancia del auto al checkpoint
+        float angle = std::atan2(vy, vx);
+
+        b2Vec2 vecVel = b2Body_GetLinearVelocity(body);
+        float speed = std::sqrt(vecVel.x*vecVel.x + vecVel.y*vecVel.y);
+
+        SrvCurrentInfo ci(cp.getId(), cp.getX(), cp.getY(), angle, len,
+                          raceTimeSeconds, raceIndex+1, speed, totalRaces);
+
+        auto base = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<SrvCurrentInfo>(std::move(ci)));
+        registry->sendTo(id, base);
+    }
+}
+
+void GameLoop::processLobbyCmds() {
+    std::list<Cmd> to_process = emptyQueue();
+    for (Cmd& cmd: to_process) {
+        if (!isConnected(cmd.client_id)) {
+            continue;
+        }
+
+        switch (cmd.msg->type()) {
+            case (Opcode::START_GAME): {
+                startRequested = true;
+                break;
+            }
+            case (Opcode::UPGRADE_REQUEST): {
+                auto it = cars.find(cmd.client_id);
+                if (it == cars.end()) return;
+                Car& car = it->second;
+                bool success;
+                Upgrade up;
+                if (car.hasUpgrade()) {
+                    up = NONE;
+                    success = false;
+                } else {
+
+                    RequestUpgrade& ur = dynamic_cast<RequestUpgrade&>(*cmd.msg);
+                    const UpgradeDef& def = findUpgradeDef(ur.getUpgrade());
+                    car.applyUpgrade(def);
+                    up = ur.getUpgrade();
+                    success = true;
+                }
+                auto base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<SendUpgrade>(up, success));
+                registry->sendTo(cmd.client_id, base);
+                break;
+            }
+            case (Opcode::INIT_PLAYER): {
+                bool ok = playerManager.initPlayer(cmd);
+                if (ok) {
+                    totalCars = static_cast<uint8_t>(cars.size());
+                }
+                break;
+            }
+            default: {
+                std::cout << "cmd desconocido: " << cmd.msg->type() << "\n";
+            }
+        }
+
+    }
+}
+
+void GameLoop::processCmds() {
+    std::list<Cmd> to_process = emptyQueue();
+    for (Cmd& cmd: to_process) {
+        if (!isConnected(cmd.client_id)) {
+            continue;
+        }
+
+        switch (cmd.msg->type()) {
+            case (Opcode::Movement): {
+                playerManager.handleMovement(cmd, TIME_STEP);
+                break;
+            }
+            default: {
+                std::cout << "cmd desconocido: " << cmd.msg->type() << "\n";
+            }
+        }
+
+    }
 }
 
 void GameLoop::processWorldEvents() {
@@ -280,60 +372,6 @@ void GameLoop::processWorldEvents() {
     }
 }
 
-void GameLoop::sendCurrentInfo() {
-    for (auto& [id, car] : cars) {
-        ID actual = car.getActualCheckpoint();
-        ID next   = actual + 1;
-
-        auto itCp = checkpoints.find(next);
-        if (itCp == checkpoints.end()) return; //termino
-        const Checkpoint& cp = itCp->second;
-
-        b2BodyId body = car.getBody();
-        b2Vec2 pos = b2Body_GetPosition(body);
-
-        float vx = cp.getX() - pos.x;
-        float vy = cp.getY() - pos.y;
-
-        float len = std::sqrt(vx*vx + vy*vy); //distancia del auto al checkpoint
-        float angle = std::atan2(vy, vx);
-
-        b2Vec2 vecVel = b2Body_GetLinearVelocity(body);
-        float speed = std::sqrt(vecVel.x*vecVel.x + vecVel.y*vecVel.y);
-
-        SrvCurrentInfo ci(cp.getId(), cp.getX(), cp.getY(), angle, len,
-                          raceTimeSeconds, raceCarNumber, speed);
-
-        auto base = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<SrvCurrentInfo>(std::move(ci)));
-        registry->sendTo(id, base);
-    }
-}
-
-void GameLoop::processCmds() {
-    std::list<Cmd> to_process = emptyQueue();
-    for (Cmd& cmd: to_process) {
-        if (!isConnected(cmd.client_id)) {
-            continue;
-        }
-
-        switch (cmd.msg->type()) {
-            case (Opcode::Movement): {
-                movementHandler(cmd);
-                break;
-            }
-            case (Opcode::INIT_PLAYER): {
-                initPlayerHandler(cmd);
-                break;
-            }
-            default: {
-                std::cout << "cmd desconocido: " << cmd.msg->type() << "\n";
-            }
-        }
-
-    }
-}
-
 //para testear spawn
 void GameLoop::simulatePlayerSpawns(int numPlayers) {
     if (spawnPoints.empty()) {
@@ -353,81 +391,22 @@ void GameLoop::simulatePlayerSpawns(int numPlayers) {
     }
 }
 
-
-void GameLoop::initPlayerHandler(Cmd& cmd){
-    const InitPlayer ip = dynamic_cast<const InitPlayer&>(*cmd.msg);
-    const auto& spawn = spawnPoints[totalCars];
-    b2Vec2 spawnVec = { spawn.x, spawn.y };
-    cars.emplace(cmd.client_id, Car(this->worldManager, cmd.client_id, spawnVec, spawn.angle,
-                                    ip.getCarType()));
-    totalCars++;
-
-    auto base = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SendPlayer>(cmd.client_id, ip.getCarType(), spawn.x, spawn.y, 3));
-    registry->sendTo(cmd.client_id, base); //le aviso al cliente q ya tiene su auto
-
-    // le aviso al nuevo cliente donde estan los otros autos
-    for (auto [id, car]: cars) {
-        auto newPlayer = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<NewPlayer>(id, car.getCarType(), 1, 2, 3));
-        // deberian ser pos reales
-        if (id == cmd.client_id) continue;
-
-        //le aviso a los demas que hay un nuevo auto en la partida
-        registry->sendTo(cmd.client_id, newPlayer);
-
-    }
-    // les aviso a todos del auto del nuevo cliente
-    for (auto& [otherId, _] : cars) {
-        if (otherId == cmd.client_id) continue;
-        auto npForOld = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<NewPlayer>(cmd.client_id, ip.getCarType(), spawn.x, spawn.y, 0.f)
-        );
-        registry->sendTo(otherId, npForOld);
-    }
-
-}
-
-void GameLoop::movementHandler(Cmd& cmd) {
-    auto it = cars.find(cmd.client_id);
-    if (it == cars.end()) return;
-    if (it->second.isCarDestroy()) return;
-
-    const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
-    it->second.applyControlsToBody(mv, TIME_STEP);
-
-}
-
 // la voy implementando aunque la logica del msj todavia no esta hecha
 void GameLoop::disconnectHandler(ID id) {
     auto it = cars.find(id);
     if (it == cars.end()) return;
-
     if (!it->second.isFinished()) {
         if (totalCars > 0) {
             totalCars--;
         }
-
         if (totalCars > 0 && finishedCarsCount >= totalCars) {
             raceEnded = true;
         }
-
         if (totalCars == 0) {
             raceEnded = true;
         }
     }
-
-    worldManager.destroyEntity(it->second.getPhysicsId());
-    cars.erase(id);
-}
-
-void GameLoop::broadcastCarSnapshots() {
-    for (auto& [id, car] : cars) {
-        PlayerState ps = car.snapshotState();
-        auto base = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<PlayerState>(std::move(ps)));
-        registry->broadcast(base);
-    }
+    playerManager.disconnectPlayer(id);
 }
 
 std::list<Cmd> GameLoop::emptyQueue() {
