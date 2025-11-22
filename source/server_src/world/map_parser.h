@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "entities/checkpoint.h"
+#include <yaml-cpp/yaml.h>
+
 
 struct BuildingConfig {
     float x;
@@ -31,12 +33,19 @@ struct SpawnPointConfig {
     float angle; // en radianes
 };
 
+struct RecommendedPointConfig {
+    float x;
+    float y;
+};
+
+
 struct RouteConfig {
     std::string nameCity;
     std::string nameRoute;
 
     std::vector<CheckpointConfig> checkpoints;
     std::vector<SpawnPointConfig> spawnPoints;
+    std::vector<RecommendedPointConfig> recommendedPath;
 };
 
 struct MapData {
@@ -48,6 +57,18 @@ struct MapData {
 class MapParser {
 public:
     MapData load(const std::string& path);
+
+private:
+
+    void parseCheckpointList(const YAML::Node& cpList,
+                                        std::vector<CheckpointConfig>& out) const;
+    void parseSpawnPoints(const YAML::Node& spList,
+                                     std::vector<SpawnPointConfig>& out) const;
+    void parseRecommendedPath(const YAML::Node& pathList,
+                                         std::vector<RecommendedPointConfig>& out) const;
+
+    void parseBuildings(const YAML::Node& buildingsNode,
+                        std::vector<BuildingConfig>& out) const;
 };
 
 #endif

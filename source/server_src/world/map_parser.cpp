@@ -1,5 +1,4 @@
 #include "map_parser.h"
-#include <yaml-cpp/yaml.h>
 #include "../../common_src/constants.h"
 #include <cmath>
 
@@ -12,177 +11,9 @@ MapData MapParser::load(const std::string& path) {
         data.city = root["city"].as<std::string>();
     }
 
-    // mínimos para que no rompa
-    constexpr float MIN_W      = 0.10f;  // ancho mínimo edificio
-    constexpr float MIN_H      = 0.10f;  // alto  mínimo edificio
-    constexpr float MIN_CP_LEN = 0.05f;  // longitud mínima de checkpoint (en metros)
-
-
     if (root["buildings"]) {
-        for (auto b : root["buildings"]) {
-            if (!b["x"] || !b["y"] || !b["w"] || !b["h"]) {
-                continue;
-            }
-
-            float x_px, y_px, w_px, h_px;
-            float ang = 0.0f;
-
-            try {
-                x_px = b["x"].as<float>();
-                y_px = b["y"].as<float>();
-                w_px = b["w"].as<float>();
-                h_px = b["h"].as<float>();
-                if (b["angle"]) {
-                    ang = b["angle"].as<float>();
-                }
-            } catch (...) {
-                continue;
-            }
-
-            // evitamos infinitos
-            if (!std::isfinite(x_px) || !std::isfinite(y_px) ||
-                !std::isfinite(w_px) || !std::isfinite(h_px)) {
-                continue;
-            }
-
-            BuildingConfig cfg;
-
-            cfg.x = x_px * PIXEL_TO_METER;
-            cfg.y = y_px * PIXEL_TO_METER;
-
-            float w_m = std::fabs(w_px) * PIXEL_TO_METER;
-            float h_m = std::fabs(h_px) * PIXEL_TO_METER;
-
-            if (w_m < MIN_W) w_m = MIN_W;
-            if (h_m < MIN_H) h_m = MIN_H;
-
-            cfg.w = w_m;
-            cfg.h = h_m;
-            float angleRad = ang * M_PI / 180.0f;
-            cfg.angle = angleRad;
-
-            if (cfg.w <= 0.f || cfg.h <= 0.f) {
-                continue;
-            }
-
-            data.buildings.push_back(cfg);
-        }
+        parseBuildings(root["buildings"], data.buildings);
     }
-
-    // para no repetir codigo
-    auto parseCheckpointList = [&](YAML::Node cpList,
-                                   std::vector<CheckpointConfig>& out) {
-        if (!cpList || !cpList.IsSequence()) {
-            return;
-        }
-
-        for (auto cpNode : cpList) {
-
-            if (!cpNode["x"] || !cpNode["y"] ||
-                !cpNode["w"] || !cpNode["h"]) {
-                continue;
-            }
-
-            CheckpointConfig cp{};
-
-            try {
-                cp.id = cpNode["id"].as<int>();
-            } catch (...) {
-                continue;
-            }
-
-            std::string kindStr = "Normal";
-            if (cpNode["kind"]) {
-                kindStr = cpNode["kind"].as<std::string>();
-            }
-
-            if (kindStr == "Start" || kindStr == "start") {
-                cp.kind = CheckpointKind::Start;
-            } else if (kindStr == "Finish" || kindStr == "finish") {
-                cp.kind = CheckpointKind::Finish;
-            } else {
-                cp.kind = CheckpointKind::Normal;
-            }
-
-            float x_px, y_px, w_px, h_px;
-            float ang = 0.0f;
-
-            try {
-                x_px = cpNode["x"].as<float>();
-                y_px = cpNode["y"].as<float>();
-                w_px = cpNode["w"].as<float>();
-                h_px = cpNode["h"].as<float>();
-                if (cpNode["angle"]) {
-                    ang = cpNode["angle"].as<float>();
-                }
-            } catch (...) {
-                continue;
-            }
-
-            if (!std::isfinite(x_px) || !std::isfinite(y_px) ||
-                !std::isfinite(w_px) || !std::isfinite(h_px)) {
-                continue;
-            }
-
-            cp.x = x_px * PIXEL_TO_METER;
-            cp.y = y_px * PIXEL_TO_METER;
-
-            float w_m = std::fabs(w_px) * PIXEL_TO_METER;
-            float h_m = std::fabs(h_px) * PIXEL_TO_METER;
-
-            if (w_m < MIN_CP_LEN) w_m = MIN_CP_LEN;
-            if (h_m < MIN_CP_LEN) h_m = MIN_CP_LEN;
-
-            cp.w = w_m;
-            cp.h = h_m;
-            float angleRad = ang * M_PI / 180.0f;
-            cp.angle = angleRad;
-
-            if (cp.w <= 0.f || cp.h <= 0.f) {
-                continue;
-            }
-
-            out.push_back(cp);
-        }
-    };
-
-    auto parseSpawnPoints = [&](YAML::Node spList, std::vector<SpawnPointConfig>& out) {
-        if (!spList || !spList.IsSequence()) {
-            return;
-        }
-
-        for (auto spNode : spList) {
-            if (!spNode["x"] || !spNode["y"]) {
-                continue;
-            }
-
-            SpawnPointConfig sp{};
-            float x_px, y_px, ang = 0.0f;
-
-            try {
-                sp.spawnId = spNode["id"].as<ID>();
-                x_px = spNode["x"].as<float>();
-                y_px = spNode["y"].as<float>();
-                if (spNode["angle"]) {
-                    ang = spNode["angle"].as<float>();
-                }
-            } catch (...) {
-                continue;
-            }
-
-            if (!std::isfinite(x_px) || !std::isfinite(y_px)) {
-                continue;
-            }
-
-            sp.x = x_px * PIXEL_TO_METER;
-            sp.y = y_px * PIXEL_TO_METER;
-            float angleRad = ang * M_PI / 180.0f;
-            sp.angle = angleRad;
-
-            out.push_back(sp);
-        }
-    };
-
 
     if (root["routes"] && root["routes"].IsSequence()) {
         for (auto routeNode : root["routes"]) {
@@ -197,15 +28,232 @@ MapData MapParser::load(const std::string& path) {
                 parseSpawnPoints(routeNode["spawn_points"], currentRoute.spawnPoints);
             }
 
+            if (routeNode["recommended_path"]) {
+                parseRecommendedPath(routeNode["recommended_path"],
+                                     currentRoute.recommendedPath);
+            }
+
             if (routeNode["name"]) {
                 currentRoute.nameRoute = routeNode["name"].as<std::string>();
             }
 
-            if (!currentRoute.checkpoints.empty() || !currentRoute.spawnPoints.empty()) {
+            if (!currentRoute.checkpoints.empty() ||
+                !currentRoute.spawnPoints.empty() ||
+                !currentRoute.recommendedPath.empty()) {
                 data.routes.push_back(std::move(currentRoute));
             }
         }
     }
 
     return data;
+}
+
+
+
+
+void MapParser::parseCheckpointList(const YAML::Node& cpList,
+                                    std::vector<CheckpointConfig>& out) const {
+    constexpr float MIN_CP_LEN = 0.05f;
+
+    if (!cpList || !cpList.IsSequence()) {
+        return;
+    }
+
+    for (auto cpNode : cpList) {
+
+        if (!cpNode["x"] || !cpNode["y"] ||
+            !cpNode["w"] || !cpNode["h"]) {
+            continue;
+        }
+
+        CheckpointConfig cp{};
+
+        try {
+            cp.id = cpNode["id"].as<int>();
+        } catch (...) {
+            continue;
+        }
+
+        std::string kindStr = "Normal";
+        if (cpNode["kind"]) {
+            kindStr = cpNode["kind"].as<std::string>();
+        }
+
+        if (kindStr == "Start" || kindStr == "start") {
+            cp.kind = CheckpointKind::Start;
+        } else if (kindStr == "Finish" || kindStr == "finish") {
+            cp.kind = CheckpointKind::Finish;
+        } else {
+            cp.kind = CheckpointKind::Normal;
+        }
+
+        float x_px, y_px, w_px, h_px;
+        float ang = 0.0f;
+
+        try {
+            x_px = cpNode["x"].as<float>();
+            y_px = cpNode["y"].as<float>();
+            w_px = cpNode["w"].as<float>();
+            h_px = cpNode["h"].as<float>();
+            if (cpNode["angle"]) {
+                ang = cpNode["angle"].as<float>();
+            }
+        } catch (...) {
+            continue;
+        }
+
+        if (!std::isfinite(x_px) || !std::isfinite(y_px) ||
+            !std::isfinite(w_px) || !std::isfinite(h_px)) {
+            continue;
+        }
+
+        cp.x = x_px * PIXEL_TO_METER;
+        cp.y = y_px * PIXEL_TO_METER;
+
+        float w_m = std::fabs(w_px) * PIXEL_TO_METER;
+        float h_m = std::fabs(h_px) * PIXEL_TO_METER;
+
+        if (w_m < MIN_CP_LEN) w_m = MIN_CP_LEN;
+        if (h_m < MIN_CP_LEN) h_m = MIN_CP_LEN;
+
+        cp.w = w_m;
+        cp.h = h_m;
+
+        float angleRad = ang * M_PI / 180.0f;
+        cp.angle = angleRad;
+
+        if (cp.w <= 0.f || cp.h <= 0.f) {
+            continue;
+        }
+
+        out.push_back(cp);
+    }
+}
+
+void MapParser::parseSpawnPoints(const YAML::Node& spList,
+                                 std::vector<SpawnPointConfig>& out) const {
+    if (!spList || !spList.IsSequence()) {
+        return;
+    }
+
+    for (auto spNode : spList) {
+        if (!spNode["x"] || !spNode["y"]) {
+            continue;
+        }
+
+        SpawnPointConfig sp{};
+        float x_px, y_px, ang = 0.0f;
+
+        try {
+            sp.spawnId = spNode["id"].as<ID>();
+            x_px = spNode["x"].as<float>();
+            y_px = spNode["y"].as<float>();
+            if (spNode["angle"]) {
+                ang = spNode["angle"].as<float>();
+            }
+        } catch (...) {
+            continue;
+        }
+
+        if (!std::isfinite(x_px) || !std::isfinite(y_px)) {
+            continue;
+        }
+
+        sp.x = x_px * PIXEL_TO_METER;
+        sp.y = y_px * PIXEL_TO_METER;
+        float angleRad = ang * M_PI / 180.0f;
+        sp.angle = angleRad;
+
+        out.push_back(sp);
+    }
+}
+
+void MapParser::parseRecommendedPath(const YAML::Node& pathList,
+                                     std::vector<RecommendedPointConfig>& out) const {
+    if (!pathList || !pathList.IsSequence()) {
+        return;
+    }
+
+    for (auto node : pathList) {
+        if (!node["x"] || !node["y"]) {
+            continue;
+        }
+
+        float x_px, y_px;
+        try {
+            x_px = node["x"].as<float>();
+            y_px = node["y"].as<float>();
+        } catch (...) {
+            continue;
+        }
+
+        if (!std::isfinite(x_px) || !std::isfinite(y_px)) {
+            continue;
+        }
+
+        RecommendedPointConfig p{};
+        p.x = x_px * PIXEL_TO_METER;
+        p.y = y_px * PIXEL_TO_METER;
+
+        out.push_back(p);
+    }
+}
+
+void MapParser::parseBuildings(const YAML::Node& buildingsNode,
+                               std::vector<BuildingConfig>& out) const {
+    constexpr float MIN_W = 0.10f;  // ancho mínimo edificio
+    constexpr float MIN_H = 0.10f;  // alto  mínimo edificio
+
+    if (!buildingsNode || !buildingsNode.IsSequence()) {
+        return;
+    }
+
+    for (auto b : buildingsNode) {
+        if (!b["x"] || !b["y"] || !b["w"] || !b["h"]) {
+            continue;
+        }
+
+        float x_px, y_px, w_px, h_px;
+        float ang = 0.0f;
+
+        try {
+            x_px = b["x"].as<float>();
+            y_px = b["y"].as<float>();
+            w_px = b["w"].as<float>();
+            h_px = b["h"].as<float>();
+            if (b["angle"]) {
+                ang = b["angle"].as<float>();
+            }
+        } catch (...) {
+            continue;
+        }
+
+        if (!std::isfinite(x_px) || !std::isfinite(y_px) ||
+            !std::isfinite(w_px) || !std::isfinite(h_px)) {
+            continue;
+        }
+
+        BuildingConfig cfg;
+
+        cfg.x = x_px * PIXEL_TO_METER;
+        cfg.y = y_px * PIXEL_TO_METER;
+
+        float w_m = std::fabs(w_px) * PIXEL_TO_METER;
+        float h_m = std::fabs(h_px) * PIXEL_TO_METER;
+
+        if (w_m < MIN_W) w_m = MIN_W;
+        if (h_m < MIN_H) h_m = MIN_H;
+
+        cfg.w = w_m;
+        cfg.h = h_m;
+
+        float angleRad = ang * M_PI / 180.0f;
+        cfg.angle = angleRad;
+
+        if (cfg.w <= 0.f || cfg.h <= 0.f) {
+            continue;
+        }
+
+        out.push_back(cfg);
+    }
 }
