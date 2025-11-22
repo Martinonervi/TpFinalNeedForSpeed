@@ -25,3 +25,18 @@ void Map::draw(const Camera& camera) {
 
     renderer.Copy(texture, srcRect,dstRect);
 }
+
+void Map::drawOver(const Camera& camera) {
+
+    SDL2pp::Texture& texture(tm.getCities().getLibertyOver());
+    auto [sx, sy, dx, dy] = camera.getView();
+
+
+    if (sx + dx > texture.GetWidth()) sx = texture.GetWidth() - dx;
+    if (sy + dy > texture.GetHeight()) sy = texture.GetHeight() - dy;
+
+    SDL2pp::Rect srcRect(sx, sy, dx, dy);
+    SDL2pp::Rect dstRect( x, y, dx , dy );
+
+    renderer.Copy(texture, srcRect,dstRect);
+}

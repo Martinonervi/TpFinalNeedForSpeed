@@ -22,25 +22,52 @@ void UpgradeScreen::renderPopUp(int windowWidth, int windowHeight) {
 
     SDL2pp::Texture& slotTex = tm.getHud().getUpgradeFrame();
 
+    auto& upgradesSheet = tm.getHud().getUpgrades();
+    int iconSize = 30;
+
+    int nitroX[3];
+    int nitroY[3];
+    int nitroW[3];
+    int nitroH[3];
+    nitroX[0] = 29;
+    nitroX[1] = 63;
+    nitroX[2] = 95;
+    nitroY[0] = 1;
+    nitroY[1] = 1;
+    nitroY[2] = 1;
+    nitroW[0] = 17;
+    nitroW[1] = 16;
+    nitroW[2] = 16;
+    nitroH[0] = 17;
+    nitroH[1] = 17;
+    nitroH[2] = 17;
+
+
     for (int i = 0; i < 3; ++i) {
         int slotX = panelX + 50;
-        int slotY = panelY + 50 + i*70;
+        int slotY = panelY + 50 + i*100;
 
-        SDL2pp::Rect src(0, 0, slotTex.GetWidth(), slotTex.GetHeight());
-        SDL2pp::Rect dst(slotX, slotY, slotTex.GetWidth()*4, slotTex.GetHeight()*4); // escalada *4
-        renderer.Copy(slotTex, src, dst);
+        SDL2pp::Rect srcFrame(0, 0, slotTex.GetWidth(), slotTex.GetHeight());
+        SDL2pp::Rect dstFrame(slotX, slotY, slotTex.GetWidth()*5, slotTex.GetHeight()*5);
+        renderer.Copy(slotTex, srcFrame, dstFrame);
 
         Button& btn = buttons[i];
-        btn.rect.x = slotX + 8*4;
-        btn.rect.y = slotY + 7*4;
-        btn.rect.w = 14*4;
-        btn.rect.h = 14*4;
-
+        btn.rect.x = slotX + 8*5;
+        btn.rect.y = slotY + 7*5;
+        btn.rect.w = 14*5;
+        btn.rect.h = 14*5;
+        btn.text = "";
+        btn.color = {0,0,0,0};
+        btn.hoverColor = {255,255,255,100};
         drawer.drawButton(btn);
 
-        // drawIcon(btn.rect.x, btn.rect.y, iconTexture);
+        // Dibujar icono dentro del botón
+        SDL2pp::Rect srcIcon(nitroX[i], nitroY[i], nitroW[i], nitroH[i]);
+        SDL2pp::Rect dstIcon(btn.rect.x, btn.rect.y, 14*5, 14*5);
+        renderer.Copy(upgradesSheet, srcIcon, dstIcon);
     }
 }
+
 
 
 
@@ -64,4 +91,3 @@ bool UpgradeScreen::handleMouseClick(int mouseX, int mouseY, std::string& clicke
     }
     return false;
 }
-

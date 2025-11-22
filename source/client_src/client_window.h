@@ -50,6 +50,8 @@ private:
     Hint hint;
     std::unique_ptr<PlayerStats> playerStats = nullptr;
     UpgradeScreen ups;
+    float raceTime = 0.0f;
+    int raceNumber = 0;
     EventManager eventManager;
     bool showUpgradeMenu = false;
     bool running;

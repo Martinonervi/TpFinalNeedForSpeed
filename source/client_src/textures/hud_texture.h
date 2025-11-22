@@ -4,15 +4,19 @@
 
 class HudTexture {
 public:
-    HudTexture(SDL2pp::Texture& bars, SDL2pp::Texture& upgradeFrame);
+    HudTexture(SDL2pp::Texture& healthAndNitro, SDL2pp::Texture& swordAndShield, SDL2pp::Texture& upgradeFrame,
+        SDL2pp::Texture& upgrades);
     SDL2pp::Rect getHealthBar() const;
     SDL2pp::Rect getEnergyBar() const;
     SDL2pp::Texture& getBarsTexture() const;
     SDL2pp::Texture& getUpgradeFrame() const;
+    SDL2pp::Texture& getUpgrades() const;
 
 private:
-    SDL2pp::Texture& bars;
+    SDL2pp::Texture& healthAndNitro;
+    SDL2pp::Texture& swordAndShield;
     SDL2pp::Texture& upgradeFrame;
+    SDL2pp::Texture& upgrades;
 
 };
 
