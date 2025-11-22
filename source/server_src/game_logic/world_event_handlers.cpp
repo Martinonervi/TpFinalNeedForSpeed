@@ -90,16 +90,22 @@ void WorldEventHandlers::CarHitBuildingHandler(WorldEvent ev,
     }
 
     car.applyDamage(damage);
-    if (car.isCarDestroy()) {
-        //le aviso a la interfaz
-    }
 
-    // frenar un poco empujando contra la normal
-    b2Vec2 newVel = {
-            vel.x - ev.nx * impactSpeed * 0.5f,
-            vel.y - ev.ny * impactSpeed * 0.5f
-    };
-    b2Body_SetLinearVelocity(body, newVel);
+
+    if (car.isCarDestroy()) {
+        b2Vec2 zero = {0.f, 0.f};
+        b2Body_SetLinearVelocity(body, zero);
+        b2Body_SetAngularVelocity(body, 0.f);
+        //tendria q destruir el cuerpo
+        totalCars -= 1;
+    } else {
+        // frenar un poco empujando contra la normal
+        b2Vec2 newVel = {
+                vel.x - ev.nx * impactSpeed * 0.5f,
+                vel.y - ev.ny * impactSpeed * 0.5f
+        };
+        b2Body_SetLinearVelocity(body, newVel);
+    }
 
     auto baseCarA = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCarHitMsg>(car.getClientId(), car.getHealth()));
@@ -158,6 +164,20 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
             vB.x + ev.nx * bAlongN * 0.4f,
             vB.y + ev.ny * bAlongN * 0.4f
     };
+
+    if (carA.isCarDestroy()) {
+        newVA = {0.f, 0.f};
+        b2Body_SetAngularVelocity(bodyA, 0.f);
+        //tendria q destruir el cuerpo
+        totalCars -= 1;
+    }
+
+    if (carB.isCarDestroy()) {
+        newVB = {0.f, 0.f};
+        b2Body_SetAngularVelocity(bodyB, 0.f);
+        //tendria q destruir el cuerpo
+        totalCars -= 1;
+    }
 
     b2Body_SetLinearVelocity(bodyA, newVA);
     b2Body_SetLinearVelocity(bodyB, newVB);

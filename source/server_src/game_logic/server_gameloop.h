@@ -78,6 +78,7 @@ private:
     uint8_t totalRaces = 0;
     MapData mapData;
 
+
     bool startRequested = false;
     uint8_t raceIndex = 0;
 

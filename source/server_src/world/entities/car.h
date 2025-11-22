@@ -36,7 +36,7 @@ public:
         ranking = finishedCarsCount;
     }
     bool isFinished() const { return finished; }
-    float getFinishTime() const { return finishTime; }
+    float getFinishTime() const { return finishTime + upgradePenalty; }
     uint8_t getRanking() const { return ranking; }
 
     void resetForNewRace(float x, float y, float angleDeg);
