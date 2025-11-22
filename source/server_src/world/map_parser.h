@@ -6,7 +6,7 @@
 
 #include "entities/checkpoint.h"
 #include <yaml-cpp/yaml.h>
-
+#include "../../common_src/srv_msg/srv_recommended_path.h"
 
 struct BuildingConfig {
     float x;
@@ -33,10 +33,6 @@ struct SpawnPointConfig {
     float angle; // en radianes
 };
 
-struct RecommendedPointConfig {
-    float x;
-    float y;
-};
 
 
 struct RouteConfig {
@@ -45,7 +41,7 @@ struct RouteConfig {
 
     std::vector<CheckpointConfig> checkpoints;
     std::vector<SpawnPointConfig> spawnPoints;
-    std::vector<RecommendedPointConfig> recommendedPath;
+    std::vector<RecommendedPoint> recommendedPath;
 };
 
 struct MapData {
@@ -65,7 +61,7 @@ private:
     void parseSpawnPoints(const YAML::Node& spList,
                                      std::vector<SpawnPointConfig>& out) const;
     void parseRecommendedPath(const YAML::Node& pathList,
-                                         std::vector<RecommendedPointConfig>& out) const;
+                                         std::vector<RecommendedPoint>& out) const;
 
     void parseBuildings(const YAML::Node& buildingsNode,
                         std::vector<BuildingConfig>& out) const;

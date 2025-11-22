@@ -169,7 +169,7 @@ void MapParser::parseSpawnPoints(const YAML::Node& spList,
 }
 
 void MapParser::parseRecommendedPath(const YAML::Node& pathList,
-                                     std::vector<RecommendedPointConfig>& out) const {
+                                     std::vector<RecommendedPoint>& out) const {
     if (!pathList || !pathList.IsSequence()) {
         return;
     }
@@ -191,7 +191,7 @@ void MapParser::parseRecommendedPath(const YAML::Node& pathList,
             continue;
         }
 
-        RecommendedPointConfig p{};
+        RecommendedPoint p{};
         p.x = x_px * PIXEL_TO_METER;
         p.y = y_px * PIXEL_TO_METER;
 

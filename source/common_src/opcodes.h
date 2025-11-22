@@ -23,6 +23,7 @@ enum Opcode : Op {
     UPGRADE_REQUEST = 0x14,
     UPGRADE_SEND = 0x15,
     START_GAME      = 0x16,
+    RECOMMENDED_PATH = 0x17,
 };
 
 enum err_code : Op {

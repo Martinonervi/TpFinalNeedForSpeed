@@ -7,6 +7,7 @@
 #include "../common_src/srv_msg/srv_current_info.h"
 #include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -108,6 +109,13 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<UpgradeLogic>(std::move(msg)));
                 receiverQueue.push(base);
+                break;
+            }
+            case Opcode::RECOMMENDED_PATH: {
+                RecommendedPath msg = protocol.recvRecommendedPath();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<RecommendedPath>(std::move(msg)));
+                //receiverQueue.push(base);
                 break;
             }
 

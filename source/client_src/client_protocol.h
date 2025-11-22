@@ -19,6 +19,7 @@
 #include "../common_src/srv_msg/srv_current_info.h"
 #include "../common_src/srv_msg/srv_time_left.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
 
 #include "client_types.h"
 
@@ -41,6 +42,7 @@ public:
     JoinGame recvGameInfo();
     SrvCurrentInfo recvCurrentInfo();
     UpgradeLogic recvUpgradeLogic();
+    RecommendedPath recvRecommendedPath();
     void requestGames();
     MetadataGames getMetadata();
     GameMetadata readOneGame();

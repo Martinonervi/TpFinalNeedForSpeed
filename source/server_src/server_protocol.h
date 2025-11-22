@@ -18,9 +18,11 @@
 #include "../common_src/srv_msg/srv_current_info.h"
 #include "../common_src/srv_msg/srv_send_upgrade.h"
 #include "../common_src/srv_msg/srv_time_left.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
 
 #include "server_types.h"
-#include "../common_src/srv_msg/srv_upgrade_logic.h"
+
 
 class ServerProtocol {
 public:
@@ -53,6 +55,8 @@ public:
     int sendCurrentInfo(SrvCurrentInfo& msg);
 
     int sendUpgradeLogic(UpgradeLogic& ul);
+
+    int sendRecommendedPath(RecommendedPath& rp);
 
     void append(std::vector<char>& buf, const void* p, std::size_t n);
 

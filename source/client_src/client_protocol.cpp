@@ -519,3 +519,33 @@ UpgradeLogic ClientProtocol::recvUpgradeLogic() {
     }
     return UpgradeLogic(std::move(uds));
 }
+
+RecommendedPath ClientProtocol::recvRecommendedPath() {
+    uint8_t size;
+    std::vector<RecommendedPoint> rps;
+
+    int n = 0;
+    try {
+        n += peer.recvall(&size, sizeof(size));
+        rps.reserve(size);
+        for (uint8_t i = 0; i < size; i++) {
+            RecommendedPoint rp;
+
+            uint32_t encodedX;
+            n += peer.recvall(&encodedX, sizeof(encodedX));
+            rp.x = decodeFloat100BE(encodedX);
+
+            uint32_t encodedY;
+            n += peer.recvall(&encodedY, sizeof(encodedY));
+            rp.y = decodeFloat100BE(encodedY);
+
+            rps.push_back(std::move(rp));
+        }
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return RecommendedPath(std::move(rps));
+}

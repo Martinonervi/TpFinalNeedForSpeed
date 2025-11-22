@@ -58,6 +58,7 @@ struct UpgradeDef {
     float penaltySec;
 };
 
+
 //no veo ganancia en que Cmd sea una clase, cumple su funcion perfecta como struct
 struct Cmd {
     ID client_id;

@@ -9,6 +9,7 @@
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
 
 Sender::Sender(Socket& peer_socket, SendQPtr queue):
         peer(peer_socket), msg_queue(std::move(queue)), protocol(peer) {}
@@ -82,6 +83,10 @@ void Sender::run() {
                 }
                 case Opcode::UPGRADE_LOGIC: {
                     n = protocol.sendUpgradeLogic(dynamic_cast<UpgradeLogic&>(*msg));
+                    break;
+                }
+                case Opcode::RECOMMENDED_PATH: {
+                    n = protocol.sendRecommendedPath(dynamic_cast<RecommendedPath&>(*msg));
                     break;
                 }
                 default: {

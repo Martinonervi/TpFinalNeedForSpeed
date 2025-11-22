@@ -488,3 +488,43 @@ int ServerProtocol::sendUpgradeLogic(UpgradeLogic& ul) {
         throw("Error sending");
     }
 }
+
+int ServerProtocol::sendRecommendedPath(RecommendedPath& rp) {
+    try{
+        Op opcode = rp.type();
+        const std::vector<RecommendedPoint>& ps = rp.getPath();
+        uint8_t size = static_cast<uint8_t>(ps.size());
+
+        const size_t recommendedPointSize =
+                sizeof(uint32_t)  // x (float)
+                + sizeof(uint32_t);  // y (float)
+
+        std::vector<char> buf(sizeof(Op) + sizeof(size)
+                              + size * recommendedPointSize);
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &size, sizeof(size));
+        offset += sizeof(size);
+
+        for (const auto& recommendedPoint : ps) {
+
+            // x (float)
+            const uint32_t x = encodeFloat100BE(recommendedPoint.x);
+            memcpy(buf.data() + offset, &x, sizeof(x));
+            offset += sizeof(x);
+
+            // y (float)
+            uint32_t y = encodeFloat100BE(recommendedPoint.y);
+            memcpy(buf.data() + offset, &y, sizeof(y));
+            offset += sizeof(y);
+        }
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}

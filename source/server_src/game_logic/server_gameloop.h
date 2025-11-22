@@ -63,6 +63,7 @@ private:
     std::unordered_map<ID,Checkpoint> checkpoints;
     std::vector<std::unique_ptr<Building>> buildings;
     std::vector<SpawnPointConfig> spawnPoints;
+    std::vector<RecommendedPoint> recommendedPath;
 
     PlayerManager playerManager;
 

@@ -89,6 +89,7 @@ void GameLoop::setupRoute() {
 
     checkpoints.clear();
     spawnPoints.clear();
+    recommendedPath.clear();
 
     for (const auto& cpCfg : routeCfg.checkpoints) {
         checkpoints.emplace(
@@ -105,6 +106,7 @@ void GameLoop::setupRoute() {
     }
 
     spawnPoints = routeCfg.spawnPoints;
+    recommendedPath = routeCfg.recommendedPath;
 
     std::cout << "[GameLoop] setupRoute: usando ruta '"
               << routeCfg.nameRoute
@@ -149,6 +151,11 @@ void GameLoop::waitingForPlayers() {
         auto msg = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<TimeLeft>(timeToSend));
         registry->broadcast(msg);
+
+        // mando el recommendedPath
+        auto rp = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<RecommendedPath>(recommendedPath));
+        registry->broadcast(rp);
 
         loop.sleep_until_next_frame();
     }
