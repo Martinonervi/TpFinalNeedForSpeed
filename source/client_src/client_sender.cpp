@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "../common_src/cli_msg/requestgame.h"
+#include "../common_src/cli_msg/cli_start_game.h"
 
 ClientSender::ClientSender(ClientProtocol& protocol, Queue<CliMsgPtr>& senderQueue)
     :protocol(protocol), senderQueue(senderQueue){}
@@ -24,8 +25,12 @@ void ClientSender::run(){
                     protocol.sendClientMove(dynamic_cast<const MoveMsg&>(*cliMsg));
                     break;
                 }
-                case(Opcode::INIT_PLAYER): {
-                    int n = protocol.sendInitPlayer(dynamic_cast<const InitPlayer&>(*cliMsg));
+                case (Opcode::INIT_PLAYER): {
+                    protocol.sendInitPlayer(dynamic_cast<const InitPlayer&>(*cliMsg));
+                    break;
+                }
+                case (Opcode::START_GAME): {
+                    protocol.sendStartGame(dynamic_cast<const StartGame&>(*cliMsg));
                     break;
                 }
 

@@ -20,6 +20,7 @@
 #include "../common_src/srv_msg/srv_time_left.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
 #include "../common_src/srv_msg/srv_recommended_path.h"
+#include "../common_src/cli_msg/cli_start_game.h"
 
 #include "client_types.h"
 
@@ -37,6 +38,7 @@ public:
     int sendClientMove(const MoveMsg& moveMsg) const;
     int sendInitPlayer(const InitPlayer& ip) const;
     int sendRequestGame(RequestGame& join_game);
+    int sendStartGame(const StartGame& sg);
     SendPlayer recvSendPlayer();
     NewPlayer recvNewPlayer();
     JoinGame recvGameInfo();

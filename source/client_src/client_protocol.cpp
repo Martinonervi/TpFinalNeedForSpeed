@@ -549,3 +549,22 @@ RecommendedPath ClientProtocol::recvRecommendedPath() {
     }
     return RecommendedPath(std::move(rps));
 }
+
+
+int ClientProtocol::sendStartGame(const StartGame& sg) {
+    try {
+        Op type = sg.type();
+
+        std::vector<char> buf(sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type , sizeof(Op));
+        offset += sizeof(type);
+
+        int n = peer.sendall(buf.data(), offset);
+        return n;
+    }  catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
