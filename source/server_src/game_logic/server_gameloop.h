@@ -26,7 +26,9 @@ public:
     GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry);
     void stop() override;
     virtual ~GameLoop();
-    bool isRaceStarted() const;
+    bool isRaceStarted() const {
+        return this->raceStarted;
+    }
 
 
 protected:
