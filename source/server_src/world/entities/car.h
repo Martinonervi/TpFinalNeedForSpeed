@@ -44,6 +44,9 @@ public:
     ID getSpawnId() const { return spawnId; }
     bool hasUpgrade() const { return upgrade != NONE; }
 
+    float getShield();
+    float getDamage();
+
 
 
 private:
@@ -64,6 +67,8 @@ private:
     Upgrade upgrade = NONE;
     float engineFactor     = 1.0f;
     float maxSpeedFactor   = 1.0f;
+    float shield   = 1.0f;
+    float damage = 1.0f;
 
 };
 

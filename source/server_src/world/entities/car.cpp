@@ -113,7 +113,11 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
 
 
 void Car::applyDamage(const float damage) {
-    this->health -= damage;
+    float newDamage = damage;
+    if (shield != 1) {
+        newDamage = newDamage * shield;
+    }
+    this->health -= newDamage;
     if (this->health < 0) this->health = 0;
 }
 
@@ -150,8 +154,23 @@ void Car::resetForNewRace(float x, float y, float angleDeg) {
 
 void Car::applyUpgrade(const UpgradeDef& up) {
     switch (up.type) {
-        case Upgrade::EngineForce: {
+        case Upgrade::ENGINE_FORCE: {
             engineFactor   = up.value;
+            upgradePenalty = up.penaltySec;
+            break;
+        }
+        case HEALTH: {
+            health = health * up.value;
+            upgradePenalty = up.penaltySec;
+            break;
+        }
+        case SHIELD: {
+            shield = up.value;
+            upgradePenalty = up.penaltySec;
+            break;
+        }
+        case DAMAGE: {
+            damage = up.value;
             upgradePenalty = up.penaltySec;
             break;
         }
@@ -159,4 +178,10 @@ void Car::applyUpgrade(const UpgradeDef& up) {
             break;
         }
     }
+}
+
+
+
+float Car::getDamage() {
+    return damage;
 }

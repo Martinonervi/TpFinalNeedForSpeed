@@ -26,9 +26,7 @@ public:
     GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry);
     void stop() override;
     virtual ~GameLoop();
-    bool isRaceStarted() const {
-        return this->raceStarted;
-    }
+    bool isRaceStarted() const;
 
 
 protected:
@@ -90,8 +88,13 @@ private:
 
 
     std::vector<UpgradeDef> upgrades = {
-            { Upgrade::EngineForce, 4.3f, 2.0f },
+            { Upgrade::ENGINE_FORCE, 2.5f, 8.0f },
+            { Upgrade::HEALTH, 1.5f, 5.0f },
+            { Upgrade::SHIELD, 0.7f, 2.0f },
+            { Upgrade::DAMAGE, 2.f, 3.0f },
     };
+
+
 
     const UpgradeDef& findUpgradeDef(Upgrade type) const {
         for (const auto& u : upgrades) {

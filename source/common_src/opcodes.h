@@ -35,7 +35,10 @@ enum err_code : Op {
 
 enum Upgrade : Op {
     NONE = 0x01,
-    EngineForce = 0x02,
+    ENGINE_FORCE = 0x02,
+    HEALTH = 0x03,
+    SHIELD = 0x04,
+    DAMAGE = 0x05
 };
 
 #endif

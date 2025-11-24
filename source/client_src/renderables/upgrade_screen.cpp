@@ -9,8 +9,8 @@ UpgradeScreen::UpgradeScreen(SDL2pp::Renderer& renderer, SdlDrawer& drawer, Text
 
 inline std::string upgradeTypeToString(const Upgrade type) {
     switch (type) {
-        case EngineForce:
-            return "EngineForce";
+        case ENGINE_FORCE:
+            return "ENGINE_FORCE";
         default:
             return "Unknown";
     }
@@ -57,7 +57,7 @@ void UpgradeScreen::renderPopUp()
 
 SDL2pp::Rect UpgradeScreen::getUpgradeIconRect(const Upgrade type) {
     switch (type) {
-        case EngineForce:
+        case ENGINE_FORCE:
             return SDL2pp::Rect(29, 1, 17, 17);
         default:
             return SDL2pp::Rect(0, 0, 0, 0);

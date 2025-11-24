@@ -82,7 +82,6 @@ void WorldEventHandlers::CarHitBuildingHandler(WorldEvent ev,
     //como ambos son unitarios
     //fwd*n = cos(ø)
 
-
     // daño base
     float damage = impactSpeed * 0.5f;
     if (frontal > 0.7f) { // casi de frente
@@ -148,8 +147,9 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
     if (aImpact < MIN_IMPACT && bImpact < MIN_IMPACT) return;
 
     // daño cruzado: cada uno sufre por la velocidad del otro
-    float damageA = bImpact * 0.4f;
-    float damageB = aImpact * 0.4f;
+    // + upgrade damage
+    float damageA = bImpact * 0.4f * carB.getDamage();
+    float damageB = aImpact * 0.4f * carA.getDamage();
 
 
     carA.applyDamage(damageA);
