@@ -120,7 +120,7 @@ void GameLoop::setupRoute() {
 void GameLoop::waitingForPlayers() {
     ConstantRateLoop loop(5.0);
     const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 15.0;
+    const double LOBBY_TIMEOUT_SEC = 10.0;
     const double BETWEEN_RACES_SEC    = 3.0;
 
     startRequested = false;
@@ -208,7 +208,7 @@ void GameLoop::runSingleRace() {
                 std::chrono::duration<float> elapsed = now - raceStartTime;
                 raceTimeSeconds = elapsed.count();
 
-                const float MAX_RACE_TIME_SECONDS = 15.0f;
+                const float MAX_RACE_TIME_SECONDS = 600.0f;
                 if (raceTimeSeconds >= MAX_RACE_TIME_SECONDS) {
                     this->raceEnded = true;
                     // asignar ranking?
