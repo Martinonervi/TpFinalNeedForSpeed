@@ -6,14 +6,16 @@
 #define SIZE_OF_DIAL 150
 #define DIAL_MARGIN 40
 
-Hud::Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, const MapType maptype)
-    : map(maptype, renderer, tm), renderer(renderer), drawer(drawer), tm(tm)
+Hud::Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, const MapType maptype,
+    std::vector<RecommendedPoint>& pathArray)
+    : map(maptype, renderer, tm, pathArray), renderer(renderer), drawer(drawer), tm(tm)
 {}
 
 
 void Hud::drawOverlay(const int x, const int y,
                       std::unordered_map<ID, std::unique_ptr<Car>>& cars,
-                      const ID playerId, const float raceTime, const int raceNumber) const {
+                      const ID playerId, const float raceTime,
+                      const uint8_t totalRaces, const uint8_t raceNumber, Upgrade upgrade) const {
 
     map.draw(x, 10, cars, playerId);
 
@@ -27,15 +29,14 @@ void Hud::drawOverlay(const int x, const int y,
     drawBars(renderer, x, health);
     drawDial(renderer, speed, x, y);
 
-    // Por ahora uso nums falsos
-    drawRaceNumber(raceNumber, raceNumber);
+    drawRaceNumber(raceNumber, totalRaces);
     drawGameTime(raceTime);
-    activeUpgrade(x);
+    activeUpgrade(x, upgrade);
 }
 
 void Hud::drawDial(SDL2pp::Renderer& renderer, const float speed, const int windowWidth,
                     const int windowHeight) const {
-    const float speedKmh = speed;
+    const float speedKmh = speed*2;
 
     SDL2pp::Texture& tex = tm.getCars().getSpeedometer();
     SDL2pp::Rect dialRect = tm.getCars().getDialFrame();
@@ -54,7 +55,7 @@ void Hud::drawDial(SDL2pp::Renderer& renderer, const float speed, const int wind
 
 float Hud::drawNeedle(const float x, const float y, const SDL2pp::Rect dstRectDial, const float speed) const {
     constexpr float minSpeed = 0.0f;
-    constexpr float maxSpeed = 200.0f;
+    constexpr float maxSpeed = 80.0f;
     constexpr float minAngle = -225.0f;
     constexpr float maxAngle = 45.0f;
 
@@ -115,6 +116,9 @@ void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const floa
                   healthSrc,
                   healthDst);
 
+    // Esto es para dibujar una barra similar a la de vida, al final no lo usamos pero lo dejo por las dudas
+
+    /*
     const SDL2pp::Rect energySrc = tm.getHud().getEnergyBar();
     const int energyX = x + healthSrc.w*scale + 10;
     const int energyY = 5*scale;
@@ -123,6 +127,7 @@ void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const floa
 
     drawEnergyFill(renderer, energyPercent, energyDst, scale);
     renderer.Copy(barsTexture, energySrc, energyDst);
+    */
 }
 
 
@@ -185,23 +190,39 @@ void Hud::drawGameTime(int totalSeconds) const {
     snprintf(buffer, sizeof(buffer), "%02d:%02d:%02d", hours, minutes, seconds);
 
     SDL_Color yellow = {255, 255, 0, 255};
-    drawer.drawText(buffer, 20, 65, yellow);
+    drawer.drawText(buffer, 20, 45, yellow);
 }
 
 void Hud::drawRaceNumber(int current, int total) const {
     std::string txt = "Race " + std::to_string(current) + "/" + std::to_string(total);
     SDL_Color white = {255, 255, 255, 255};
 
-    drawer.drawText(txt, 20, 35, white);
+    drawer.drawText(txt, 20, 15, white);
 }
 
-void Hud::activeUpgrade(const int windowWidth) const {
-    SDL2pp::Texture& tex = tm.getHud().getUpgradeFrame();
-    SDL2pp::Rect src(0, 0, tex.GetWidth()*4, tex.GetHeight()*4);
-    const int x = windowWidth - 260 - src.w;
-    SDL2pp::Rect dst(x, 10, src.w, src.h);
+void Hud::activeUpgrade(const int windowWidth, Upgrade upgrade) const {
+    SDL2pp::Texture& frameTex = tm.getHud().getUpgradeFrame();
 
-    renderer.Copy(tex, src, dst);
+    const int frameScale = 4;  // escalamos 4x
+    const int x = windowWidth / 2;
+    const int y = 0;
+    SDL2pp::Rect srcFrame(0, 0, frameTex.GetWidth(), frameTex.GetHeight());
+    SDL2pp::Rect dstFrame(x, y, frameTex.GetWidth() * frameScale, frameTex.GetHeight() * frameScale);
+
+    renderer.Copy(frameTex, srcFrame, dstFrame);
+    if (upgrade == NONE) return;
+
+    SDL2pp::Rect srcIcon = SDL2pp::Rect(29, 1, 17, 17);
+    const int iconScale = 4;  // mismo scale que el frame
+    SDL2pp::Rect dstIcon(
+        x + 8 * iconScale,  // offset dentro del frame
+        y + 7 * iconScale,  // offset dentro del frame
+        14 * iconScale,
+        14 * iconScale
+    );
+
+    SDL2pp::Texture& iconTex = tm.getHud().getUpgrades();
+    renderer.Copy(iconTex, srcIcon, dstIcon);
 }
 
 

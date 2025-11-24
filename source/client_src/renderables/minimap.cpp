@@ -1,13 +1,9 @@
 #include "minimap.h"
 
 #include <cmath>
-std::vector<SDL_Point> recommendedPath = {
-        {20, 20},   {40, 30},  {70, 50},  {100, 90}, {130, 140}, {160, 180}, {200, 200}, {220, 170},
-        {230, 130}, {210, 90}, {180, 60}, {140, 40}, {100, 30},  {60, 25},   {30, 20}};
-
-
-Minimap::Minimap(MapType maptype, SDL2pp::Renderer& renderer, TextureManager& tm):
-        maptype(maptype), renderer(renderer), tm(tm) {}
+Minimap::Minimap(MapType maptype, SDL2pp::Renderer& renderer, TextureManager& tm,
+    std::vector<RecommendedPoint>& pathArray):
+        maptype(maptype), renderer(renderer), tm(tm), pathArray(pathArray) {}
 
 void Minimap::draw(const int windowWidth, const int windowHeight,
                    std::unordered_map<ID, std::unique_ptr<Car>>& cars, const ID playerId) const {
@@ -25,7 +21,7 @@ void Minimap::draw(const int windowWidth, const int windowHeight,
     uint8_t originalAlpha;
     SDL_GetTextureAlphaMod(texture.Get(), &originalAlpha);
 
-    texture.SetAlphaMod(115);
+    texture.SetAlphaMod(150);
 
     renderer.Copy(texture, srcRect, dstRect);
 
@@ -54,18 +50,18 @@ void Minimap::draw(const int windowWidth, const int windowHeight,
 
 void Minimap::drawRecommendedPath(const int x, const int y, float scaleX, float scaleY) const {
 
-    const int thickness = 3;
+    const int thickness = 4;
     renderer.SetDrawColor(0, 0, 0, 255);
 
-    for (size_t i = 1; i < recommendedPath.size(); i++) {
-        int x1 = x + static_cast<int>(recommendedPath[i - 1].x * 1);
-        int y1 = y + static_cast<int>(recommendedPath[i - 1].y * 1);
-        int x2 = x + static_cast<int>(recommendedPath[i].x * 1);
-        int y2 = y + static_cast<int>(recommendedPath[i].y * 1);
+    for (size_t i = 1; i < pathArray.size(); i++) {
+        int x1 = x + static_cast<int>(pathArray[i - 1].x * scaleX * PIXELS_PER_METER);
+        int y1 = y + static_cast<int>(pathArray[i - 1].y * scaleY * PIXELS_PER_METER);
+        int x2 = x + static_cast<int>(pathArray[i].x * scaleX * PIXELS_PER_METER);
+        int y2 = y + static_cast<int>(pathArray[i].y * scaleY * PIXELS_PER_METER);
 
         for (int t = -thickness / 2; t <= thickness / 2; t++) {
-            renderer.DrawLine(x1 + t, y1, x2 + t, y2);  // grosor horizontal
-            renderer.DrawLine(x1, y1 + t, x2, y2 + t);  // grosor vertical
+            renderer.DrawLine(x1 + t, y1, x2 + t, y2);
+            renderer.DrawLine(x1, y1 + t, x2, y2 + t);
         }
     }
 }

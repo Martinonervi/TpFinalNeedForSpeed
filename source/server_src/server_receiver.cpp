@@ -7,6 +7,7 @@
 #include "../common_src/cli_msg/init_player.h"
 #include "../common_src/cli_msg/requeststats.h"
 #include "../common_src/srv_msg/new_player.h"
+#include "../common_src/cli_msg/cli_start_game.h"
 
 Receiver::Receiver(Socket& peer_socket, ID clientID, GameManager& game_manager_ref, SendQPtr sender_queue):
         peer(peer_socket),
@@ -82,6 +83,12 @@ void Receiver::run() {
                     InitPlayer ip = protocol.recvInitPlayer();
                     CliMsgPtr base = std::static_pointer_cast<CliMsg>(
                             std::make_shared<InitPlayer>(std::move(ip)));
+                    cmdQueue->push(Cmd{id, base});
+                    break;
+                }
+                case Opcode::START_GAME: {
+                    CliMsgPtr base = std::static_pointer_cast<CliMsg>(
+                            std::make_shared<StartGame>());
                     cmdQueue->push(Cmd{id, base});
                     break;
                 }
