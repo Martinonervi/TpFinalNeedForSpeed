@@ -84,6 +84,8 @@ void LobbyWindow::populateGames(const std::vector<GameMetadata>& games) {
         auto* idItem = new QTableWidgetItem(QString::number(static_cast<quint32>(g.game_id)));
         idItem->setData(Qt::UserRole, static_cast<quint32>(g.game_id));
 
+        idItem->setData(Qt::UserRole + 1, g.started); // para rebotar gente que entra cuando ya empezó
+
         auto* playersItem = new QTableWidgetItem(QString::number(g.players));
         auto* statusItem  = new QTableWidgetItem(g.started ? "En curso" : "Esperando");
 
@@ -194,10 +196,14 @@ void LobbyWindow::on_joinButton_clicked() {
         } else if (code == INEXISTENT_GAME) {
             QMessageBox::warning(this, "Unirse a partida",
                                  "La partida no existe.");
+        } else if (code == STARTED_GAME){
+            QMessageBox::warning(this, "Unirse a partida",
+                                 "La partida ya está empezada.");
         } else {
             QMessageBox::warning(this, "Unirse a partida",
                                  "No se pudo unir a la partida.");
         }
+        on_refreshButton_clicked();
     }
 }
 
@@ -543,6 +549,17 @@ void LobbyWindow::on_selectCarButton_clicked() {
     if (n == 0) {
         QMessageBox::warning(this, "Seleccionar auto",
                      "Respuesta inesperada del servidor.");
+        return;
+    }
+    Op op = protocol.readActionByte();
+    if (op != CAR_SELECT) {
+        return; // ???????
+    }
+    CarSelect car_confirmation = protocol.recvCarConfirmation();
+    if (!car_confirmation.isSelected()) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "La partida ya empezó.");
+        on_backButtonCar_clicked();
         return;
     }
     close();

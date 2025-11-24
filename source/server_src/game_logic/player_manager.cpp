@@ -1,20 +1,30 @@
 #include "player_manager.h"
 
 // player_manager.cpp
+#include "../../common_src/srv_msg/srv_car_select.h"
+
 #include "player_manager.h"
 
 PlayerManager::PlayerManager(WorldManager& world,
                              ClientsRegistry& registry,
                              std::unordered_map<ID, Car>& cars,
-                             const std::vector<SpawnPointConfig>& spawnPoints)
+                             const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted)
         : world(world)
           , registry(registry)
           , cars(cars)
           , spawnPoints(spawnPoints)
+          , raceStarted(raceStarted)
 {}
 
 bool PlayerManager::initPlayer(Cmd& cmd) {
-    const auto& ip = dynamic_cast<const InitPlayer&>(*cmd.msg);
+    auto init_msg = std::static_pointer_cast<SrvMsg>(
+        std::make_shared<CarSelect>(!raceStarted));
+    registry.sendTo(cmd.client_id, init_msg);
+    if (raceStarted) {
+        std::cout << "[Player Manager] ya empezó"<< std::endl;
+        return false;
+    }
+    const auto& ip  = dynamic_cast<const InitPlayer&>(*cmd.msg);
 
     if (spawnPoints.empty()) {
         std::cerr << "[PlayerManager] ERROR: no hay spawnPoints cargados\n";

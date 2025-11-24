@@ -28,7 +28,7 @@ GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<Clients
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(cars, checkpoints, *this->registry,
             raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking),
-        playerManager(worldManager, *this->registry, cars, spawnPoints)  {
+        playerManager(worldManager, *this->registry, cars, spawnPoints, raceStarted)  {
     loadMapFromYaml(FILE_YAML_PATH);
 }
 
@@ -120,7 +120,7 @@ void GameLoop::setupRoute() {
 void GameLoop::waitingForPlayers() {
     ConstantRateLoop loop(5.0);
     const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 5.0;
+    const double LOBBY_TIMEOUT_SEC = 15.0;
     const double BETWEEN_RACES_SEC    = 3.0;
 
     startRequested = false;
@@ -208,7 +208,7 @@ void GameLoop::runSingleRace() {
                 std::chrono::duration<float> elapsed = now - raceStartTime;
                 raceTimeSeconds = elapsed.count();
 
-                const float MAX_RACE_TIME_SECONDS = 300.0f;
+                const float MAX_RACE_TIME_SECONDS = 15.0f;
                 if (raceTimeSeconds >= MAX_RACE_TIME_SECONDS) {
                     this->raceEnded = true;
                     // asignar ranking?
@@ -344,6 +344,11 @@ void GameLoop::processCmds() {
                 playerManager.handleMovement(cmd, TIME_STEP);
                 break;
             }
+            case (Opcode::INIT_PLAYER): {
+                playerManager.initPlayer(cmd);
+                break;
+            }
+
             default: {
                 std::cout << "cmd desconocido: " << cmd.msg->type() << "\n";
             }

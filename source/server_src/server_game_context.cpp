@@ -25,3 +25,8 @@ void GameContext::gameThreadStop() {
     game_thread->stop();
     game_thread->join();
 }
+
+bool GameContext::isStarted() const {
+    return game_thread->isRaceStarted();
+}
+

@@ -528,3 +528,24 @@ int ServerProtocol::sendRecommendedPath(RecommendedPath& rp) {
         throw("Error sending");
     }
 }
+
+int ServerProtocol::sendCarConfirmation(CarSelect& car_select) {
+    try{
+        Op opcode = car_select.type();
+        bool success = car_select.isSelected();
+
+        std::vector<char> buf(sizeof(Op) + sizeof(bool));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &success, sizeof(Upgrade));
+        offset += sizeof(bool);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
