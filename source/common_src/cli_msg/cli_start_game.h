@@ -7,7 +7,7 @@
 class StartGame : public CliMsg {
 
 public:
-    StartGame();
+    StartGame() = default;
     Op type() const override { return Opcode::START_GAME; }
 
 };

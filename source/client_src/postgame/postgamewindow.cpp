@@ -2,6 +2,7 @@
 
 #include "ui_postgamewindow.h"
 #include <QGraphicsDropShadowEffect>
+#include <QFontDatabase>
 
 static QString formatRaceTime(float seconds) {
     int totalMs = qRound(seconds * 1000.0f);
@@ -14,14 +15,17 @@ static QString formatRaceTime(float seconds) {
             .arg(centi,   2, 10, QChar('0'));
 }
 
-PostGameWindow::PostGameWindow(PlayerStats& stats,QWidget* parent)
-    :QWidget(parent), stats(stats), ui(new Ui::PostGameWindow) {
+PostGameWindow::PostGameWindow(PlayerStats& stats, QWidget* parent)
+    : QWidget(parent), stats(stats), ui(new Ui::PostGameWindow) {
     ui->setupUi(this);
+
+    // carga y aplica la fuente con herencia para toda la ventana
+    loadAndApplyPixelFont();
+
     applyStyles();
 
-    const QString pos = QString::number(static_cast<int>(stats.getRacePosition()));
+    const QString pos  = QString::number(static_cast<int>(stats.getRacePosition()));
     const QString time = formatRaceTime(stats.getTimeSecToComplete());
-
     setStats(pos, time);
 
     auto* sh = new QGraphicsDropShadowEffect(ui->panel);
@@ -33,18 +37,39 @@ PostGameWindow::PostGameWindow(PlayerStats& stats,QWidget* parent)
 
 PostGameWindow::~PostGameWindow() { delete ui; }
 
-void PostGameWindow::setStats(const QString& pos, const QString& time, const QString& bestLap) {
+bool PostGameWindow::loadAndApplyPixelFont() {
+    const char* kResPath = ":/fonts/pressstart2p.ttf";
+    const int id = QFontDatabase::addApplicationFont(kResPath);
+
+    const QStringList fams = QFontDatabase::applicationFontFamilies(id);
+
+    const QString family = fams.first();
+    QFont f(family);
+    f.setPixelSize(18);
+    f.setHintingPreference(QFont::PreferNoHinting);
+
+    this->setFont(f);
+
+    ui->titleLabel->setFont(f);
+    ui->subtitleLabel->setFont(f);
+    ui->posEdit->setFont(f);
+    ui->timeEdit->setFont(f);
+    ui->closeButton->setFont(f);
+
+    return true;
+}
+
+void PostGameWindow::setStats(const QString& pos, const QString& time, const QString&) {
     ui->posEdit->setText(pos);
     ui->timeEdit->setText(time);
 }
 
 void PostGameWindow::applyStyles() {
     this->setAttribute(Qt::WA_StyledBackground, true);
-
     this->setObjectName("PostGameWindow");
 
     const QString css = R"CSS(
-        QWidget#PostGamePanel {
+        QWidget#PostGameWindow {
             background-image: url(:/postgame/lobby_bg.png);
             background-repeat: no-repeat;
             background-position: center;
@@ -57,50 +82,58 @@ void PostGameWindow::applyStyles() {
           border-radius: 16px;
         }
 
-        QLabel#titleLabel {
-          color: #F3F0D0;
-          font-size: 32px; font-weight: 900; letter-spacing: 1px;
+        /* === Tipografía === */
+        QLabel {                      /* "Posicion" y "Tiempo" quedan en la fuente pixel */
+          color:#E6EDF3;
+          font-size:20px;
+          font-family: "Press Start 2P";
         }
-        QLabel#subtitleLabel {
-          color: #C8D0D8;
-          font-size: 16px; margin-bottom: 6px;
+
+        QLabel#titleLabel {
+          color:#F3F0D0;
+          font-size:30px;
+          font-weight:900;
+          letter-spacing:1px;
+          margin-bottom: -8;           /* pega el subtítulo al título */
+        }
+        QLabel#subtitleLabel{
+          color:#C8D0D8;
+          font-size:16px;
+          margin-top: -12px;
+          margin-bottom:4px;
         }
 
         QFrame#divider {
           background: rgba(255,255,255,0.10);
-          max-height: 1px; min-height: 1px;
+          max-height:1px; min-height:1px;
         }
 
-        QLabel { color: #E6EDF3; font-size: 20px; }
         QLineEdit {
           background: rgba(255,255,255,0.06);
           border: 2px solid rgba(255,255,255,0.10);
           border-radius: 8px;
-          color: #E6EDF3; padding: 6px 10px;
+          color:#E6EDF3; padding:6px 10px;
         }
-        QLineEdit:read-only { color: #E6EDF3; }
+        QLineEdit:read-only { color:#E6EDF3; }
 
         QPushButton#closeButton {
-          min-height: 48px; min-width: 220px;
-          background: #E74C3C;
-          border: 3px solid #7A1E18;
-          color: white; font-weight: 900; font-size: 20px;
-          border-radius: 12px; padding: 10px 24px;
+          min-height:48px; min-width:220px;
+          background:#E74C3C; border:3px solid #7A1E18;
+          color:white; font-weight:900; font-size:20px;
+          border-radius:12px; padding:10px 24px;
+          margin-top: 36px;
         }
-        QPushButton#closeButton:hover   { background: #FF5E4F; }
-        QPushButton#closeButton:pressed { background: #C83A2C; }
+        QPushButton#closeButton:hover   { background:#FF5E4F; }
+        QPushButton#closeButton:pressed { background:#C83A2C; }
     )CSS";
     this->setStyleSheet(css);
 }
 
-void PostGameWindow::setStats(const QString& pos,
-                              const QString& time) {
+void PostGameWindow::setStats(const QString& pos, const QString& time) {
     ui->posEdit->setText(pos);
     ui->timeEdit->setText(time);
     ui->posEdit->setReadOnly(true);
     ui->timeEdit->setReadOnly(true);
 }
 
-void PostGameWindow::on_closeButton_clicked() {
-    close();
-}
+void PostGameWindow::on_closeButton_clicked() { close(); }
