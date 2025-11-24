@@ -14,6 +14,7 @@
 #include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/send_player.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
 #include "renderables/car.h"
 #include "renderables/checkpoint.h"
 #include "renderables/hint.h"
@@ -29,8 +30,12 @@ public:
                               std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                               Hint& hint, UpgradeScreen& ups, bool& showUpgradeMenu,
                               bool& running, bool& showMap, bool& quit,
-                              float& raceTime, int& raceNumber,
-                              std::unique_ptr<PlayerStats>& playerStats);
+                              float& raceTime, uint8_t& totalRaces,
+                              uint8_t& raceNumber,
+                              std::unique_ptr<PlayerStats>& playerStats,
+                              std::vector<RecommendedPoint>& pathArray,
+                              Upgrade& upgrade,
+                              std::vector<UpgradeDef>& upgradesArray);
 
     void handleEvents() const;
     void handleServerMessage(const SrvMsgPtr& msg) const;
@@ -52,7 +57,11 @@ private:
     bool& quit;
     std::unique_ptr<PlayerStats>& playerStats;
     float& raceTime;
-    int& raceNumber;
+    uint8_t& totalRaces;
+    uint8_t& raceNumber;
+    std::vector<RecommendedPoint>& pathArray;
+    Upgrade& upgrade;
+    std::vector<UpgradeDef>& upgradesArray;
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
             {SDLK_w, MoveMsg(1, 0, 0, 0)},  {SDLK_s, MoveMsg(2, 0, 0, 0)},

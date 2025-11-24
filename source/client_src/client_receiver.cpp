@@ -21,7 +21,6 @@ void ClientReceiver::run(){
             peerClosed = true;
             break;
         }
-        std::cout << static_cast<int>(op) << std::endl;
         switch (op) {
             case Opcode::Movement: {
                 PlayerState ps = protocol.recvSrvMsg();
@@ -115,7 +114,7 @@ void ClientReceiver::run(){
                 RecommendedPath msg = protocol.recvRecommendedPath();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<RecommendedPath>(std::move(msg)));
-                //receiverQueue.push(base);
+                receiverQueue.push(base);
                 break;
             }
 

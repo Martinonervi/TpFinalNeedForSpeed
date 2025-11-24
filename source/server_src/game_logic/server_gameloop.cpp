@@ -17,6 +17,7 @@
 #include "../../common_src/srv_msg/srv_time_left.h"
 #include "../../common_src/srv_msg/srv_send_upgrade.h"
 #include "../../common_src/cli_msg/cli_request_upgrade.h"
+#include "../../common_src/srv_msg/srv_upgrade_logic.h"
 
 #define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
 #define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
@@ -119,7 +120,7 @@ void GameLoop::setupRoute() {
 void GameLoop::waitingForPlayers() {
     ConstantRateLoop loop(5.0);
     const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 5.0;
+    const double LOBBY_TIMEOUT_SEC = 10.0;
     const double BETWEEN_RACES_SEC    = 3.0;
 
     startRequested = false;
@@ -151,6 +152,10 @@ void GameLoop::waitingForPlayers() {
         auto msg = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<TimeLeft>(timeToSend));
         registry->broadcast(msg);
+
+        auto up = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<UpgradeLogic>(upgrades));
+        registry->broadcast(up);
 
         // mando el recommendedPath
         auto rp = std::static_pointer_cast<SrvMsg>(
@@ -305,8 +310,7 @@ void GameLoop::processLobbyCmds() {
                     up = NONE;
                     success = false;
                 } else {
-
-                    RequestUpgrade& ur = dynamic_cast<RequestUpgrade&>(*cmd.msg);
+                    auto& ur = dynamic_cast<RequestUpgrade&>(*cmd.msg);
                     const UpgradeDef& def = findUpgradeDef(ur.getUpgrade());
                     car.applyUpgrade(def);
                     up = ur.getUpgrade();

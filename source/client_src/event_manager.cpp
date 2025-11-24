@@ -1,9 +1,13 @@
 #include "event_manager.h"
 
+#include "../common_src/cli_msg/cli_request_upgrade.h"
 #include "../common_src/srv_msg/client_disconnect.h"
 #include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
+#include "../common_src/srv_msg/srv_send_upgrade.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
 
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
@@ -14,8 +18,11 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                                 Hint& hint, UpgradeScreen& ups, bool& showUpgradeMenu,
                                 bool& running, bool& showMap, bool& quit,
-                                float& raceTime, int& raceNumber,
-                                std::unique_ptr<PlayerStats>& playerStats)
+                                float& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
+                                std::unique_ptr<PlayerStats>& playerStats,
+                                std::vector<RecommendedPoint>& pathArray,
+                                Upgrade& upgrade,
+                                std::vector<UpgradeDef>& upgradesArray)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
         cars(cars),
@@ -30,9 +37,13 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         running(running),
         showMap(showMap),
         quit(quit),
+        totalRaces(totalRaces),
         raceTime(raceTime),
         raceNumber(raceNumber),
-        playerStats(playerStats)
+        playerStats(playerStats),
+        pathArray(pathArray),
+        upgrade(upgrade),
+        upgradesArray(upgradesArray)
 {}
 
 void EventManager::handleEvents() const {
@@ -61,7 +72,11 @@ void EventManager::handleEvents() const {
             // Manejar click
             if (event.type == SDL_MOUSEBUTTONDOWN) {
                 std::string clickedButton;
-                if (ups.handleMouseClick(event.button.x, event.button.y, clickedButton)) {
+                auto [bought, upType] = ups.handleMouseClick(event.button.x, event.button.y, clickedButton);
+                if (bought) {
+                    RequestUpgrade reqUp(upType);
+                    auto msg = std::make_shared<RequestUpgrade>(reqUp);
+                    senderQueue.push(msg);
                     showUpgradeMenu = false;
                 }
             }
@@ -148,15 +163,34 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
 
             raceTime = current.getRaceTimeSeconds();
             raceNumber = current.getRaceNumber();
+            totalRaces = current.getTotalRaces();
 
             break;
         }
         case STATS: {
-            std::cout << "Stats:" << std::endl;
             running = false;
             quit = true;
             const auto* raw = dynamic_cast<const PlayerStats*>(msg.get());
             playerStats = std::make_unique<PlayerStats>(*raw);
+            break;
+        }
+        case RECOMMENDED_PATH: {
+            const auto recommendedPath = dynamic_cast<const RecommendedPath&>(*msg);
+            pathArray = recommendedPath.getPath();
+            break;
+        }
+        case UPGRADE_SEND: {
+            const auto sendUpgrade = dynamic_cast<const SendUpgrade&>(*msg);
+            std::cout << "Send Upgrade" << std::endl;
+            if (sendUpgrade.couldBuy()) {
+                upgrade = sendUpgrade.getUpgrade();
+            }
+            break;
+        }
+        case UPGRADE_LOGIC: {
+            const auto upgrades = dynamic_cast<const UpgradeLogic&>(*msg);
+            upgradesArray = upgrades.getUpgrades();
+            ups.createButtons(upgradesArray);
             break;
         }
         default:

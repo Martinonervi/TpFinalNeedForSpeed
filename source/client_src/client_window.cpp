@@ -18,14 +18,14 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         nextCheckpoint(-1),
         tm(renderer),
         hint(renderer, tm, 0, 0),
-        ups(renderer, drawer, tm, 500, 500),
+        ups(renderer, drawer, tm, 500, 500, window.GetWidth(), window.GetHeight()),
         eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue, drawer,
             tm, checkpoints, hint, ups, showUpgradeMenu,running, showMap, quit,
-            raceTime, raceNumber, playerStats) {}
+            raceTime, totalRaces, raceNumber, playerStats, pathArray, upgrade, upgradesArray) {}
 
 // Hay que manejar FPS
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
-    Hud hud(renderer, drawer, tm, MAP_LIBERTY);
+    Hud hud(renderer, drawer, tm, MAP_LIBERTY, pathArray);
     Map map(renderer, tm, MAP_LIBERTY);
 
     while (running) {
@@ -44,12 +44,6 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
         renderer.Clear();
         map.draw(camera);
 
-        if (nextCheckpoint != -1) {
-            auto it = checkpoints.find(nextCheckpoint);
-            if (it != checkpoints.end() && it->second) {
-                hint.draw(camera);
-            }
-        }
         for (auto& [id, checkpoint] : checkpoints) {
             if (!checkpoint) continue;
             checkpoint->draw(camera);
@@ -86,14 +80,22 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                 }
             }
         }
+		map.drawOver(camera);
+
+		if (nextCheckpoint != -1) {
+            auto it = checkpoints.find(nextCheckpoint);
+            if (it != checkpoints.end() && it->second) {
+                hint.draw(camera);
+            }
+        }
+
         if (showMap)
-            hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId, raceTime, raceNumber);  // Por ahora asi
+            hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId, raceTime, totalRaces, raceNumber, upgrade);  // Por ahora asi
 
         if (showUpgradeMenu) {
-            ups.renderPopUp(window.GetWidth(), window.GetHeight());
+            ups.renderPopUp();
         }
-        //ups.renderPopUp(window.GetWidth(), window.GetHeight());
-        map.drawOver(camera);
+
         renderer.Present();
     }
     TTF_Quit();

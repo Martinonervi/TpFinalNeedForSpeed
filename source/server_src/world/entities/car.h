@@ -42,7 +42,7 @@ public:
     void resetForNewRace(float x, float y, float angleDeg);
 
     ID getSpawnId() const { return spawnId; }
-    bool hasUpgrade() const { return upgrade == NONE; }
+    bool hasUpgrade() const { return upgrade != NONE; }
 
 
 

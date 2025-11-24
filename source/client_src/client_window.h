@@ -51,12 +51,16 @@ private:
     std::unique_ptr<PlayerStats> playerStats = nullptr;
     UpgradeScreen ups;
     float raceTime = 0.0f;
-    int raceNumber = 0;
+    uint8_t totalRaces = 0;
+    uint8_t raceNumber = 0;
     EventManager eventManager;
     bool showUpgradeMenu = false;
     bool running;
     bool quit = false;
     bool showMap = true;
+    std::vector<RecommendedPoint> pathArray;
+    Upgrade upgrade = NONE;
+    std::vector<UpgradeDef> upgradesArray;
 
 };
 

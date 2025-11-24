@@ -88,7 +88,7 @@ private:
 
 
     std::vector<UpgradeDef> upgrades = {
-            { Upgrade::EngineForce, 1.3f, 2.0f },
+            { Upgrade::EngineForce, 4.3f, 2.0f },
     };
 
     const UpgradeDef& findUpgradeDef(Upgrade type) const {
