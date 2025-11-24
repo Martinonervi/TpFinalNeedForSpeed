@@ -16,7 +16,6 @@ receiver(protocol, receiverQueue), sender(protocol, senderQueue)
 
 void Client::run() {
 
-    std::string line;
     if (lobbyState()) { return;}
 
     sender.start();
@@ -52,9 +51,11 @@ void Client::run() {
     );
 
     auto [quit, playerStatsPtr] = client_window.run();
-    if (quit) {
-        PlayerStats stats(playerStatsPtr->getRacePosition(), playerStatsPtr->getTimeSecToComplete()); // por ahora es un placeholder para llamar a la funcion solamente
-        postGame(stats);
+
+    PlayerStats stats_hardcoded(3, 2.66);
+    if (true) {
+        PlayerStats stats(playerStatsPtr->getRacePosition(), playerStatsPtr->getTimeSecToComplete());
+        postGame(stats_hardcoded);
     }
     stop();
     join();

@@ -28,6 +28,8 @@ private slots:
 
 private:
     void setStats(const QString& pos, const QString& time);
+    bool loadAndApplyPixelFont();
+
     Ui::PostGameWindow* ui;
     PlayerStats& stats;
 };

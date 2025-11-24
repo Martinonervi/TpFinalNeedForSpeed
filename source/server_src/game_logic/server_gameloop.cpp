@@ -119,7 +119,7 @@ void GameLoop::setupRoute() {
 void GameLoop::waitingForPlayers() {
     ConstantRateLoop loop(5.0);
     const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 5.0;
+    const double LOBBY_TIMEOUT_SEC = 25.0;
     const double BETWEEN_RACES_SEC    = 3.0;
 
     startRequested = false;

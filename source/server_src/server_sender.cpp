@@ -32,10 +32,12 @@ void Sender::run() {
 
             switch (msg->type()) {
                 case Opcode::TIME: {
+                    if (!playing){continue;}
                     n = protocol.sendTimeLeft(dynamic_cast<TimeLeft&>(*msg));
                     break;
                 }
                 case Opcode::STATS:{ // no esta testeado
+                    if (!playing){continue;}
                     n = protocol.sendPlayerStats(dynamic_cast<PlayerStats&>(*msg));
                     break;
                 }
@@ -70,22 +72,27 @@ void Sender::run() {
                     break;
                 }
                 case Opcode::CLIENT_DISCONNECT: {
+                    if (!playing){continue;}
                     n = protocol.sendClientDisconnect(dynamic_cast<ClientDisconnect&>(*msg));
                     break;
                 }
                 case Opcode::CURRENT_INFO: {
+                    if (!playing){continue;}
                     n = protocol.sendCurrentInfo(dynamic_cast<SrvCurrentInfo&>(*msg));
                     break;
                 }
                 case Opcode::UPGRADE_SEND: {
+                    if (!playing){continue;}
                     n = protocol.sendUpgrade(dynamic_cast<SendUpgrade&>(*msg));
                     break;
                 }
                 case Opcode::UPGRADE_LOGIC: {
+                    if (!playing){continue;}
                     n = protocol.sendUpgradeLogic(dynamic_cast<UpgradeLogic&>(*msg));
                     break;
                 }
                 case Opcode::RECOMMENDED_PATH: {
+                    if (!playing){continue;}
                     n = protocol.sendRecommendedPath(dynamic_cast<RecommendedPath&>(*msg));
                     break;
                 }
