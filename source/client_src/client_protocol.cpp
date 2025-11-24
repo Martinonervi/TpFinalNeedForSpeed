@@ -568,3 +568,19 @@ int ClientProtocol::sendStartGame(const StartGame& sg) {
         throw("Error sending");
     }
 }
+
+CarSelect ClientProtocol::recvCarConfirmation() {
+    bool confirmation;
+
+    int n = 0;
+    try {
+        n += peer.recvall(&confirmation, sizeof(bool));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+
+    return CarSelect(confirmation);
+}

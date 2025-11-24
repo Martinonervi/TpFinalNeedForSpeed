@@ -22,7 +22,7 @@ public:
     PlayerManager(WorldManager& world,
                   ClientsRegistry& registry,
                   std::unordered_map<ID, Car>& cars,
-                  const std::vector<SpawnPointConfig>& spawnPoints);
+                  const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted);
 
     // Devuelve true si se pudo crear el jugador (si había spawn)
     bool initPlayer(Cmd& cmd);
@@ -51,6 +51,8 @@ private:
     // manejo de spawns
     std::unordered_set<ID> usedSpawnIds;       // spawnId ocupados
     std::unordered_map<ID, ID> carToSpawnId;   // carId -> spawnId
+
+    bool& raceStarted;
 };
 
 

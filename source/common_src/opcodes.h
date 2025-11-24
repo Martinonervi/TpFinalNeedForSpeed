@@ -24,6 +24,8 @@ enum Opcode : Op {
     UPGRADE_SEND = 0x15,
     START_GAME      = 0x16,
     RECOMMENDED_PATH = 0x17,
+    SEND_PLAYER = 0x18,
+    CAR_SELECT = 0x19
 };
 
 enum err_code : Op {
@@ -31,6 +33,7 @@ enum err_code : Op {
     UNKNOWN_ERR,
     FULL_GAME,
     INEXISTENT_GAME,
+    STARTED_GAME
 };
 
 enum Upgrade : Op {

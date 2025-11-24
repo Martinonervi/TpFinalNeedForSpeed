@@ -53,7 +53,7 @@ void Client::run() {
     auto [quit, playerStatsPtr] = client_window.run();
 
     PlayerStats stats_hardcoded(3, 2.66);
-    if (true) {
+    if (quit) {
         PlayerStats stats(playerStatsPtr->getRacePosition(), playerStatsPtr->getTimeSecToComplete());
         postGame(stats_hardcoded);
     }
@@ -121,6 +121,7 @@ void Client::stop(){
     receiver.stop();
     senderQueue.close();
     std::cout << "[Client] Sender y Receiver frenados" <<std::endl;
+    close();
 }
 
 void Client::join(){
@@ -128,7 +129,6 @@ void Client::join(){
     std::cout << "[Client] Receiver joineado" <<std::endl;
     sender.join();
     std::cout << "[Client] Sender y Receiver joineados" <<std::endl;
-    close();
 }
 void Client::close() { peer.close(); }
 
