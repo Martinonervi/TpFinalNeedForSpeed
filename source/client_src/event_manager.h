@@ -19,6 +19,16 @@
 #include "renderables/checkpoint.h"
 #include "renderables/hint.h"
 #include "renderables/upgrade_screen.h"
+#include "../common_src/cli_msg/cli_request_upgrade.h"
+#include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/playerstats.h"
+#include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
+#include "../common_src/srv_msg/srv_current_info.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
+#include "../common_src/srv_msg/srv_send_upgrade.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
+
+#include "audio_manager.h"
 
 class EventManager {
 public:
@@ -38,7 +48,7 @@ public:
                               std::vector<UpgradeDef>& upgradesArray);
 
     void handleEvents() const;
-    void handleServerMessage(const SrvMsgPtr& msg) const;
+    void handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio);
 
 private:
     ID& myCarId;
@@ -59,6 +69,7 @@ private:
     float& raceTime;
     uint8_t& totalRaces;
     uint8_t& raceNumber;
+    uint8_t lastRaceNumber = 0x0;
     std::vector<RecommendedPoint>& pathArray;
     Upgrade& upgrade;
     std::vector<UpgradeDef>& upgradesArray;

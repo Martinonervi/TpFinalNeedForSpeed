@@ -31,6 +31,8 @@
 #define MEDIUM_CAR 40
 #define LARGE_CAR 48
 #define PIXELS_PER_METER 10
+
+// OTRO ARCHIVO
 #define CARS_PATH  "../assets/cars/cars.png"
 #define PEOPLE_PATH  "../assets/cars/cars.png"
 #define SAN_ANDREAS_PATH  "../assets/cities/san_andreas.png"
@@ -43,7 +45,6 @@
 #define SWORD_SHIELD_PATH "../assets/extras/sword-and-shield.png"
 #define UPGRADES_PATH "../assets/extras/upgrades.png"
 #define LIBERTY_OVER_PATH "../assets/cities/liberty_city_over.png"
-
 
 using ID = std::uint32_t;
 

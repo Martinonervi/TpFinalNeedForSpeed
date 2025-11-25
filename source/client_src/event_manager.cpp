@@ -1,14 +1,5 @@
 #include "event_manager.h"
 
-#include "../common_src/cli_msg/cli_request_upgrade.h"
-#include "../common_src/srv_msg/client_disconnect.h"
-#include "../common_src/srv_msg/playerstats.h"
-#include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
-#include "../common_src/srv_msg/srv_current_info.h"
-#include "../common_src/srv_msg/srv_recommended_path.h"
-#include "../common_src/srv_msg/srv_send_upgrade.h"
-#include "../common_src/srv_msg/srv_upgrade_logic.h"
-
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                                 SDL2pp::Renderer& renderer,
@@ -85,7 +76,7 @@ void EventManager::handleEvents() const {
 }
 
 
-void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
+void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio) {
     switch (msg->type()) {
         case INIT_PLAYER: {
             const auto sp = dynamic_cast<const SendPlayer&>(*msg);
@@ -122,6 +113,13 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
             const auto ch = dynamic_cast<const SrvCarHitMsg&>(*msg);
             if (cars.count(ch.getPlayerId())) {
                 cars[ch.getPlayerId()]->setHealth(ch.getCarHealth());
+                if (ch.getPlayerId()==myCarId) {
+                    if (ch.getCarHealth() == 0) {
+                        audio.playSound("explosion");
+                    } else {
+                        audio.playSound("crash");
+                    }
+                }
             }
             break;
         }
@@ -138,12 +136,19 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
         case CHECKPOINT_HIT: {
             const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
             if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
+                audio.playSound("checkpoint");
                 checkpoints[nextCheckpoint]->setInactive();
             }
             break;
         }
         case CURRENT_INFO: {
             const auto current = dynamic_cast<const SrvCurrentInfo&>(*msg);
+            if (current.getRaceNumber() != lastRaceNumber) {
+                std::cout << "Nueva carrera! Limpio checkpoints viejos..." << std::endl;
+                checkpoints.clear();
+            }
+
+            lastRaceNumber = current.getRaceNumber();
             if (!checkpoints.count(current.getNextCheckpointId())) {
                 checkpoints[current.getNextCheckpointId()] = std::make_unique<Checkpoint>(renderer, drawer, tm,
                     current.getCheckX()*PIXELS_PER_METER, current.getCheckY()*PIXELS_PER_METER);
@@ -190,6 +195,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg) const {
         case UPGRADE_LOGIC: {
             const auto upgrades = dynamic_cast<const UpgradeLogic&>(*msg);
             upgradesArray = upgrades.getUpgrades();
+            std::cout << "Upgrade logic" << std::endl;
             ups.createButtons(upgradesArray);
             break;
         }
