@@ -5,14 +5,14 @@
 #include "../../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 
-WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& cars,
+WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& playerCars,
                                        std::unordered_map<ID, Checkpoint>& checkpoints,
                                        ClientsRegistry& registry,
                                        float& raceTimeSeconds,
                                        uint8_t& finishedCarsCount,
                                        uint8_t& totalCars,
                                        bool& raceEnded,  std::vector<ID>& raceRanking)
-        : cars(cars)
+        : playerCars(playerCars)
         , checkpoints(checkpoints)
         , registry(registry)
         , raceTimeSeconds(raceTimeSeconds)
@@ -23,8 +23,8 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& cars,
 
 
 void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
-    auto itCar = cars.find(ev.carId);
-    if (itCar == cars.end()) return;
+    auto itCar = playerCars.find(ev.carId);
+    if (itCar == playerCars.end()) return;
     auto& car = itCar->second;
 
     auto actualCheckpoint = car.getActualCheckpoint();
@@ -55,8 +55,8 @@ void WorldEventHandlers::CarHitBuildingHandler(WorldEvent ev,
     if (alreadyHitBuildingThisFrame.count(ev.carId)) return;
     alreadyHitBuildingThisFrame.insert(ev.carId);
 
-    auto it = cars.find(ev.carId);
-    if (it == cars.end()) return;
+    auto it = playerCars.find(ev.carId);
+    if (it == playerCars.end()) return;
     Car& car = it->second;
     b2BodyId body = car.getBody();
 
@@ -123,9 +123,9 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
     if (alreadyHitCarPairThisFrame.count(key)) return;
     alreadyHitCarPairThisFrame.insert(key);
 
-    auto itA = cars.find(ev.carId);
-    auto itB = cars.find(ev.otherCarId);
-    if (itA == cars.end() || itB == cars.end()) return;
+    auto itA = playerCars.find(ev.carId);
+    auto itB = playerCars.find(ev.otherCarId);
+    if (itA == playerCars.end() || itB == playerCars.end()) return;
 
     Car& carA = itA->second;
     Car& carB = itB->second;

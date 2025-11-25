@@ -118,7 +118,12 @@ void Car::applyDamage(const float damage) {
         newDamage = newDamage * shield;
     }
     this->health -= newDamage;
-    if (this->health < 0) this->health = 0;
+    if (this->health <= 0) kill();
+}
+
+void Car::kill() {
+    this->health = 0.f;
+    b2Body_Disable(body);   // o b2Body_SetEnabled(body, false) según versión
 }
 
 bool Car::isCarDestroy() {
@@ -132,13 +137,13 @@ PlayerState Car::snapshotState(){
 }
 
 
-void Car::resetForNewRace(float x, float y, float angleDeg) {
+void Car::resetForNewRace(float x, float y, float angleRad) {
     b2BodyId body = this->body;
-
-    float angleRad = angleDeg * (M_PI/ 180.0f);  // en el yaml estan en grados creo
 
     b2Vec2 pos{ x, y };
     b2Rot rot = b2MakeRot(angleRad);
+
+    b2Body_Enable(body);
 
     b2Body_SetTransform(body, pos, rot);
     b2Body_SetLinearVelocity(body, {0.f, 0.f});

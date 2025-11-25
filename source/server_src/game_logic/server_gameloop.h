@@ -59,7 +59,8 @@ private:
 
     // box2D
     WorldManager worldManager;
-    std::unordered_map<ID, Car> cars;
+    std::unordered_map<ID, Car> playerCars;
+    std::vector<Car> npcParkedCars;
     std::unordered_map<ID,Checkpoint> checkpoints;
     std::vector<std::unique_ptr<Building>> buildings;
     std::vector<SpawnPointConfig> spawnPoints;

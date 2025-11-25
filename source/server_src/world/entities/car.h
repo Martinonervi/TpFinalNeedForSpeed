@@ -7,6 +7,22 @@
 
 #include "entity.h"
 
+struct RaceState {
+    float health = 100.0f;
+    ID actualCheckpoint = 0;
+    bool finished = false;
+    float finishTime = 0.0f;
+    uint8_t ranking = 0;
+    ID spawnId = 0;
+    float speed = 0;
+
+    float upgradePenalty = 0.f;
+    Upgrade upgrade = NONE;
+    float engineFactor   = 1.0f;
+    float maxSpeedFactor = 1.0f;
+    float shield         = 1.0f;
+    float damage         = 1.0f;
+};
 
 class Car : public Entity {
 public:
@@ -28,6 +44,7 @@ public:
     void setCheckpoint(ID checkpoint) { this->actualCheckpoint = checkpoint; }
 
     void applyDamage(const float damage);
+    void kill();
     bool isCarDestroy();
 
     void markFinished(float t, u_int8_t finishedCarsCount) {
@@ -53,7 +70,7 @@ private:
     ID clientId;
     CarType carType;
 
-    float health = 100.0f;
+    float health = 1.0f;
     ID actualCheckpoint = 0;
     bool finished = false;
     float finishTime = 0.0f;

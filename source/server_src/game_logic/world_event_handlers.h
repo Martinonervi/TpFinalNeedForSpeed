@@ -9,7 +9,7 @@
 
 class WorldEventHandlers {
 public:
-    WorldEventHandlers(std::unordered_map<ID, Car>& cars,
+    WorldEventHandlers(std::unordered_map<ID, Car>& playerCars,
                        std::unordered_map<ID, Checkpoint>& checkpoints,
                        ClientsRegistry& registry,
                        float& raceTimeSeconds,
@@ -24,7 +24,7 @@ public:
     void CarHitCarHandler(WorldEvent ev, std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame);
 
 private:
-    std::unordered_map<ID, Car>& cars;
+    std::unordered_map<ID, Car>& playerCars;
     std::unordered_map<ID, Checkpoint>& checkpoints;
     ClientsRegistry& registry;
 

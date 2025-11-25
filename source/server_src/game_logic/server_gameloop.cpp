@@ -26,9 +26,9 @@ using Clock = std::chrono::steady_clock;
 
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
-registry(std::move(registry)), eventHandlers(cars, checkpoints, *this->registry,
+registry(std::move(registry)), eventHandlers(playerCars, checkpoints, *this->registry,
             raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking),
-        playerManager(worldManager, *this->registry, cars, spawnPoints)  {
+        playerManager(worldManager, *this->registry, playerCars, spawnPoints)  {
     loadMapFromYaml(FILE_YAML_PATH);
 }
 
@@ -54,10 +54,10 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
 // loop principal de distinas carreras
 void GameLoop::run() {
     setupRoute();
-    const int racesToPlay = 1;
+
     this->totalRaces = mapData.routes.size(); // seria el raceToPlay,
                                               // se lo paso para ver si le llega bien a fran
-    //const int racesToPlay = mapData.routes.size();
+    const int racesToPlay = mapData.routes.size();
 
     while (raceIndex < racesToPlay && should_keep_running()) {
         waitingForPlayers();
@@ -120,7 +120,7 @@ void GameLoop::setupRoute() {
 void GameLoop::waitingForPlayers() {
     ConstantRateLoop loop(5.0);
     const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 5.0;
+    const double LOBBY_TIMEOUT_SEC = 10.0;
     const double BETWEEN_RACES_SEC    = 3.0;
 
     startRequested = false;
@@ -168,7 +168,7 @@ void GameLoop::resetRaceState() {
     setupRoute();
 
     uint8_t i = 0;
-    for (auto& [id, car] : cars) {
+    for (auto& [id, car] : playerCars) {
         const auto& sp = spawnPoints[i % spawnPoints.size()];
         car.resetForNewRace(sp.x, sp.y, sp.angle);
         i++;
@@ -177,7 +177,7 @@ void GameLoop::resetRaceState() {
     // reseteo variables
     raceTimeSeconds    = 0.f;
     finishedCarsCount  = 0;
-    totalCars          = static_cast<int>(cars.size());
+    totalCars          = static_cast<int>(playerCars.size());
     raceEnded          = false;
     raceRanking.clear();
 
@@ -232,7 +232,7 @@ void GameLoop::runSingleRace() {
 
 void GameLoop::checkPlayersStatus() {
     std::vector<ID> ids;
-    for (auto& car: cars) {
+    for (auto& car: playerCars) {
         ids.push_back(car.first);
     }
     std::vector<ID> toDisconnect = registry->checkClients(ids);
@@ -255,7 +255,7 @@ bool GameLoop::isConnected(ID id) const {
 }
 
 void GameLoop::sendCurrentInfo() {
-    for (auto& [id, car] : cars) {
+    for (auto& [id, car] : playerCars) {
         ID actual = car.getActualCheckpoint();
         ID next   = actual + 1;
 
@@ -297,8 +297,8 @@ void GameLoop::processLobbyCmds() {
                 break;
             }
             case (Opcode::UPGRADE_REQUEST): {
-                auto it = cars.find(cmd.client_id);
-                if (it == cars.end()) return;
+                auto it = playerCars.find(cmd.client_id);
+                if (it == playerCars.end()) return;
                 Car& car = it->second;
                 bool success;
                 Upgrade up;
@@ -320,7 +320,7 @@ void GameLoop::processLobbyCmds() {
             case (Opcode::INIT_PLAYER): {
                 bool ok = playerManager.initPlayer(cmd);
                 if (ok) {
-                    totalCars = static_cast<uint8_t>(cars.size());
+                    totalCars = static_cast<uint8_t>(playerCars.size());
                 }
                 break;
             }
@@ -400,8 +400,8 @@ void GameLoop::simulatePlayerSpawns(int numPlayers) {
 
 // la voy implementando aunque la logica del msj todavia no esta hecha
 void GameLoop::disconnectHandler(ID id) {
-    auto it = cars.find(id);
-    if (it == cars.end()) return;
+    auto it = playerCars.find(id);
+    if (it == playerCars.end()) return;
     if (!it->second.isFinished()) {
         if (totalCars > 0) {
             totalCars--;

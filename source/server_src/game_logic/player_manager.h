@@ -21,7 +21,7 @@ class PlayerManager {
 public:
     PlayerManager(WorldManager& world,
                   ClientsRegistry& registry,
-                  std::unordered_map<ID, Car>& cars,
+                  std::unordered_map<ID, Car>& playerCars,
                   const std::vector<SpawnPointConfig>& spawnPoints);
 
     // Devuelve true si se pudo crear el jugador (si había spawn)
@@ -45,7 +45,7 @@ public:
 private:
     WorldManager& world;
     ClientsRegistry& registry;
-    std::unordered_map<ID, Car>& cars;
+    std::unordered_map<ID, Car>& playerCars;
     const std::vector<SpawnPointConfig>& spawnPoints;
 
     // manejo de spawns

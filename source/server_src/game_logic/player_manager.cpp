@@ -5,11 +5,11 @@
 
 PlayerManager::PlayerManager(WorldManager& world,
                              ClientsRegistry& registry,
-                             std::unordered_map<ID, Car>& cars,
+                             std::unordered_map<ID, Car>& playerCars,
                              const std::vector<SpawnPointConfig>& spawnPoints)
         : world(world)
           , registry(registry)
-          , cars(cars)
+          , playerCars(playerCars)
           , spawnPoints(spawnPoints)
 {}
 
@@ -44,7 +44,7 @@ bool PlayerManager::initPlayer(Cmd& cmd) {
 
     // creo el auto
     b2Vec2 spawnVec = { spawn.x, spawn.y };
-    cars.emplace(cmd.client_id,
+    playerCars.emplace(cmd.client_id,
                  Car(this->world, cmd.client_id, spawnVec, spawn.angle,
                      ip.getCarType()));
 
@@ -57,7 +57,7 @@ bool PlayerManager::initPlayer(Cmd& cmd) {
     registry.sendTo(cmd.client_id, base);
 
     // le aviso al nuevo cliente dónde están los otros autos
-    for (auto [id, car] : cars) {
+    for (auto [id, car] : playerCars) {
         if (id == cmd.client_id) continue;
 
         auto newPlayer = std::static_pointer_cast<SrvMsg>(
@@ -68,7 +68,7 @@ bool PlayerManager::initPlayer(Cmd& cmd) {
     }
 
     // les aviso a todos del auto del nuevo cliente
-    for (auto& [otherId, _] : cars) {
+    for (auto& [otherId, _] : playerCars) {
         if (otherId == cmd.client_id) continue;
 
         auto npForOld = std::static_pointer_cast<SrvMsg>(
@@ -83,8 +83,8 @@ bool PlayerManager::initPlayer(Cmd& cmd) {
 }
 
 void PlayerManager::handleMovement(Cmd& cmd, float dt) {
-    auto it = cars.find(cmd.client_id);
-    if (it == cars.end()) return;
+    auto it = playerCars.find(cmd.client_id);
+    if (it == playerCars.end()) return;
     if (it->second.isCarDestroy()) return;
 
     const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
@@ -92,8 +92,8 @@ void PlayerManager::handleMovement(Cmd& cmd, float dt) {
 }
 
 void PlayerManager::disconnectPlayer(ID id) {
-    auto it = cars.find(id);
-    if (it == cars.end()) return;
+    auto it = playerCars.find(id);
+    if (it == playerCars.end()) return;
 
     // libero spawn si lo tenía
     auto itSpawn = carToSpawnId.find(id);
@@ -106,11 +106,11 @@ void PlayerManager::disconnectPlayer(ID id) {
     world.destroyEntity(it->second.getPhysicsId());
 
     // borro el auto
-    cars.erase(it);
+    playerCars.erase(it);
 }
 
 void PlayerManager::broadcastSnapshots() {
-    for (auto& [id, car] : cars) {
+    for (auto& [id, car] : playerCars) {
         PlayerState ps = car.snapshotState();
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerState>(std::move(ps)));
@@ -119,7 +119,7 @@ void PlayerManager::broadcastSnapshots() {
 }
 
 void PlayerManager::sendPlayerStats() {
-    for (auto& [id, car] : cars) {
+    for (auto& [id, car] : playerCars) {
         PlayerStats ps(car.getRanking(), car.getFinishTime());
         auto msg = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerStats>(std::move(ps)));
