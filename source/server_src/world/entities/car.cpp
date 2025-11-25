@@ -149,13 +149,24 @@ void Car::resetForNewRace(float x, float y, float angleRad) {
     b2Body_SetLinearVelocity(body, {0.f, 0.f});
     b2Body_SetAngularVelocity(body, 0.f);
 
+    //tengo q hacer ya el struct
     health = 100.0f;
     actualCheckpoint = 0;
     finished         = false;
     finishTime       = 0.f;
     ranking          = 0;
     //multa = 0
+    spawnId = 0;
+    upgradePenalty = 0.f;
+    upgrade = NONE;
+    engineFactor     = 1.0f;
+    maxSpeedFactor   = 1.0f;
+    shield   = 1.0f;
+    damage = 1.0f;
 }
+
+
+
 
 void Car::applyUpgrade(const UpgradeDef& up) {
     switch (up.type) {

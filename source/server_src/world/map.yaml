@@ -4837,7 +4837,7 @@ routes:
   - name: recorido1
     checkpoints:
       - id: 1
-        kind: Start
+        kind: Finish
         x: 84.6534238538261
         y: 830.609337021205
         w: 79.624507585282
@@ -4999,7 +4999,7 @@ routes:
   - name: recorrido2
     checkpoints:
       - id: 1 #1
-        kind: Normal
+        kind: Finish
         x: 4518.157791699297
         y: 2725.137039937351
         w: 74.8825371965549

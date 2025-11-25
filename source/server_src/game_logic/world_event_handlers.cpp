@@ -11,7 +11,8 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& playerCars,
                                        float& raceTimeSeconds,
                                        uint8_t& finishedCarsCount,
                                        uint8_t& totalCars,
-                                       bool& raceEnded,  std::vector<ID>& raceRanking)
+                                       bool& raceEnded,  std::vector<ID>& raceRanking,
+                                       std::vector<RaceResult>& lastRaceResults)
         : playerCars(playerCars)
         , checkpoints(checkpoints)
         , registry(registry)
@@ -19,7 +20,8 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& playerCars,
         , finishedCarsCount(finishedCarsCount)
         , totalCars(totalCars)
         , raceEnded(raceEnded)
-        ,raceRanking(raceRanking) {}
+        ,raceRanking(raceRanking)
+        ,lastRaceResults(lastRaceResults) {}
 
 
 void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
@@ -39,6 +41,7 @@ void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
     if (cp.getKind() == CheckpointKind::Finish and !car.isFinished()) {
         finishedCarsCount++;
         car.markFinished(raceTimeSeconds, finishedCarsCount);
+        onPlayerFinishedRace(car.getClientId(), raceTimeSeconds);
         raceRanking.push_back(car.getClientId());
         if (finishedCarsCount == totalCars) {
             this->raceEnded = true;
@@ -190,4 +193,13 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
     auto baseCarB = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCarHitMsg>(carB.getClientId(), carB.getHealth()));
     registry.broadcast(baseCarB);
+}
+
+void WorldEventHandlers::onPlayerFinishedRace(ID playerId, float timeSec) {
+    lastRaceResults.push_back(RaceResult{
+            playerId,
+            timeSec,
+            finishedCarsCount,
+            true
+    });
 }

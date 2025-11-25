@@ -19,7 +19,6 @@
 #include "player_manager.h"
 
 
-
 class GameLoop: public Thread {
 
 public:
@@ -51,6 +50,9 @@ private:
     void disconnectHandler(ID id);
     bool isConnected(ID id) const;
 
+    void finalizeDNFs();
+    void updateGlobalStatsFromLastRace();
+    void computeGlobalRanking();
 
     std::shared_ptr<gameLoopQueue> queue;
     std::shared_ptr<ClientsRegistry> registry;
@@ -105,7 +107,13 @@ private:
         throw std::runtime_error("UpgradeType desconocido");
     }
 
+    std::vector<RaceResult> lastRaceResults;
+    std::unordered_map<ID, PlayerGlobalStats> globalStats;
+
 };
+
+
+
 
 
 

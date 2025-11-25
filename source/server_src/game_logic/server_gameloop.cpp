@@ -27,7 +27,7 @@ using Clock = std::chrono::steady_clock;
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(playerCars, checkpoints, *this->registry,
-            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking),
+            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking, lastRaceResults),
         playerManager(worldManager, *this->registry, playerCars, spawnPoints, raceStarted)  {
     loadMapFromYaml(FILE_YAML_PATH);
 }
@@ -62,7 +62,9 @@ void GameLoop::run() {
     while (raceIndex < racesToPlay && should_keep_running()) {
         waitingForPlayers();
         runSingleRace();
-        //storeRaceResult(raceIndex);
+
+        updateGlobalStatsFromLastRace(); // acumula tiempos globales
+        computeGlobalRanking();
 
         raceIndex += 1;
         if (raceIndex < racesToPlay) { //no termino la ultima
@@ -70,7 +72,7 @@ void GameLoop::run() {
         }
     }
 
-    playerManager.sendPlayerStats();
+    playerManager.sendPlayerStats(globalStats);
 }
 
 //setea el proximo recorrido
@@ -180,6 +182,7 @@ void GameLoop::resetRaceState() {
     totalCars          = static_cast<int>(playerCars.size());
     raceEnded          = false;
     raceRanking.clear();
+    lastRaceResults.clear();
 
     // vaciar queues
     while (!worldEvents.empty()) {
@@ -227,6 +230,7 @@ void GameLoop::runSingleRace() {
     } catch (...) {
         std::cerr << "[GameLoop] fatal: unknown\n";
     }
+    finalizeDNFs();
 }
 
 
@@ -302,6 +306,8 @@ void GameLoop::processLobbyCmds() {
                 Car& car = it->second;
                 bool success;
                 Upgrade up;
+                // puede comprar multiples mejoras?
+                // tendria que hacer upgradePenalty += y cre0 quu esta
                 if (car.hasUpgrade()) {
                     up = NONE;
                     success = false;
@@ -440,3 +446,48 @@ void GameLoop::stop() {
 
 GameLoop::~GameLoop() {}
 
+
+void GameLoop::finalizeDNFs() {
+    for (auto& [id, car] : playerCars) {
+        if (!car.isFinished()) {
+            lastRaceResults.push_back(RaceResult{
+                    id,
+                    raceTimeSeconds,
+                    0,
+                    false
+            });
+        }
+    }
+}
+
+
+void GameLoop::updateGlobalStatsFromLastRace() {
+    for (const auto& r : lastRaceResults) {
+        // Solo sumamos los que realmente terminaron la carrera
+        if (!r.finished) continue;
+
+        auto& gs = globalStats[r.playerId];  // crea la entrada si no existe
+        gs.totalTime += r.raceTime;
+        // globalPosition lo calculamos aparte en computeGlobalRanking()
+    }
+}
+
+void GameLoop::computeGlobalRanking() {
+    // Pasamos el map a un vector para poder ordenarlo
+    std::vector<std::pair<ID, PlayerGlobalStats*>> ranking;
+    ranking.reserve(globalStats.size());
+
+    for (auto& [id, stats] : globalStats) {
+        ranking.push_back({id, &stats});
+    }
+
+    std::sort(ranking.begin(), ranking.end(),
+              [](const auto& a, const auto& b) {
+                  return a.second->totalTime < b.second->totalTime;
+              });
+
+    uint8_t pos = 1;
+    for (auto& [id, statsPtr] : ranking) {
+        statsPtr->globalPosition = pos++;
+    }
+}

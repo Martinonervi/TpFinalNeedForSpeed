@@ -55,7 +55,7 @@ void Client::run() {
     PlayerStats stats_hardcoded(3, 2.66);
     if (quit) {
         PlayerStats stats(playerStatsPtr->getRacePosition(), playerStatsPtr->getTimeSecToComplete());
-        postGame(stats_hardcoded);
+        postGame(stats);
     }
     stop();
     join();

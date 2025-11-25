@@ -16,6 +16,11 @@
 #include "../../common_src/srv_msg/playerstats.h"
 #include "../../common_src/srv_msg/new_player.h"
 
+struct PlayerGlobalStats {
+    float totalTime = 0.0f;
+    uint8_t globalPosition = 0;
+};
+
 
 class PlayerManager {
 public:
@@ -37,7 +42,7 @@ public:
     void broadcastSnapshots();
 
     // Envía stats de todos los jugadores
-    void sendPlayerStats();
+    void sendPlayerStats(const std::unordered_map<ID, PlayerGlobalStats>& globalStats);
 
     // Entre carreras: limpiar info de spawns usados, etc.
     void resetForNewRace();

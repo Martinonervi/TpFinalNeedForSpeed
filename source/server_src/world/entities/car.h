@@ -70,13 +70,12 @@ private:
     ID clientId;
     CarType carType;
 
-    float health = 1.0f;
+    float health = 100.0f;
     ID actualCheckpoint = 0;
     bool finished = false;
     float finishTime = 0.0f;
     uint8_t ranking = 0;
     ID spawnId = 0;
-    float speed = 0;
 
     // logica de mejoras
     // factores de mejora (empiezan en 1.0 = sin mejora)

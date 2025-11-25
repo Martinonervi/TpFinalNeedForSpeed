@@ -128,14 +128,36 @@ void PlayerManager::broadcastSnapshots() {
     }
 }
 
-void PlayerManager::sendPlayerStats() {
+void PlayerManager::sendPlayerStats(
+        const std::unordered_map<ID, PlayerGlobalStats>& globalStats
+) {
+    std::cout << "[DBG] globalStats size = " << globalStats.size() << "\n";
+    for (auto& [id, stats] : globalStats) {
+        std::cout << "  playerId=" << id
+                  << " totalTime=" << stats.totalTime
+                  << " globalPos=" << (int)stats.globalPosition << "\n";
+    }
+
+    
     for (auto& [id, car] : playerCars) {
-        PlayerStats ps(car.getRanking(), car.getFinishTime());
+        float   totalTime   = 0.0f;
+        uint8_t globalPos   = 0;    // 0 = sin ranking (nunca terminó)
+
+        auto it = globalStats.find(id);
+        if (it != globalStats.end()) {
+            totalTime = it->second.totalTime;
+            globalPos = it->second.globalPosition;
+        }
+
+        // PlayerStats(racePosition, timeSecToComplete)
+        PlayerStats ps(globalPos, totalTime);
+
         auto msg = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<PlayerStats>(std::move(ps)));
         registry.sendTo(id, msg);
     }
 }
+
 
 void PlayerManager::resetForNewRace() {
     usedSpawnIds.clear();
