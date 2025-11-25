@@ -76,7 +76,7 @@ void EventManager::handleEvents() const {
 }
 
 
-void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio) const {
+void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio) {
     switch (msg->type()) {
         case INIT_PLAYER: {
             const auto sp = dynamic_cast<const SendPlayer&>(*msg);
@@ -143,6 +143,12 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case CURRENT_INFO: {
             const auto current = dynamic_cast<const SrvCurrentInfo&>(*msg);
+            if (current.getRaceNumber() != lastRaceNumber) {
+                std::cout << "Nueva carrera! Limpio checkpoints viejos..." << std::endl;
+                checkpoints.clear();
+            }
+
+            lastRaceNumber = current.getRaceNumber();
             if (!checkpoints.count(current.getNextCheckpointId())) {
                 checkpoints[current.getNextCheckpointId()] = std::make_unique<Checkpoint>(renderer, drawer, tm,
                     current.getCheckX()*PIXELS_PER_METER, current.getCheckY()*PIXELS_PER_METER);

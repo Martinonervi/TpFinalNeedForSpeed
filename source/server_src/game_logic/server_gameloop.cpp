@@ -60,6 +60,7 @@ void GameLoop::run() {
     const int racesToPlay = mapData.routes.size();
 
     while (raceIndex < racesToPlay && should_keep_running()) {
+
         waitingForPlayers();
         runSingleRace();
         //storeRaceResult(raceIndex);
@@ -157,6 +158,10 @@ void GameLoop::waitingForPlayers() {
         auto rp = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<RecommendedPath>(recommendedPath));
         registry->broadcast(rp);
+
+        auto ul = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<UpgradeLogic>(upgrades));
+        registry->broadcast(ul);
 
         loop.sleep_until_next_frame();
     }

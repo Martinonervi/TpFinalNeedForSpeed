@@ -79,7 +79,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                     car->draw(camera);
                     const uint32_t ticks = SDL_GetTicks();
                     const float intensity = (sin(ticks * 0.005f) + 1.0f) * 0.5f;
-                    auto alpha = static_cast<uint8_t>(intensity * 120);
+                    const auto alpha = static_cast<uint8_t>(intensity * 120);
 
                     SDL_Rect full = {0, 0, window.GetWidth(), window.GetHeight()};
 

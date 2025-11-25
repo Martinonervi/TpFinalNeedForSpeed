@@ -48,7 +48,7 @@ public:
                               std::vector<UpgradeDef>& upgradesArray);
 
     void handleEvents() const;
-    void handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio) const;
+    void handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio);
 
 private:
     ID& myCarId;
@@ -69,6 +69,7 @@ private:
     float& raceTime;
     uint8_t& totalRaces;
     uint8_t& raceNumber;
+    uint8_t lastRaceNumber = 0x0;
     std::vector<RecommendedPoint>& pathArray;
     Upgrade& upgrade;
     std::vector<UpgradeDef>& upgradesArray;
