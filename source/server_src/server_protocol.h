@@ -14,12 +14,13 @@
 #include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/send_player.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
+#include "../common_src/srv_msg/srv_car_select.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
 #include "../common_src/srv_msg/srv_send_upgrade.h"
 #include "../common_src/srv_msg/srv_time_left.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
-#include "../common_src/srv_msg/srv_recommended_path.h"
 
 #include "server_types.h"
 
@@ -71,6 +72,8 @@ public:
     RequestUpgrade recvUpgradeReq();
 
     int sendUpgrade(SendUpgrade& up);
+
+    int sendCarConfirmation(CarSelect& car_select);
 private:
     Socket& peer;
 

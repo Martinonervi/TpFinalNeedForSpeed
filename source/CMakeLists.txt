@@ -71,6 +71,7 @@ set(CLIENT_RESOURCES
         client_src/lobby/lobby_resources.qrc
         client_src/postgame/postgame_resources.qrc
         common_src/srv_msg/srv_time_left.h
+        common_src/srv_msg/srv_car_select.h
 )
 
 add_executable(client

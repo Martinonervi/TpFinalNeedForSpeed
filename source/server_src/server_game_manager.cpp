@@ -40,6 +40,10 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
                 sender_queue->push(std::make_shared<JoinGame>(false, INEXISTENT_GAME, 0));
                 throw std::runtime_error("Partida inexistente");
             }
+            if (it->second.isStarted()) {
+                sender_queue->push(std::make_shared<JoinGame>(false, STARTED_GAME, 0));
+                throw std::runtime_error("Partida inexistente");
+            }
             reg = it->second.getRegistry();
             q   = it->second.getGameQueue();
         }
@@ -49,7 +53,7 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
             std::cout << "[Game Manager] Player joined:  " << client_id << ", game id: " << game_id<< std::endl;
         } catch (const std::exception&) {
             sender_queue->push(std::make_shared<JoinGame>(false, FULL_GAME, 0));
-            throw;
+            throw(std::runtime_error("Partida llena"));
         }
         return {q, game_id};
     }
@@ -96,7 +100,7 @@ MetadataGames GameManager::getGames() {
             ID gid = kv.first;
             GameContext& ctx = kv.second;
             int players = ctx.getRegistry() ? ctx.getRegistry()->size() : 0;
-            bool started = false; //por ahora hardcodeado pero desp tino decime de donde lo saco
+            bool started = ctx.isStarted(); //por ahora hardcodeado pero desp tino decime de donde lo saco
 
             out.push_back(GameMetadata{gid, players, started});
         }
