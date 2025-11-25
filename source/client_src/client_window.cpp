@@ -4,6 +4,8 @@
 #include "renderables/hint.h"
 #include "renderables/upgrade_screen.h"
 
+#include "audio_manager.h"
+
 ClientWindow::ClientWindow(const int width, const int height, const std::string& title,
                            Queue<SrvMsgPtr>& receiverQueue, Queue<CliMsgPtr>& senderQueue):
         sdl(SDL_INIT_VIDEO),
@@ -27,11 +29,22 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
     Hud hud(renderer, drawer, tm, MAP_LIBERTY, pathArray);
     Map map(renderer, tm, MAP_LIBERTY);
+    AudioManager audio;
+    audio.loadSound("explosion", "../assets/sfx/explosion.wav");
+    audio.loadSound("crash", "../assets/sfx/crash.wav");
+    audio.loadSound("checkpoint", "../assets/sfx/checkpoint.wav");
+    audio.loadSound("countdown", "../assets/sfx/countdown.wav");
+    audio.loadSound("engine", "../assets/sfx/engine.wav");
+    audio.loadSound("purchase", "../assets/sfx/purchase.wav");
 
+    audio.loadMusic("game_music", "../assets/sfx/game-music.wav");
+
+    audio.playMusic("game_music", -1);
+    audio.playSound("engine", -1);
     while (running) {
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
-            eventManager.handleServerMessage(srvMsg);
+            eventManager.handleServerMessage(srvMsg, audio);
         }
         if (!running) {
             break;
@@ -72,6 +85,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                     break;
                 }
                 case EXPLODING: {
+
                     car->drawExplosion(camera);
                     break;
                 }
@@ -98,6 +112,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
 
         renderer.Present();
     }
+    audio.stopMusic();
     TTF_Quit();
     SDL_Quit();
 
