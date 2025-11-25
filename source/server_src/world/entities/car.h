@@ -70,7 +70,7 @@ private:
     ID clientId;
     CarType carType;
 
-    float health = 1.0f;
+    float health = 100.0f;
     ID actualCheckpoint = 0;
     bool finished = false;
     float finishTime = 0.0f;

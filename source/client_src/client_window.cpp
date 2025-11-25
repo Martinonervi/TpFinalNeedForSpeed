@@ -31,7 +31,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
     Map map(renderer, tm, MAP_LIBERTY);
     AudioManager audio;
     audio.loadSound("explosion", "../assets/sfx/explosion.wav");
-    audio.loadSound("crash", "../assets/sfx/crash.wav");
+    audio.loadSound("crash", "../assets/sfx/crash.mp3"); // PASAR A WAV
     audio.loadSound("checkpoint", "../assets/sfx/checkpoint.wav");
     audio.loadSound("countdown", "../assets/sfx/countdown.wav");
     audio.loadSound("engine", "../assets/sfx/engine.wav");
@@ -40,8 +40,9 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
     audio.loadMusic("game_music", "../assets/sfx/game-music.wav");
 
     audio.playMusic("game_music", -1);
-    audio.playSound("engine", -1);
     while (running) {
+
+
         SrvMsgPtr srvMsg;
         while (receiverQueue.try_pop(srvMsg)) {
             eventManager.handleServerMessage(srvMsg, audio);
@@ -65,6 +66,8 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
             if (!car) continue;
             const auto carState = car->getState();
             if (id == myCarId) {
+                if (car->getSpeed() > 0) audio.playSound("engine", -1);
+                else audio.stopSound("engine");
                 camera.follow(car->getX(), car->getY());
             }
             switch (carState) {
@@ -73,7 +76,16 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                     break;
                 }
                 case LOW_HEALTH: {
-                    // DIBUJAMOS ROJO EN LA PANTALLA
+                    car->draw(camera);
+                    const uint32_t ticks = SDL_GetTicks();
+                    const float intensity = (sin(ticks * 0.005f) + 1.0f) * 0.5f;
+                    auto alpha = static_cast<uint8_t>(intensity * 120);
+
+                    SDL_Rect full = {0, 0, window.GetWidth(), window.GetHeight()};
+
+                    renderer.SetDrawColor(255, 0, 0, alpha);
+                    renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
+                    renderer.FillRect(full);
                     break;
                 }
                 case DESTROYED: {
@@ -85,7 +97,6 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                     break;
                 }
                 case EXPLODING: {
-
                     car->drawExplosion(camera);
                     break;
                 }

@@ -189,6 +189,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case UPGRADE_LOGIC: {
             const auto upgrades = dynamic_cast<const UpgradeLogic&>(*msg);
             upgradesArray = upgrades.getUpgrades();
+            std::cout << "Upgrade logic" << std::endl;
             ups.createButtons(upgradesArray);
             break;
         }

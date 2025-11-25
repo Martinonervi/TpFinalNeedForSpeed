@@ -46,18 +46,26 @@ void AudioManager::loadMusic(const std::string& name, const std::string& path) {
 }
 
 void AudioManager::playSound(const std::string& name, int loops) {
-    if (sounds.count(name)) {
-        int ch = Mix_PlayChannel(-1, sounds[name], loops); // retornamos el canal
-        if (ch != -1) {
-            channels[name] = ch; // guardamos canal para stopSound
+    if (!sounds.count(name)) return;
+
+    if (channels.count(name)) {
+        int ch = channels[name];
+        if (Mix_Playing(ch)) {
+            return;
         }
+    }
+
+    int ch = Mix_PlayChannel(-1, sounds[name], loops);
+    if (ch != -1) {
+        channels[name] = ch;
     }
 }
 
+
 void AudioManager::stopSound(const std::string& name) {
     if (channels.count(name)) {
-        Mix_HaltChannel(channels[name]); // detiene ese canal
-        channels.erase(name);            // eliminamos registro
+        Mix_HaltChannel(channels[name]);
+        channels.erase(name);
     }
 }
 
