@@ -119,7 +119,9 @@ void Client::sendRequest(int game_id) { // solo para probar cosas
 void Client::stop(){
     sender.stop();
     receiver.stop();
+
     senderQueue.close();
+    receiverQueue.close();
     std::cout << "[Client] Sender y Receiver frenados" <<std::endl;
     close();
 }

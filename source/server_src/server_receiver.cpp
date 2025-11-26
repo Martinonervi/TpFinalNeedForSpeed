@@ -93,7 +93,7 @@ void Receiver::run() {
                     break;
                 }
                 default: {
-                    std::cout << "cmd desconocido: " << static_cast<int>(op) << "\n";
+                    std::cout << "[Server receiver] cmd desconocido: " << static_cast<int>(op) << "\n";
                 }
             }
 

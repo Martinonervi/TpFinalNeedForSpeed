@@ -336,7 +336,7 @@ void GameLoop::processLobbyCmds() {
                 break;
             }
             default: {
-                std::cout << "cmd desconocido: " << cmd.msg->type() << "\n";
+                std::cout << "[Gameloop] cmd desconocido: " << static_cast<int>(cmd.msg->type()) << "\n";
             }
         }
 
@@ -361,7 +361,7 @@ void GameLoop::processCmds() {
             }
 
             default: {
-                std::cout << "cmd desconocido: " << cmd.msg->type() << "\n";
+                std::cout << "[Gameloop] cmd desconocido: " << static_cast<int>(cmd.msg->type()) << "\n";
             }
         }
 
