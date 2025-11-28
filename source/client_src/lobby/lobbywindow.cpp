@@ -548,16 +548,6 @@ void LobbyWindow::on_backButtonCar_clicked() {
     CliMsgPtr msg = std::make_shared<DisconnectReq>(dr);
     protocol.sendDisconnectReq(dr);
     joined_id = 0;
-
-    /*
-    Op opcode = protocol.readActionByte();
-
-    if (opcode == INIT_PLAYER) {
-        std::cout << "recibí init player" << std::endl;
-        protocol.recvSendPlayer();
-    }
-    */
-
     ui->stackedPages->setCurrentWidget(ui->LobbySelector);
     on_refreshButton_clicked();
 }
@@ -609,4 +599,29 @@ void LobbyWindow::on_selectCarButton_clicked() {
         return;
     }
     close();
+}
+
+void LobbyWindow::closeEvent(QCloseEvent* event) {
+    const auto ret = QMessageBox::question(
+        this,
+        tr("Salir"),
+        tr("¿Seguro que querés cerrar?"),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No
+    );
+    if (ret != QMessageBox::Yes) {
+        event->ignore();
+        return;
+    }
+
+    if (joined_id != 0) {
+        try {
+            DisconnectReq dr(joined_id);
+            protocol.sendDisconnectReq(dr);
+        } catch (...) {}
+        joined_id = 0;
+    }
+
+    was_closed = true;
+    event->accept();
 }
