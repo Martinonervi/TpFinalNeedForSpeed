@@ -9,7 +9,6 @@
 class ClientSender: public Thread {
 public:
     explicit ClientSender(ClientProtocol& protocol, Queue<CliMsgPtr>& senderQueue);
-    bool is_listening() const;
     void run() override;
 
 private:
