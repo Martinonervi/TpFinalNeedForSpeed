@@ -43,8 +43,12 @@
 #define CHECKPOINT_PATH "../assets/extras/checkpoint.png"
 #define HEALTH_NITRO_PATH "../assets/extras/health-and-nitro.png"
 #define SWORD_SHIELD_PATH "../assets/extras/sword-and-shield.png"
+#define START_BACK_PATH "../assets/extras/start-background.png"
 #define UPGRADES_PATH "../assets/extras/upgrades.png"
 #define LIBERTY_OVER_PATH "../assets/cities/liberty_city_over.png"
+#define FONT_PATH "../client_src/lobby/resources/fonts/pressstart2p.ttf"
+
+// #define FONT_PATH "../assets/fonts/pixel_font.ttf"
 
 using ID = std::uint32_t;
 
@@ -107,13 +111,15 @@ enum class EntityLayer {
     BRIDGE
 };
 
-inline uint32_t encodeFloat100BE(float value) {
+// Helpers para el protocolo
+
+inline uint32_t encodeFloatBE(float value) {
     int32_t fixed = static_cast<int32_t>(std::lround(value * 100.0f));
     uint32_t as_u32 = static_cast<uint32_t>(fixed);
     return htonl(as_u32);
 }
 
-inline float decodeFloat100BE(uint32_t be_value) {
+inline float decodeFloatBE(uint32_t be_value) {
     uint32_t as_u32 = ntohl(be_value);
     int32_t fixed = static_cast<int32_t>(as_u32);
     return static_cast<float>(fixed) / 100.0f;

@@ -1,9 +1,10 @@
 #include "client_window.h"
 
+#include "../common_src/constant_rate_loop.h"
 #include "./renderables/checkpoint.h"
 #include "renderables/hint.h"
+#include "renderables/start_screen.h"
 #include "renderables/upgrade_screen.h"
-#include "../common_src/constant_rate_loop.h"
 
 #include "audio_manager.h"
 
@@ -21,15 +22,27 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         nextCheckpoint(-1),
         tm(renderer),
         hint(renderer, tm, 0, 0),
-        ups(renderer, drawer, tm, 500, 500, window.GetWidth(), window.GetHeight()),
+        ups(renderer, drawer, tm, 480, 480, window.GetWidth(), window.GetHeight()),
+        startBtn(
+            {
+                window.GetWidth()/2 - 150,
+                window.GetHeight()/10*8,
+                300, 80
+            },
+            "Start Game",
+            {0, 208, 22, 255},
+            {0, 255, 51, 255}
+            ),
         eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue, drawer,
-            tm, checkpoints, hint, ups, showUpgradeMenu,running, showMap, quit,
+            tm, checkpoints, hint, ups, startBtn, showStart, showUpgradeMenu, running, showMap, quit,
             raceTime, totalRaces, raceNumber, playerStats, pathArray, upgrade, upgradesArray) {}
 
 // Hay que manejar FPS
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
     Hud hud(renderer, drawer, tm, MAP_LIBERTY, pathArray);
     Map map(renderer, tm, MAP_LIBERTY);
+    StartScreen startScreen(renderer, drawer, tm, MAP_LIBERTY, pathArray, ups, startBtn);
+
     AudioManager audio;
     audio.loadSound("explosion", "../assets/sfx/explosion.wav");
     audio.loadSound("crash", "../assets/sfx/crash.wav");
@@ -54,74 +67,76 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                 break;
             }
 
-
             eventManager.handleEvents();
 
             renderer.SetDrawColor(0, 0, 0, 255);
             renderer.Clear();
-            map.draw(camera);
 
-            for (auto& [id, checkpoint] : checkpoints) {
-                if (!checkpoint) continue;
-                checkpoint->draw(camera);
-            }
-            for (auto& [id, car]: cars) {
-                if (!car) continue;
-                const auto carState = car->getState();
-                if (id == myCarId) {
-                    if (car->getSpeed() > 0) audio.playSound("engine", -1);
-                    else audio.stopSound("engine");
-                    camera.follow(car->getX(), car->getY());
+            if (showStart) {
+                startScreen.draw(window.GetWidth(), window.GetHeight(), showUpgradeMenu);
+            } else {
+                map.draw(camera);
+
+                for (auto& [id, checkpoint] : checkpoints) {
+                    if (!checkpoint) continue;
+                    checkpoint->draw(camera);
                 }
-                switch (carState) {
-                    case ALIVE: {
-                        car->draw(camera);
-                        break;
+                for (auto& [id, car]: cars) {
+                    if (!car) continue;
+                    const auto carState = car->getState();
+                    if (id == myCarId) {
+                        if (car->getSpeed() > 0) audio.playSound("engine", -1);
+                        else audio.stopSound("engine");
+                        camera.follow(car->getX(), car->getY());
                     }
-                    case LOW_HEALTH: {
-                        car->draw(camera);
-                        const uint32_t ticks = SDL_GetTicks();
-                        const float intensity = (sin(ticks * 0.005f) + 1.0f) * 0.5f;
-                        const auto alpha = static_cast<uint8_t>(intensity * 120);
+                    switch (carState) {
+                        case ALIVE: {
+                            car->draw(camera);
+                            break;
+                        }
+                        case LOW_HEALTH: {
+                            car->draw(camera);
+                            const uint32_t ticks = SDL_GetTicks();
+                            const float intensity = (sin(ticks * 0.005f) + 1.0f) * 0.5f;
+                            const auto alpha = static_cast<uint8_t>(intensity * 120);
 
-                        SDL_Rect full = {0, 0, window.GetWidth(), window.GetHeight()};
+                            SDL_Rect full = {0, 0, window.GetWidth(), window.GetHeight()};
 
-                        renderer.SetDrawColor(255, 0, 0, alpha);
-                        renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
-                        renderer.FillRect(full);
-                        break;
-                    }
-                    case DESTROYED: {
-                        /*
-                        cars.erase(id);
-                        if (id == myCarId) {
-                            myCarId = -1;
-                        } */
-                        break;
-                    }
-                    case EXPLODING: {
-                        car->drawExplosion(camera);
-                        break;
-                    }
-                    default: {
-                        break;
+                            renderer.SetDrawColor(255, 0, 0, alpha);
+                            renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
+                            renderer.FillRect(full);
+                            break;
+                        }
+                        case DESTROYED: {
+                            /*
+                            cars.erase(id);
+                            if (id == myCarId) {
+                                myCarId = -1;
+                            } */
+                            break;
+                        }
+                        case EXPLODING: {
+                            car->drawExplosion(camera);
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
                     }
                 }
-            }
-		    map.drawOver(camera);
+                map.drawOver(camera);
 
-		    if (nextCheckpoint != -1) {
-                auto it = checkpoints.find(nextCheckpoint);
-                if (it != checkpoints.end() && it->second) {
-                    hint.draw(camera);
+                if (nextCheckpoint != -1) {
+                    auto it = checkpoints.find(nextCheckpoint);
+                    if (it != checkpoints.end() && it->second) {
+                        hint.draw(camera);
+                    }
                 }
-            }
 
-            if (showMap)
-                hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId, raceTime, totalRaces, raceNumber, upgrade);  // Por ahora asi
 
-            if (showUpgradeMenu) {
-                ups.renderPopUp();
+                if (showMap)
+                    hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId, raceTime, totalRaces, raceNumber, upgrade);  // Por ahora asi
+
             }
 
             renderer.Present();

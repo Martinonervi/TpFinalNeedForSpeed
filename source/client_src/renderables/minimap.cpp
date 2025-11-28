@@ -6,12 +6,13 @@ Minimap::Minimap(MapType maptype, SDL2pp::Renderer& renderer, TextureManager& tm
         maptype(maptype), renderer(renderer), tm(tm), pathArray(pathArray) {}
 
 void Minimap::draw(const int windowWidth, const int windowHeight,
-                   std::unordered_map<ID, std::unique_ptr<Car>>& cars, const ID playerId) const {
+                   std::unordered_map<ID, std::unique_ptr<Car>>& cars,
+                   const ID playerId, const int alphaMod, const int mapSize) const {
     SDL2pp::Texture& texture = tm.getCities().getTexture(MAP_LIBERTY);
-    const int miniWidth = 250;   // CONSTANTES
-    const int miniHeight = 250;  // CONSTANTES
+    const int miniWidth = mapSize;   // CONSTANTES
+    const int miniHeight = mapSize;  // CONSTANTES
 
-    const int x = windowWidth - miniWidth - 10;
+    const int x = windowWidth;
     const int y = windowHeight;
 
     SDL2pp::Rect srcRect(0, 0, texture.GetWidth(), texture.GetHeight());
@@ -21,7 +22,7 @@ void Minimap::draw(const int windowWidth, const int windowHeight,
     uint8_t originalAlpha;
     SDL_GetTextureAlphaMod(texture.Get(), &originalAlpha);
 
-    texture.SetAlphaMod(150);
+    texture.SetAlphaMod(alphaMod);
 
     renderer.Copy(texture, srcRect, dstRect);
 
@@ -29,6 +30,9 @@ void Minimap::draw(const int windowWidth, const int windowHeight,
 
     float scaleX = static_cast<float>(miniWidth) / texture.GetWidth();
     float scaleY = static_cast<float>(miniHeight) / texture.GetHeight();
+
+    if (cars.empty())
+        return;
 
     drawRecommendedPath(x, y, scaleX, scaleY);
 

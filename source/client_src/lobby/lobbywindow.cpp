@@ -130,7 +130,6 @@ void LobbyWindow::on_playButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
-        was_closed = true;
         close();
         return;
     }
@@ -145,7 +144,6 @@ void LobbyWindow::on_playButton_clicked() {
 }
 
 void LobbyWindow::on_quitButton_clicked() {
-    was_closed = true;
     close();
 }
 
@@ -159,7 +157,6 @@ void LobbyWindow::on_refreshButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
-        was_closed = true;
         close();
         return;
     }
@@ -199,7 +196,6 @@ void LobbyWindow::on_joinButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
-        was_closed = true;
         close();
         return;
     }
@@ -212,6 +208,7 @@ void LobbyWindow::on_joinButton_clicked() {
     JoinGame info = protocol.recvGameInfo();
 
     if (info.couldJoin()) {
+        joined_id = info.getGameID();
         QMessageBox::information(this, "Unirse a partida",
                                  "Te uniste correctamente a la partida.");
         ui->stackedPages->setCurrentWidget(ui->CarSelector);
@@ -246,7 +243,6 @@ void LobbyWindow::on_createButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
-        was_closed = true;
         close();
         return;
     }
@@ -545,7 +541,6 @@ void LobbyWindow::updateCarView() {
 void LobbyWindow::on_backButtonCar_clicked() {
     int n = 0;
     DisconnectReq dr(joined_id);
-    CliMsgPtr msg = std::make_shared<DisconnectReq>(dr);
     protocol.sendDisconnectReq(dr);
     joined_id = 0;
     ui->stackedPages->setCurrentWidget(ui->LobbySelector);
@@ -583,7 +578,6 @@ void LobbyWindow::on_selectCarButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
-        was_closed = true;
         close();
         return;
     }
@@ -598,10 +592,16 @@ void LobbyWindow::on_selectCarButton_clicked() {
         on_backButtonCar_clicked();
         return;
     }
+    silentClose = true;
     close();
 }
 
 void LobbyWindow::closeEvent(QCloseEvent* event) {
+    if (silentClose) {
+        silentClose = false;
+        event->accept();
+        return;
+    }
     const auto ret = QMessageBox::question(
         this,
         tr("Salir"),

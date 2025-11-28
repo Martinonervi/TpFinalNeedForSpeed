@@ -62,4 +62,5 @@ private:
     int m_currentCar{0};
     ID joined_id{0};
     bool& was_closed;
+    bool silentClose{false};
 };
