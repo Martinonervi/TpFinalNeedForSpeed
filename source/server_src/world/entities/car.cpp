@@ -163,6 +163,7 @@ void Car::resetForNewRace(float x, float y, float angleRad) {
     maxSpeedFactor   = 1.0f;
     shield   = 1.0f;
     damage = 1.0f;
+    totalUpgrades = 0;
 }
 
 
@@ -171,23 +172,31 @@ void Car::resetForNewRace(float x, float y, float angleRad) {
 void Car::applyUpgrade(const UpgradeDef& up) {
     switch (up.type) {
         case Upgrade::ENGINE_FORCE: {
+            if (engineFactor != 1.0f) break; //para q no pueda elegir la misma devuelta
             engineFactor   = up.value;
-            upgradePenalty = up.penaltySec;
+            upgradePenalty += up.penaltySec;
+            totalUpgrades  += 1;
             break;
         }
         case HEALTH: {
+            if (health != 1.0f) break;
             health = health * up.value;
-            upgradePenalty = up.penaltySec;
+            upgradePenalty += up.penaltySec;
+            totalUpgrades  += 1;
             break;
         }
         case SHIELD: {
+            if (shield != 1.0f) break;
             shield = up.value;
-            upgradePenalty = up.penaltySec;
+            upgradePenalty += up.penaltySec;
+            totalUpgrades  += 1;
             break;
         }
         case DAMAGE: {
+            if (damage != 1.0f) break;
             damage = up.value;
-            upgradePenalty = up.penaltySec;
+            upgradePenalty += up.penaltySec;
+            totalUpgrades  += 1;
             break;
         }
         case Upgrade::NONE: {

@@ -323,7 +323,7 @@ void GameLoop::processLobbyCmds() {
                 Upgrade up;
                 // puede comprar multiples mejoras?
                 // tendria que hacer upgradePenalty += y cre0 quu esta
-                if (car.hasUpgrade()) {
+                if (car.hasMaxUpgrade()) {
                     up = NONE;
                     success = false;
                 } else {

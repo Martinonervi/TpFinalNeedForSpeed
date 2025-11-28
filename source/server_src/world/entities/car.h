@@ -7,6 +7,8 @@
 
 #include "entity.h"
 
+const int CAR_MAX_UPGRADES = 3;
+
 struct RaceState {
     float health = 100.0f;
     ID actualCheckpoint = 0;
@@ -59,7 +61,7 @@ public:
     void resetForNewRace(float x, float y, float angleDeg);
 
     ID getSpawnId() const { return spawnId; }
-    bool hasUpgrade() const { return upgrade != NONE; }
+    bool hasMaxUpgrade() const { return totalUpgrades >= CAR_MAX_UPGRADES; }
 
     float getShield();
     float getDamage();
@@ -85,6 +87,7 @@ private:
     float maxSpeedFactor   = 1.0f;
     float shield   = 1.0f;
     float damage = 1.0f;
+    uint8_t totalUpgrades = 0;
 
 };
 
