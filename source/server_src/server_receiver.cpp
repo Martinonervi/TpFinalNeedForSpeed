@@ -41,9 +41,6 @@ void Receiver::run() {
                         game_manager.LeaveGame(id, joined_game_id);
                         cmdQueue = nullptr;
                         joined_game_id = 0;
-                        //auto msg = std::static_pointer_cast<SrvMsg>(
-                        //    std::make_shared<ClientDisconnect>(id));
-                        //sender_queue->push(msg);
                     }
                     break;
                 }

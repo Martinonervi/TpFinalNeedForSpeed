@@ -28,37 +28,49 @@
 
 class ClientProtocol {
 public:
+
+    // Constructor
+
     explicit ClientProtocol(Socket& peer);
 
 
-    // recibe y devuelve el struct de msg
-    PlayerState recvSrvMsg();
+    /* ---------- Serialización de datos ---------- */
 
-    // lee (y por ahora descarta) el primer byte
     Op readActionByte() const;
+
+    // QT
+
+    void requestGames();
+    void sendDisconnectReq(DisconnectReq& dr);
+    void requestStats();
+    void sendRequestUpgrade(RequestUpgrade& up);
+
+    // SDL
+
     int sendClientMove(const MoveMsg& moveMsg) const;
     int sendInitPlayer(const InitPlayer& ip) const;
     int sendRequestGame(RequestGame& join_game);
     int sendStartGame(const StartGame& sg);
+
+    /* ---------- Deserialización de datos ---------- */
+
+    PlayerState recvSrvMsg();
     SendPlayer recvSendPlayer();
     NewPlayer recvNewPlayer();
     JoinGame recvGameInfo();
     SrvCurrentInfo recvCurrentInfo();
     UpgradeLogic recvUpgradeLogic();
     RecommendedPath recvRecommendedPath();
-    void requestGames();
     MetadataGames getMetadata();
     GameMetadata readOneGame();
     SrvCarHitMsg recvCollisionEvent();
     SrvCheckpointHitMsg recvCheckpointHitEvent();
     ClientDisconnect recvClientDisconnect();
-    void sendDisconnectReq(DisconnectReq& dr);
-    void requestStats();
     PlayerStats recvStats();
     TimeLeft recvTimeLeft();
-    void sendRequestUpgrade(RequestUpgrade& up);
     SendUpgrade recvUpgrade();
     CarSelect recvCarConfirmation();
+
 private:
     Socket& peer;
 };

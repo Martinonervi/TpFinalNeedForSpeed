@@ -91,7 +91,6 @@ Opcode ServerProtocol::recvOpcode() {
 InitPlayer ServerProtocol::recvInitPlayer() {
     size_t n = 0;
 
-    //std::string name;
     CarType carType;
 
     try {

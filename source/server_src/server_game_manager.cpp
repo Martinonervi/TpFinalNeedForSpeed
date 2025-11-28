@@ -58,18 +58,7 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
         return {q, game_id};
     }
 }
-/*
-void GameManager::reap_dead() {
-    for (auto it = games.begin(); it != games.end(); ) {
-        if (it->second.getRegistry()->size() == 0) {
-            it->second.gameThreadStop();
-            it = games.erase(it);
-        } else {
-            ++it; // solo avanza si no borro
-        }
-    }
-}
-*/
+
 void GameManager::LeaveGame(ID client_id, ID game_id) {
     std::unique_ptr<GameLoop> to_stop;
     {

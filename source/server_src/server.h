@@ -7,13 +7,16 @@
 
 class Server {
 public:
+
     explicit Server(const char* service);
+
+    // lógica disparadora del servidor
     int run();
 private:
-    // frena al acceptor y al gameloop
+    // frena al acceptor
     void stop_workers();
 
-    // joinea al acceptor y al gameloop
+    // joinea al acceptor
     void join_workers();
 
     GameManager game_registry;

@@ -36,10 +36,8 @@ int Server::run() {
 }
 
 void Server::stop_workers() {
-    //gameloop.stop();
     acceptor.stop();
 }
 void Server::join_workers() {
-    //gameloop.join();
     acceptor.join();
 }
