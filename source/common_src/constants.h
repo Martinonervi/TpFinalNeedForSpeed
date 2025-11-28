@@ -107,13 +107,15 @@ enum class EntityLayer {
     BRIDGE
 };
 
-inline uint32_t encodeFloat100BE(float value) {
+// Helpers para el protocolo
+
+inline uint32_t encodeFloatBE(float value) {
     int32_t fixed = static_cast<int32_t>(std::lround(value * 100.0f));
     uint32_t as_u32 = static_cast<uint32_t>(fixed);
     return htonl(as_u32);
 }
 
-inline float decodeFloat100BE(uint32_t be_value) {
+inline float decodeFloatBE(uint32_t be_value) {
     uint32_t as_u32 = ntohl(be_value);
     int32_t fixed = static_cast<int32_t>(as_u32);
     return static_cast<float>(fixed) / 100.0f;

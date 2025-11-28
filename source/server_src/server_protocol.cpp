@@ -18,9 +18,9 @@ int ServerProtocol::sendPlayerInit(Player& sp) const {
         const Op type = sp.type();
         const uint16_t pid = htons(sp.getPlayerId());
         const CarType car = sp.getCarType();
-        const uint32_t x_cast = encodeFloat100BE(sp.getX());
-        const uint32_t y_cast = encodeFloat100BE(sp.getY());
-        const uint32_t angle  = encodeFloat100BE(sp.getAngleRad());
+        const uint32_t x_cast = encodeFloatBE(sp.getX());
+        const uint32_t y_cast = encodeFloatBE(sp.getY());
+        const uint32_t angle  = encodeFloatBE(sp.getAngleRad());
 
         std::vector<char> buf;
         buf.reserve(sizeof(Op) + sizeof(uint16_t) + sizeof(CarType) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t));
@@ -49,9 +49,9 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
     try {
         const Op type = Movement;
         const uint16_t pid = htons(ps.getPlayerId());
-        const uint32_t x = encodeFloat100BE(ps.getX());
-        const uint32_t y = encodeFloat100BE(ps.getY());
-        const uint32_t angle  = encodeFloat100BE(ps.getAngleRad());
+        const uint32_t x = encodeFloatBE(ps.getX());
+        const uint32_t y = encodeFloatBE(ps.getY());
+        const uint32_t angle  = encodeFloatBE(ps.getAngleRad());
 
         std::vector<char> buf;
         buf.reserve(sizeof(type) + sizeof(pid) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t));
@@ -220,7 +220,7 @@ int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
     try {
         Op type = COLLISION;
         ID player_id_BE = htonl(msg.getPlayerId());
-        uint32_t health_BE = encodeFloat100BE(msg.getCarHealth());
+        uint32_t health_BE = encodeFloatBE(msg.getCarHealth());
 
 
         std::vector<char> buf(sizeof(Op) + sizeof(ID) + sizeof(uint32_t));
@@ -316,7 +316,7 @@ int ServerProtocol::sendPlayerStats(PlayerStats& msg) {
     try {
         Op type = Opcode::STATS;
         uint8_t racePosition = msg.getRacePosition();
-        const uint32_t timeSecToComplete_BE = encodeFloat100BE(msg.getTimeSecToComplete());
+        const uint32_t timeSecToComplete_BE = encodeFloatBE(msg.getTimeSecToComplete());
 
         std::vector<char> buf(sizeof(Op) + sizeof(racePosition) + sizeof(timeSecToComplete_BE));
         size_t offset = 0;
@@ -342,14 +342,14 @@ int ServerProtocol::sendPlayerStats(PlayerStats& msg) {
 int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
     try {
         const Op type = msg.type();
-        const uint32_t speed = encodeFloat100BE(msg.getSpeed());
-        const uint32_t raceTimeSeconds = encodeFloat100BE(msg.getRaceTimeSeconds());
+        const uint32_t speed = encodeFloatBE(msg.getSpeed());
+        const uint32_t raceTimeSeconds = encodeFloatBE(msg.getRaceTimeSeconds());
         const uint8_t raceNumber = msg.getRaceNumber();
         const ID nextCheckpointId = htons(msg.getNextCheckpointId());
-        const uint32_t checkX = encodeFloat100BE(msg.getCheckX());
-        const uint32_t checkY = encodeFloat100BE(msg.getCheckY());
-        const uint32_t angleHint = encodeFloat100BE(msg.getAngleHint());
-        const uint32_t distanceToChekpoint = encodeFloat100BE(msg.getDistanceToCheckpoint());
+        const uint32_t checkX = encodeFloatBE(msg.getCheckX());
+        const uint32_t checkY = encodeFloatBE(msg.getCheckY());
+        const uint32_t angleHint = encodeFloatBE(msg.getAngleHint());
+        const uint32_t distanceToChekpoint = encodeFloatBE(msg.getDistanceToCheckpoint());
         const uint8_t totalRaces = msg.getTotalRaces();
         const uint8_t totalCheckpoints = msg.getTotalCheckpoints();
 
@@ -473,13 +473,13 @@ int ServerProtocol::sendUpgradeLogic(UpgradeLogic& ul) {
             memcpy(buf.data() + offset, &t, sizeof(t));
             offset += sizeof(t);
 
-            const uint32_t value = encodeFloat100BE(upgradeDef.value);
+            const uint32_t value = encodeFloatBE(upgradeDef.value);
             // value (float)
             memcpy(buf.data() + offset, &value, sizeof(value));
             offset += sizeof(value);
 
             // penalty (float)
-            uint32_t penalty = encodeFloat100BE(upgradeDef.penaltySec);
+            uint32_t penalty = encodeFloatBE(upgradeDef.penaltySec);
             memcpy(buf.data() + offset, &penalty, sizeof(penalty));
             offset += sizeof(penalty);
         }
@@ -514,12 +514,12 @@ int ServerProtocol::sendRecommendedPath(RecommendedPath& rp) {
         for (const auto& recommendedPoint : ps) {
 
             // x (float)
-            const uint32_t x = encodeFloat100BE(recommendedPoint.x);
+            const uint32_t x = encodeFloatBE(recommendedPoint.x);
             memcpy(buf.data() + offset, &x, sizeof(x));
             offset += sizeof(x);
 
             // y (float)
-            uint32_t y = encodeFloat100BE(recommendedPoint.y);
+            uint32_t y = encodeFloatBE(recommendedPoint.y);
             memcpy(buf.data() + offset, &y, sizeof(y));
             offset += sizeof(y);
         }
