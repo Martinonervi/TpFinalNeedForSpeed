@@ -28,56 +28,45 @@
 
 class ServerProtocol {
 public:
+
+    // Constructor
+
     explicit ServerProtocol(Socket& peer);
 
-    // serializa y envía el mensaje por el socket
+    /* ---------- Serialización de datos ---------- */
+
     int sendPlayerState(const PlayerState& ps) const;
-
-    // recibe mensaje y devuelve el opcode del mensaje recibido
-    Opcode recvOpcode();
-
-    MoveMsg recvMoveInfo();
-
-    InitPlayer recvInitPlayer();
-
-    int sendPlayerInit(Player& sp) const;
-
-    RequestGame recvGameInfo();
-
     int sendGameInfo(const JoinGame& game_info);
-
     int sendGames(const MetadataGames& games);
-
     int sendCollisionEvent(SrvCarHitMsg& msg);
-
     int sendCheckpointHit(SrvCheckpointHitMsg& msg);
-
     int sendClientDisconnect(ClientDisconnect& msg);
-
     int sendCurrentInfo(SrvCurrentInfo& msg);
-
     int sendUpgradeLogic(UpgradeLogic& ul);
-
     int sendRecommendedPath(RecommendedPath& rp);
+    int sendPlayerInit(Player& sp) const;
+    int sendPlayerStats(PlayerStats& msg);
+    int sendTimeLeft(TimeLeft& msg);
+    int sendUpgrade(SendUpgrade& up);
+    int sendCarConfirmation(CarSelect& car_select);
 
+    /* ---------- Deserialización de datos ---------- */
+
+    Opcode recvOpcode();
+    MoveMsg recvMoveInfo();
+    InitPlayer recvInitPlayer();
+    RequestGame recvGameInfo();
+    DisconnectReq recvDisconnectReq();
+    RequestUpgrade recvUpgradeReq();
     CheatRequest recvCheat();
 
-    void append(std::vector<char>& buf, const void* p, std::size_t n);
+    // Helpers
 
+    void append(std::vector<char>& buf, const void* p, std::size_t n);
     void writeGameAppend(std::vector<char>& buf, const GameMetadata& metadata);
 
-    DisconnectReq recvDisconnectReq();
-
-    int sendPlayerStats(PlayerStats& msg);
-
-    int sendTimeLeft(TimeLeft& msg);
-
-    RequestUpgrade recvUpgradeReq();
-
-    int sendUpgrade(SendUpgrade& up);
-
-    int sendCarConfirmation(CarSelect& car_select);
 private:
+
     Socket& peer;
 
 };

@@ -43,5 +43,3 @@ void ClientHandler::close() {
 }
 
 bool ClientHandler::is_alive() { return sender.is_listening() && receiver.is_listening(); }
-
-ID ClientHandler::getID() { return id; }

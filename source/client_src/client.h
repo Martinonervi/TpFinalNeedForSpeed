@@ -9,15 +9,17 @@ class Client {
 public:
     Client(const char* host, const char* service);
 
-    void run();  // lógica disparadora del cliente
+    // lógica disparadora del cliente
+    void run();
+
 private:
-    void close();  // cierra el socket (por si hiciera falta cerrar más cosas)antes de irse
-                   // ordenadamente
-    bool lobbyState(); // lógica disparadora de QT (lobby), devuelve true
-                       // si el cliente nunca entró en partida
-    void postGame(PlayerStats& stats);  // lógica disparadora de QT (estadísticas)
-    void sendRequest(int game_id);
-    void recvGame();
+    // cierra el socket (por si hiciera falta cerrar más cosas)antes de irse ordenadamente
+    void close();
+    // lógica disparadora de QT (lobby), devuelve true si el cliente nunca entró en partida
+    bool lobbyState();
+    // lógica disparadora de QT (estadísticas)
+    void postGame(PlayerStats& stats);
+
     void stop();
     void join();
 
@@ -27,6 +29,5 @@ private:
     ClientProtocol protocol;
     ClientReceiver receiver;
     ClientSender sender;
-    Printer printer;
     bool in_game{false};
 };

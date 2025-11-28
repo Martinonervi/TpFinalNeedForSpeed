@@ -21,10 +21,6 @@ std::shared_ptr<gameLoopQueue> GameContext::getGameQueue() {
 std::unique_ptr<GameLoop> GameContext::takeGameThread() {
     return std::move(game_thread);
 }
-void GameContext::gameThreadStop() {
-    game_thread->stop();
-    game_thread->join();
-}
 
 bool GameContext::isStarted() const {
     return game_thread->isRaceStarted();

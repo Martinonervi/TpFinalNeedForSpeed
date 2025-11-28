@@ -37,7 +37,6 @@ public:
     MetadataGames getGames();
 
 private:
-    //void reap_dead(); // busca partidas inactivas para cerrar hilos y estructuras
 
     mutable std::mutex mx;
     ID last_id{0};
