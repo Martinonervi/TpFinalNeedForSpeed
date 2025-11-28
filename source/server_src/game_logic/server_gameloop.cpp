@@ -77,8 +77,9 @@ void GameLoop::run() {
             resetRaceState();
         }
     }
-
-    playerManager.sendPlayerStats(globalStats);
+    if (should_keep_running()) {
+        playerManager.sendPlayerStats(globalStats);
+    }
 }
 
 //setea el proximo recorrido
@@ -199,7 +200,11 @@ void GameLoop::resetRaceState() {
     }
     if (raceIndex > 0) {
         Cmd cmd_aux;
-        while (queue->try_pop(cmd_aux)) {}
+        try {
+            while (queue->try_pop(cmd_aux)) { }
+        } catch (const ClosedQueue&) {
+            // la queue ya fue cerrada por stop
+        }
     }
 }
 
@@ -339,7 +344,7 @@ void GameLoop::processLobbyCmds() {
                 break;
             }
             default: {
-                std::cout << "cmd desconocido: " << cmd.msg->type() << "\n";
+                std::cout << "[Gameloop] cmd desconocido: " << static_cast<int>(cmd.msg->type()) << "\n";
             }
         }
 
@@ -364,7 +369,7 @@ void GameLoop::processCmds() {
             }
 
             default: {
-                std::cout << "cmd desconocido: " << cmd.msg->type() << "\n";
+                std::cout << "[Gameloop] cmd desconocido: " << static_cast<int>(cmd.msg->type()) << "\n";
             }
         }
 
@@ -438,9 +443,11 @@ void GameLoop::disconnectHandler(ID id) {
 std::list<Cmd> GameLoop::emptyQueue() {
     std::list<Cmd> cmd_list;
     Cmd cmd_aux;
-
-    while (queue->try_pop(cmd_aux)) {
-        cmd_list.push_back(std::move(cmd_aux));
+    try {
+        while (queue->try_pop(cmd_aux)) {
+            cmd_list.push_back(std::move(cmd_aux));
+        }
+    } catch (const ClosedQueue&) {
     }
     return cmd_list;
 }

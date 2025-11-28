@@ -98,11 +98,11 @@ void Sender::run() {
                 }
                 case Opcode::CAR_SELECT: {
                     n = protocol.sendCarConfirmation(dynamic_cast<CarSelect&>(*msg));
-                    std::cout << "[Sender] mande opcode"<< std::endl;
+                    std::cout << "[Server Sender] mande opcode"<< std::endl;
                     break;
                 }
                 default: {
-                    std::cout << "cmd desconocido: " << msg->type() << "\n";
+                    std::cout << "[Server Sender] cmd desconocido: " << msg->type() << "\n";
                     n = 0; //quiero salir
                 }
             }

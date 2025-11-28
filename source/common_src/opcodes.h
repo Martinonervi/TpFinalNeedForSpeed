@@ -25,7 +25,8 @@ enum Opcode : Op {
     START_GAME      = 0x16,
     RECOMMENDED_PATH = 0x17,
     SEND_PLAYER = 0x18,
-    CAR_SELECT = 0x19
+    CAR_SELECT = 0x19,
+    SRV_DISCONNECTION = 0x20
 };
 
 enum err_code : Op {

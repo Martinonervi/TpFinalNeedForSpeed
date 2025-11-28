@@ -124,7 +124,16 @@ void LobbyWindow::on_playButton_clicked() {
 
     // pedir partidas al servidor
     protocol.requestGames();
-    Op op = protocol.readActionByte();
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        was_closed = true;
+        close();
+        return;
+    }
 
     if (op == REQUEST_GAMES) {
         MetadataGames games = protocol.getMetadata();
@@ -144,7 +153,16 @@ void LobbyWindow::on_quitButton_clicked() {
 
 void LobbyWindow::on_refreshButton_clicked() {
     protocol.requestGames();
-    Op op = protocol.readActionByte();
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        was_closed = true;
+        close();
+        return;
+    }
 
     if (op == REQUEST_GAMES) {
         MetadataGames games = protocol.getMetadata();
@@ -175,7 +193,16 @@ void LobbyWindow::on_joinButton_clicked() {
     RequestGame req(game_id);
     protocol.sendRequestGame(req);
 
-    Op op = protocol.readActionByte();
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        was_closed = true;
+        close();
+        return;
+    }
     if (op != JOIN_GAME) {
         QMessageBox::warning(this, "Unirse a partida",
                              "Respuesta inesperada del servidor.");
@@ -213,7 +240,16 @@ void LobbyWindow::on_createButton_clicked() {
     RequestGame req(game_id);
     protocol.sendRequestGame(req);
 
-    Op op = protocol.readActionByte();
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        was_closed = true;
+        close();
+        return;
+    }
     if (op != JOIN_GAME) {
         QMessageBox::warning(this, "Crear partida",
                              "Respuesta inesperada del servidor.");
@@ -551,7 +587,17 @@ void LobbyWindow::on_selectCarButton_clicked() {
                      "Respuesta inesperada del servidor.");
         return;
     }
-    Op op = protocol.readActionByte();
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        was_closed = true;
+        close();
+        return;
+    }
+
     if (op != CAR_SELECT) {
         return; // ???????
     }
