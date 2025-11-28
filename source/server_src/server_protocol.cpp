@@ -351,6 +351,7 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         const uint32_t angleHint = encodeFloat100BE(msg.getAngleHint());
         const uint32_t distanceToChekpoint = encodeFloat100BE(msg.getDistanceToCheckpoint());
         const uint8_t totalRaces = msg.getTotalRaces();
+        const uint8_t totalCheckpoints = msg.getTotalCheckpoints();
 
         std::vector<char> buf;
         buf.reserve(sizeof(Op) + 2*sizeof(uint8_t) + 7 * sizeof(uint32_t));
@@ -371,6 +372,7 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         append(&angleHint, sizeof(angleHint));
         append(&distanceToChekpoint, sizeof(distanceToChekpoint));
         append(&totalRaces, sizeof(totalRaces));
+        append(&totalCheckpoints, sizeof(totalCheckpoints));
 
         return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {

@@ -81,6 +81,8 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SrvCurrentInfo>(std::move(msg)));
                 receiverQueue.push(base);
+                std::cout<< "[client Receiver] total checkpoints: "
+                << static_cast<int>(msg.getTotalCheckpoints()) << "\n";
                 break;
             }
             case Opcode::STATS: {

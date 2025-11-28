@@ -291,9 +291,10 @@ void GameLoop::sendCurrentInfo() {
 
         b2Vec2 vecVel = b2Body_GetLinearVelocity(body);
         float speed = std::sqrt(vecVel.x*vecVel.x + vecVel.y*vecVel.y);
-
+        uint8_t totalCheckpoints = checkpoints.size();
         SrvCurrentInfo ci(cp.getId(), cp.getX(), cp.getY(), angle, len,
-                           MAX_RACE_TIME_SECONDS - raceTimeSeconds, raceIndex+1, speed, totalRaces);
+                           MAX_RACE_TIME_SECONDS - raceTimeSeconds, raceIndex+1, speed,
+                           totalRaces, totalCheckpoints);
 
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<SrvCurrentInfo>(std::move(ci)));
@@ -311,6 +312,7 @@ void GameLoop::processLobbyCmds() {
         switch (cmd.msg->type()) {
             case (Opcode::START_GAME): {
                 startRequested = true;
+                //comentar tiempo break
                 break;
             }
             case (Opcode::UPGRADE_REQUEST): {

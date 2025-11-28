@@ -8,7 +8,7 @@ class SrvCurrentInfo: public SrvMsg {
 public:
     SrvCurrentInfo(ID nextId, float checkX, float checkY, float angleHint, float distToCheck,
                                    float raceTime, std::uint8_t raceNumber, float speed
-                   , uint8_t totalRaces):
+                   , uint8_t totalRaces, uint8_t totalCheckpoints):
             nextCheckpointId(nextId),
             checkX(checkX),
             checkY(checkY),
@@ -17,7 +17,8 @@ public:
             raceTimeSeconds(raceTime),
             raceNumber(raceNumber),
             speed(speed),
-            totalRaces(totalRaces) {}
+            totalRaces(totalRaces),
+            totalCheckpoints(totalCheckpoints) {}
 
     Op type() const override { return Opcode::CURRENT_INFO; }
 
@@ -31,6 +32,7 @@ public:
     float getAngleHint() const { return angleHint; }
     float getDistanceToCheckpoint() const { return distanceToChekpoint; }
     uint8_t getTotalRaces() const { return totalRaces; }
+    uint8_t getTotalCheckpoints() const { return totalCheckpoints; }
 
 private:
     float speed;
@@ -44,6 +46,7 @@ private:
     float distanceToChekpoint;
 
     uint8_t totalRaces;
+    uint8_t totalCheckpoints;
 
 };
 
