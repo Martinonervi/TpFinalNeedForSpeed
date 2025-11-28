@@ -24,6 +24,11 @@
 #define FILE_YAML_PATH "../server_src/world/map.yaml"
 using Clock = std::chrono::steady_clock;
 
+const int MAX_PLAYERS = 8;
+const double LOBBY_TIMEOUT_SEC = 5.0;
+const double BETWEEN_RACES_SEC    = 3.0;
+const float MAX_RACE_TIME_SECONDS = 600.0f;
+
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(playerCars, checkpoints, *this->registry,
@@ -120,11 +125,10 @@ void GameLoop::setupRoute() {
               << "\n";
 }
 
+
+
 void GameLoop::waitingForPlayers() {
     ConstantRateLoop loop(5.0);
-    const int MAX_PLAYERS = 8;
-    const double LOBBY_TIMEOUT_SEC = 15.0;
-    const double BETWEEN_RACES_SEC    = 3.0;
 
     startRequested = false;
     raceStarted    = false;
@@ -216,7 +220,6 @@ void GameLoop::runSingleRace() {
                 std::chrono::duration<float> elapsed = now - raceStartTime;
                 raceTimeSeconds = elapsed.count();
 
-                const float MAX_RACE_TIME_SECONDS = 600.0f;
                 if (raceTimeSeconds >= MAX_RACE_TIME_SECONDS) {
                     this->raceEnded = true;
                     // asignar ranking?
@@ -285,7 +288,7 @@ void GameLoop::sendCurrentInfo() {
         float speed = std::sqrt(vecVel.x*vecVel.x + vecVel.y*vecVel.y);
 
         SrvCurrentInfo ci(cp.getId(), cp.getX(), cp.getY(), angle, len,
-                          raceTimeSeconds, raceIndex+1, speed, totalRaces);
+                           MAX_RACE_TIME_SECONDS - raceTimeSeconds, raceIndex+1, speed, totalRaces);
 
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<SrvCurrentInfo>(std::move(ci)));
