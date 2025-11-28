@@ -94,9 +94,9 @@ PlayerState ClientProtocol::recvSrvMsg() {
         //endianess para los floats??
 
         uint16_t player_id = ntohs(player_id_BE);
-        float x = decodeFloat100BE(x_BE);
-        float y = decodeFloat100BE(y_BE);
-        float angleRad = decodeFloat100BE(angleRad_BE);
+        float x = decodeFloatBE(x_BE);
+        float y = decodeFloatBE(y_BE);
+        float angleRad = decodeFloatBE(angleRad_BE);
 
 
         PlayerState ps(player_id, x, y, angleRad);
@@ -146,9 +146,9 @@ SendPlayer ClientProtocol::recvSendPlayer() {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
     uint16_t player_id = ntohs(player_id_BE);
-    float x = decodeFloat100BE(x_BE);
-    float y = decodeFloat100BE(y_BE);
-    float angleRad = decodeFloat100BE(angleRad_BE);
+    float x = decodeFloatBE(x_BE);
+    float y = decodeFloatBE(y_BE);
+    float angleRad = decodeFloatBE(angleRad_BE);
     return SendPlayer(player_id, carType, x, y, angleRad);
 }
 
@@ -174,9 +174,9 @@ NewPlayer ClientProtocol::recvNewPlayer() {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
     float player_id = ntohs(player_id_BE);
-    float x = decodeFloat100BE(x_BE);
-    float y = decodeFloat100BE(y_BE);
-    float angleRad = decodeFloat100BE(angleRad_BE);
+    float x = decodeFloatBE(x_BE);
+    float y = decodeFloatBE(y_BE);
+    float angleRad = decodeFloatBE(angleRad_BE);
 
     return NewPlayer(player_id, carType, x, y, angleRad);
 }
@@ -292,7 +292,7 @@ SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
     }
 
     ID player_id = ntohl(player_id_BE);
-    float health = decodeFloat100BE(health_BE);
+    float health = decodeFloatBE(health_BE);
     return SrvCarHitMsg(player_id, health);
 }
 
@@ -378,13 +378,13 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
         peer.recvall(&distanceToChekpoint_BE, sizeof(distanceToChekpoint_BE));
         peer.recvall(&totalRaces, sizeof(totalRaces));
 
-        float speed = decodeFloat100BE(speed_BE);
-        float raceTimeSecond = decodeFloat100BE(raceTimeSeconds_BE);
+        float speed = decodeFloatBE(speed_BE);
+        float raceTimeSecond = decodeFloatBE(raceTimeSeconds_BE);
         ID nextCheckpointID = ntohs(nextCheckpointId_BE);
-        float checkX = decodeFloat100BE(checkX_BE);
-        float checkY = decodeFloat100BE(checkY_BE);
-        float angleHint = decodeFloat100BE(angleHint_BE);
-        float distanceToheckpoint = decodeFloat100BE(distanceToChekpoint_BE);
+        float checkX = decodeFloatBE(checkX_BE);
+        float checkY = decodeFloatBE(checkY_BE);
+        float angleHint = decodeFloatBE(angleHint_BE);
+        float distanceToheckpoint = decodeFloatBE(distanceToChekpoint_BE);
 
 
         return SrvCurrentInfo(nextCheckpointID, checkX, checkY, angleHint,
@@ -428,7 +428,7 @@ PlayerStats ClientProtocol::recvStats() {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
 
-    float timeSecToComplete = decodeFloat100BE(timeSecToComplete_BE);
+    float timeSecToComplete = decodeFloatBE(timeSecToComplete_BE);
     return PlayerStats(racePosition, timeSecToComplete);
 }
 
@@ -503,11 +503,11 @@ UpgradeLogic ClientProtocol::recvUpgradeLogic() {
 
             uint32_t encodedValue;
             n += peer.recvall(&encodedValue, sizeof(encodedValue));
-            ud.value = decodeFloat100BE(encodedValue);
+            ud.value = decodeFloatBE(encodedValue);
 
             uint32_t encodedPenalty;
             n += peer.recvall(&encodedPenalty, sizeof(encodedPenalty));
-            ud.penaltySec = decodeFloat100BE(encodedPenalty);
+            ud.penaltySec = decodeFloatBE(encodedPenalty);
 
             uds.push_back(std::move(ud));
         }
@@ -533,11 +533,11 @@ RecommendedPath ClientProtocol::recvRecommendedPath() {
 
             uint32_t encodedX;
             n += peer.recvall(&encodedX, sizeof(encodedX));
-            rp.x = decodeFloat100BE(encodedX);
+            rp.x = decodeFloatBE(encodedX);
 
             uint32_t encodedY;
             n += peer.recvall(&encodedY, sizeof(encodedY));
-            rp.y = decodeFloat100BE(encodedY);
+            rp.y = decodeFloatBE(encodedY);
 
             rps.push_back(std::move(rp));
         }
