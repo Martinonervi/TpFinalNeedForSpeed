@@ -25,12 +25,15 @@ Para compilar y ejecutar el proyecto, ejecutar los siguientes comandos:
 ```bash
 chmod +x installer.sh
 ./installer.sh
-cd source/build-installer/
 ```
 
-Luego, se podrá ejecutar el binario generado dentro de `source/build-installer/`.
+Luego, se podrá levantar el servidor ejecutando el siguiente comando:
 
 ```bash
-./client localhost 5050
-./server 5050
+./server.sh
+```
+Y finalmente para conectar un cliente se puede ejecutar este último comando:
+
+```bash
+./client.sh
 ```
