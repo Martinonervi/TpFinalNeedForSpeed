@@ -25,10 +25,10 @@ void Acceptor::run() {
                 reap_dead();
             } catch (const std::exception& e) {
                 if (!should_keep_running()) {
-                    break;  // cierre esperado
+                    break;
                 }
                 std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
-                break;  // salimos igual para no loop-ear errores
+                break;
             }
         }
     } catch (const std::exception& e) {

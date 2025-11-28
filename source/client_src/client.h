@@ -16,8 +16,6 @@ private:
     bool lobbyState(); // lógica disparadora de QT (lobby), devuelve true
                        // si el cliente nunca entró en partida
     void postGame(PlayerStats& stats);  // lógica disparadora de QT (estadísticas)
-    void sendRequest(int game_id);
-    void recvGame();
     void stop();
     void join();
 
@@ -27,6 +25,5 @@ private:
     ClientProtocol protocol;
     ClientReceiver receiver;
     ClientSender sender;
-    Printer printer;
     bool in_game{false};
 };
