@@ -6,6 +6,7 @@
 
 #include <arpa/inet.h>
 
+#include "../common_src/cli_msg/cli_cheat_request.h"
 #include "../common_src/cli_msg/requestgame.h"
 #include "../common_src/srv_msg/srv_time_left.h"
 
@@ -550,4 +551,20 @@ int ServerProtocol::sendCarConfirmation(CarSelect& car_select) {
         std::cerr << e.what() << '\n';
         throw("Error sending");
     }
+}
+
+
+CheatRequest ServerProtocol::recvCheat() {
+    Cheat cheat;
+    int n = 0;
+    try {
+        n += peer.recvall(&cheat, sizeof(cheat));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+
+    return CheatRequest(cheat);
 }

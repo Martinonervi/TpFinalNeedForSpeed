@@ -92,6 +92,13 @@ void Receiver::run() {
                     cmdQueue->push(Cmd{id, base});
                     break;
                 }
+                case Opcode::REQUEST_CHEAT: {
+                    CheatRequest rc = protocol.recvCheat();
+                    CliMsgPtr base = std::static_pointer_cast<CliMsg>(
+                            std::make_shared<CheatRequest>(rc));
+                    cmdQueue->push(Cmd{id, base});
+                    break;
+                }
                 default: {
                     std::cout << "[Server receiver] cmd desconocido: " << static_cast<int>(op) << "\n";
                 }

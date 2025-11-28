@@ -21,6 +21,7 @@
 #include "../common_src/srv_msg/srv_send_upgrade.h"
 #include "../common_src/srv_msg/srv_time_left.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/cli_msg/cli_cheat_request.h"
 
 #include "server_types.h"
 
@@ -58,6 +59,8 @@ public:
     int sendUpgradeLogic(UpgradeLogic& ul);
 
     int sendRecommendedPath(RecommendedPath& rp);
+
+    CheatRequest recvCheat();
 
     void append(std::vector<char>& buf, const void* p, std::size_t n);
 

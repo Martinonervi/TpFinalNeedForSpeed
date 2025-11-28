@@ -586,3 +586,24 @@ CarSelect ClientProtocol::recvCarConfirmation() {
 
     return CarSelect(confirmation);
 }
+
+int ClientProtocol::sendCheat(const CheatRequest& up) {
+    try{
+        Op opcode = up.type();
+        Cheat cheat = up.getCheat();
+
+        std::vector<char> buf(sizeof(opcode) + sizeof(cheat));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &cheat, sizeof(cheat));
+        offset += sizeof(cheat);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}

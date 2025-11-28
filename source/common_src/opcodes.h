@@ -26,7 +26,8 @@ enum Opcode : Op {
     RECOMMENDED_PATH = 0x17,
     SEND_PLAYER = 0x18,
     CAR_SELECT = 0x19,
-    SRV_DISCONNECTION = 0x20
+    SRV_DISCONNECTION = 0x20,
+    REQUEST_CHEAT = 0x21,
 };
 
 enum err_code : Op {
@@ -43,6 +44,10 @@ enum Upgrade : Op {
     HEALTH = 0x03,
     SHIELD = 0x04,
     DAMAGE = 0x05
+};
+
+enum Cheat : Op {
+    HEALTH_CHEAT = 0x01,
 };
 
 #endif
