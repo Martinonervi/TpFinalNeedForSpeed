@@ -34,6 +34,7 @@ private:
     std::optional<SDL2pp::Texture> arrowTexture;
     std::optional<SDL2pp::Texture> upgradeFrameTexture;
     std::optional<SDL2pp::Texture> upgradeTexture;
+    std::optional<SDL2pp::Texture> startBackTexture;
 
     std::optional<CarTexture> carManager;
     std::optional<PeopleTexture> peopleManager;

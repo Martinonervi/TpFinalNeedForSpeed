@@ -17,7 +17,7 @@ void Hud::drawOverlay(const int x, const int y,
                       const ID playerId, const float raceTime,
                       const uint8_t totalRaces, const uint8_t raceNumber, Upgrade upgrade) const {
 
-    map.draw(x, 10, cars, playerId);
+    map.draw(x - 260, 10, cars, playerId, 150, 250);
 
     const auto it = cars.find(playerId);
     if (it == cars.end() || !it->second) return;
@@ -96,7 +96,7 @@ void Hud::drawSpeedText(const float clampedSpeed,
     int textX = static_cast<int>(x - 50);
     int textY = dstRectDial.y + dstRectDial.h;
 
-    drawer.drawText(speedText, textX, textY, white);
+    drawer.drawText(speedText, textX - 26, textY, white);
 }
 
 void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const float health) const {
@@ -212,7 +212,7 @@ void Hud::activeUpgrade(const int windowWidth, Upgrade upgrade) const {
     renderer.Copy(frameTex, srcFrame, dstFrame);
     if (upgrade == NONE) return;
 
-    SDL2pp::Rect srcIcon = SDL2pp::Rect(29, 1, 17, 17);
+    SDL2pp::Rect srcIcon = tm.getHud().getUpgradeIconRect(upgrade);
     const int iconScale = 4;  // mismo scale que el frame
     SDL2pp::Rect dstIcon(
         x + 8 * iconScale,  // offset dentro del frame

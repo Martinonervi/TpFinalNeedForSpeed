@@ -32,3 +32,10 @@ SDL2pp::Texture& HudTexture::getUpgradeFrame() const {
 SDL2pp::Texture& HudTexture::getUpgrades() const {
     return upgrades;
 }
+
+SDL2pp::Rect HudTexture::getUpgradeIconRect(const Upgrade type) const {
+    auto it = rects.find(type);
+    if (it != rects.end()) return it->second;
+
+    return SDL2pp::Rect(0, 0, 0, 0);
+}

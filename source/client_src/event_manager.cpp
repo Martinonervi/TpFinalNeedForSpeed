@@ -1,5 +1,7 @@
 #include "event_manager.h"
 
+#include "../common_src/cli_msg/cli_start_game.h"
+
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                                 SDL2pp::Renderer& renderer,
@@ -7,7 +9,9 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 SdlDrawer& drawer,
                                 TextureManager& textureManager,
                                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
-                                Hint& hint, UpgradeScreen& ups, bool& showUpgradeMenu,
+                                Hint& hint, UpgradeScreen& ups, Button& startBtn,
+                                bool& showStart,
+                                bool& showUpgradeMenu,
                                 bool& running, bool& showMap, bool& quit,
                                 float& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
                                 std::unique_ptr<PlayerStats>& playerStats,
@@ -24,14 +28,16 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         tm(textureManager),
         hint(hint),
         ups(ups),
+        startBtn(startBtn),
+        showStart(showStart),
         showUpgradeMenu(showUpgradeMenu),
         running(running),
         showMap(showMap),
         quit(quit),
-        totalRaces(totalRaces),
-        raceTime(raceTime),
-        raceNumber(raceNumber),
         playerStats(playerStats),
+        raceTime(raceTime),
+        totalRaces(totalRaces),
+        raceNumber(raceNumber),
         pathArray(pathArray),
         upgrade(upgrade),
         upgradesArray(upgradesArray)
@@ -54,22 +60,30 @@ void EventManager::handleEvents() const {
                 showUpgradeMenu = !showUpgradeMenu;
             }
         }
-        if (showUpgradeMenu) {
-            // Manejar hover
-            if (event.type == SDL_MOUSEMOTION) {
-                ups.handleMouseMotion(event.motion.x, event.motion.y);
-            }
 
-            // Manejar click
-            if (event.type == SDL_MOUSEBUTTONDOWN) {
-                std::string clickedButton;
-                auto [bought, upType] = ups.handleMouseClick(event.button.x, event.button.y, clickedButton);
+        if (event.type == SDL_MOUSEMOTION) {
+            if (showUpgradeMenu) {
+                ups.handleMouseMotion(event.motion.x, event.motion.y);
+            } else if (showStart) {
+                startBtn.handleHover(event.motion.x, event.motion.y);
+            }
+        }
+
+        if (event.type == SDL_MOUSEBUTTONDOWN) {
+            if (showUpgradeMenu) {
+                auto [bought, upType] = ups.handleMouseClick();
+
                 if (bought) {
                     RequestUpgrade reqUp(upType);
                     auto msg = std::make_shared<RequestUpgrade>(reqUp);
                     senderQueue.push(msg);
                     showUpgradeMenu = false;
                 }
+            } else if (showStart && startBtn.getHover()) {
+                StartGame strGame;
+                auto msg = std::make_shared<StartGame>(strGame);
+                senderQueue.push(msg);
+                showStart = false;
             }
         }
     }
@@ -186,7 +200,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case UPGRADE_SEND: {
             const auto sendUpgrade = dynamic_cast<const SendUpgrade&>(*msg);
-            std::cout << "Send Upgrade" << std::endl;
             if (sendUpgrade.couldBuy()) {
                 upgrade = sendUpgrade.getUpgrade();
             }
@@ -195,13 +208,12 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case UPGRADE_LOGIC: {
             const auto upgrades = dynamic_cast<const UpgradeLogic&>(*msg);
             upgradesArray = upgrades.getUpgrades();
-            std::cout << "Upgrade logic" << std::endl;
             ups.createButtons(upgradesArray);
             break;
         }
         case SRV_DISCONNECTION:{
-            // acá habría que tirar un mensaje de que se perdió la conexión
-            // y cerrar todo.
+            std::cout << "Server Disconnection" << std::endl;
+            running = false;
             break;
         }
         default:

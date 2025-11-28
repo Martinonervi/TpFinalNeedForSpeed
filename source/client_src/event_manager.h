@@ -38,7 +38,10 @@ public:
                               Queue<CliMsgPtr>& senderQueue, SdlDrawer& drawer,
                               TextureManager& textureManager,
                               std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
-                              Hint& hint, UpgradeScreen& ups, bool& showUpgradeMenu,
+                              Hint& hint, UpgradeScreen& ups,
+                              Button& startBtn,
+                              bool& showStart,
+                              bool& showUpgradeMenu,
                               bool& running, bool& showMap, bool& quit,
                               float& raceTime, uint8_t& totalRaces,
                               uint8_t& raceNumber,
@@ -61,6 +64,8 @@ private:
     TextureManager& tm;
     Hint& hint;
     UpgradeScreen& ups;
+    Button& startBtn;
+    bool& showStart;
     bool& showUpgradeMenu;
     bool& running;
     bool& showMap;
