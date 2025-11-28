@@ -2,12 +2,13 @@
 
 #include "../common_src/queue.h"
 #include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
-#include "../common_src/srv_msg/playerstats.h"
-#include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/srv_msg/srv_disconnection.h"
 #include "../common_src/srv_msg/srv_recommended_path.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -18,7 +19,10 @@ void ClientReceiver::run(){
         try {
             op = protocol.readActionByte();
         } catch (...) {
-            peerClosed = true;
+            SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                    std::make_shared<SrvDisconnection>());
+            receiverQueue.push(base);
+            // peerClosed = true; // ????
             break;
         }
         switch (op) {
@@ -125,6 +129,6 @@ void ClientReceiver::run(){
     }
 }
 
-bool ClientReceiver::is_listening() const { return !peerClosed; }
+/*bool ClientReceiver::is_listening() const { return !peerClosed; }*/
 
 

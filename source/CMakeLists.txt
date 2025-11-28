@@ -72,6 +72,7 @@ set(CLIENT_RESOURCES
         client_src/postgame/postgame_resources.qrc
         common_src/srv_msg/srv_time_left.h
         common_src/srv_msg/srv_car_select.h
+        common_src/srv_msg/srv_disconnection.h
 )
 
 add_executable(client

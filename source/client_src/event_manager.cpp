@@ -199,6 +199,11 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             ups.createButtons(upgradesArray);
             break;
         }
+        case SRV_DISCONNECTION:{
+            // acá habría que tirar un mensaje de que se perdió la conexión
+            // y cerrar todo.
+            break;
+        }
         default:
             break;
     }
