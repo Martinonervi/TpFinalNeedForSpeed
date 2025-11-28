@@ -33,7 +33,7 @@ GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<Clients
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(playerCars, checkpoints, *this->registry,
             raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking, lastRaceResults),
-        playerManager(worldManager, *this->registry, playerCars, spawnPoints, raceStarted)  {
+        playerManager(worldManager, *this->registry, playerCars, spawnPoints, raceStarted, checkpoints)  {
     loadMapFromYaml(FILE_YAML_PATH);
 }
 
@@ -367,6 +367,10 @@ void GameLoop::processCmds() {
             }
             case (Opcode::INIT_PLAYER): {
                 playerManager.initPlayer(cmd);
+                break;
+            }
+            case (Opcode::REQUEST_CHEAT): {
+                playerManager.cheatHandler(cmd);
                 break;
             }
 

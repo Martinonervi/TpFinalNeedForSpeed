@@ -55,7 +55,7 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     float vLong = vel.x * fwd.x + vel.y * fwd.y;
 
 
-    if (throttle > 0.0f && vLong < (MAX_FWD_SPEED * maxSpeedFactor)) {
+    if (throttle > 0.0f && vLong < (MAX_FWD_SPEED * maxSpeedFactor * maxSpeedCheat)) {
         b2Vec2 j = { fwd.x * (ENGINE_IMPULSE * engineFactor) * dt, fwd.y * ENGINE_IMPULSE * dt };
         b2Body_ApplyLinearImpulseToCenter(body, j, true);
     }
@@ -179,7 +179,7 @@ void Car::applyUpgrade(const UpgradeDef& up) {
             break;
         }
         case HEALTH: {
-            if (health != 1.0f) break;
+            if (health > 100.0f) break;
             health = health * up.value;
             upgradePenalty += up.penaltySec;
             totalUpgrades  += 1;
@@ -209,4 +209,29 @@ void Car::applyUpgrade(const UpgradeDef& up) {
 
 float Car::getDamage() {
     return damage;
+}
+
+
+void Car::setPosition(float x, float y) {
+    b2BodyId body = this->body;
+    b2Vec2 pos{ x, y };
+    b2Rot rot = b2Body_GetRotation(body);
+    b2Body_SetTransform(body, pos, rot);
+}
+
+
+void Car::applyCheat(const Cheat cheat) {
+    switch (cheat) {
+        case (Cheat::HEALTH_CHEAT): {
+            health = 100000.0f;
+            break;
+        }
+        case (Cheat::FREE_SPEED_CHEAT): {
+            maxSpeedCheat = 1000.f;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 }

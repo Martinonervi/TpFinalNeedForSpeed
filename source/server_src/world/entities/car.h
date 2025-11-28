@@ -2,6 +2,7 @@
 #include <box2d/box2d.h>
 
 #include "../../../common_src/cli_msg/move_Info.h"
+#include "../../../common_src/cli_msg/cli_cheat_request.h"
 #include "../../../common_src/constants.h"
 #include "../../../common_src/srv_msg/player_state.h"
 
@@ -65,7 +66,9 @@ public:
 
     float getShield();
     float getDamage();
+    void setPosition(float x, float y);
 
+    void applyCheat(Cheat cheat);
 
 
 private:
@@ -88,6 +91,8 @@ private:
     float shield   = 1.0f;
     float damage = 1.0f;
     uint8_t totalUpgrades = 0;
+
+    float maxSpeedCheat = 1.0f;
 
 };
 

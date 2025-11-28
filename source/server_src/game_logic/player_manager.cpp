@@ -1,6 +1,7 @@
 #include "player_manager.h"
 
 // player_manager.cpp
+#include "../../common_src/cli_msg/cli_cheat_request.h"
 #include "../../common_src/srv_msg/srv_car_select.h"
 
 #include "player_manager.h"
@@ -8,12 +9,11 @@
 PlayerManager::PlayerManager(WorldManager& world,
                              ClientsRegistry& registry,
                              std::unordered_map<ID, Car>& playerCars,
-                             const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted)
-        : world(world)
-          , registry(registry)
-          , playerCars(playerCars)
-          , spawnPoints(spawnPoints)
-          , raceStarted(raceStarted)
+                             const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
+                             const std::unordered_map<ID,Checkpoint> checkpoints):
+    world(world), registry(registry),
+    playerCars(playerCars), spawnPoints(spawnPoints),
+    raceStarted(raceStarted), checkpoints(checkpoints)
 {}
 
 bool PlayerManager::initPlayer(Cmd& cmd) {
@@ -90,6 +90,42 @@ bool PlayerManager::initPlayer(Cmd& cmd) {
     }
 
     return true;
+}
+
+void PlayerManager::cheatHandler(Cmd& cmd) {
+    const auto& cheatRequest  = dynamic_cast<const CheatRequest&>(*cmd.msg);
+    const auto cheat = cheatRequest.getCheat();
+
+    auto it = playerCars.find(cmd.client_id);
+    if (it == playerCars.end()) return;
+    Car& car = it->second;
+
+    switch (cheat) {
+        case (Cheat::HEALTH_CHEAT):
+        case (Cheat::FREE_SPEED_CHEAT): {
+            car.applyCheat(cheatRequest.getCheat());
+            break;
+        }
+        case (Cheat::WIN_RACE_CHEAT): {
+            break;
+        }
+        case (Cheat::LOST_RACE_CHEAT): {
+            break;
+        }
+        case (Cheat::NEXT_CHECKPOINT_CHEAT): {
+            const auto& actualCheckpoint = car.getActualCheckpoint();
+            auto it = checkpoints.find(actualCheckpoint + 1);
+            if (it == checkpoints.end()) return;
+            auto newCheckpoint = it->second;
+            car.setPosition(newCheckpoint.getX(), newCheckpoint.getY());
+            break;
+        }
+
+        default: {
+            std::cout << "[Gameloop] comando desconocido: " << static_cast<int>(cmd.msg->type()) << "\n";
+        }
+    }
+
 }
 
 void PlayerManager::handleMovement(Cmd& cmd, float dt) {

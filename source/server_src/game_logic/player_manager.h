@@ -27,13 +27,16 @@ public:
     PlayerManager(WorldManager& world,
                   ClientsRegistry& registry,
                   std::unordered_map<ID, Car>& playerCars,
-                  const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted);
+                  const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
+                  const std::unordered_map<ID,Checkpoint> checkpoints);
 
     // Devuelve true si se pudo crear el jugador (si había spawn)
     bool initPlayer(Cmd& cmd);
 
     // Aplica comandos de movimiento
     void handleMovement(Cmd& cmd, float dt);
+
+    void cheatHandler(Cmd& cmd);
 
     // Borra auto + cuerpo físico + libera spawn
     void disconnectPlayer(ID id);
@@ -51,6 +54,7 @@ private:
     WorldManager& world;
     ClientsRegistry& registry;
     std::unordered_map<ID, Car>& playerCars;
+    const std::unordered_map<ID,Checkpoint>& checkpoints;
     const std::vector<SpawnPointConfig>& spawnPoints;
 
     // manejo de spawns
