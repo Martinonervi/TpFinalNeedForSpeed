@@ -43,8 +43,12 @@
 #define CHECKPOINT_PATH "../assets/extras/checkpoint.png"
 #define HEALTH_NITRO_PATH "../assets/extras/health-and-nitro.png"
 #define SWORD_SHIELD_PATH "../assets/extras/sword-and-shield.png"
+#define START_BACK_PATH "../assets/extras/start-background.png"
 #define UPGRADES_PATH "../assets/extras/upgrades.png"
 #define LIBERTY_OVER_PATH "../assets/cities/liberty_city_over.png"
+#define FONT_PATH "../client_src/lobby/resources/fonts/pressstart2p.ttf"
+
+// #define FONT_PATH "../assets/fonts/pixel_font.ttf"
 
 using ID = std::uint32_t;
 

@@ -53,11 +53,13 @@ private:
     float raceTime = 0.0f;
     uint8_t totalRaces = 0;
     uint8_t raceNumber = 0;
+    Button startBtn;
     EventManager eventManager;
     bool showUpgradeMenu = false;
     bool running;
     bool quit = false;
     bool showMap = true;
+    bool showStart = true;
     std::vector<RecommendedPoint> pathArray;
     Upgrade upgrade = NONE;
     std::vector<UpgradeDef> upgradesArray;

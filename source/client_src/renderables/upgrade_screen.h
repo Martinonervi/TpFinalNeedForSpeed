@@ -6,6 +6,7 @@
 #include "../textures/texture_manager.h"
 
 #include "sdl_drawer.h"
+#include "button.h"
 
 struct UpgradeButton {
     Button button;
@@ -17,10 +18,9 @@ public:
     UpgradeScreen(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, int width,
                   int height, int windowWidth, int windowHeight);
     void renderPopUp();
-    SDL2pp::Rect getUpgradeIconRect(Upgrade type);
     void handleMouseMotion(int mouseX, int mouseY);
-    std::pair<bool, Upgrade> handleMouseClick(int mouseX, int mouseY, std::string& clickedButton);
-    void createButtons(std::vector<UpgradeDef>& upgradesArray);
+    std::pair<bool, Upgrade> handleMouseClick();
+    void createButtons(const std::vector<UpgradeDef>& upgradesArray);
 
 private:
     SDL2pp::Renderer& renderer;

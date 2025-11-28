@@ -1,4 +1,5 @@
 #include "upgrade_screen.h"
+#include "button.h"
 
 UpgradeScreen::UpgradeScreen(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm,
     const int width, const int height, const int windowWidth, const int windowHeight)
@@ -6,35 +7,22 @@ UpgradeScreen::UpgradeScreen(SDL2pp::Renderer& renderer, SdlDrawer& drawer, Text
     windowHeight(windowHeight)
 {}
 
+void UpgradeScreen::renderPopUp() {
+    const int panelX = windowWidth / 2 - width;
+    const int panelY = 85;
+    const SDL2pp::Rect panel = {panelX, panelY, width, height};
 
-inline std::string upgradeTypeToString(const Upgrade type) {
-    switch (type) {
-        case ENGINE_FORCE:
-            return "ENGINE_FORCE";
-        default:
-            return "Unknown";
-    }
-}
-
-
-void UpgradeScreen::renderPopUp()
-{
-    int panelX = windowWidth/2 - width/2;
-    int panelY = windowHeight/2 - height/2;
-    SDL2pp::Rect panel = {panelX, panelY, width, height};
-
-    renderer.SetDrawColor(0, 0, 0, 220);
+    renderer.SetDrawColor(0, 0, 0, 150);
     renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
     renderer.FillRect(panel);
 
     SDL2pp::Texture& slotTex = tm.getHud().getUpgradeFrame();
     auto& upgradesSheet = tm.getHud().getUpgrades();
 
-    for (size_t i = 0; i < buttons.size(); i++) {
-
-        // dibujar frame
-        int slotX = buttons[i].button.rect.x - 8*5;
-        int slotY = buttons[i].button.rect.y - 7*5;
+    for (auto& upBtn : buttons) {
+        const SDL2pp::Rect btnRect = upBtn.button.getRect();
+        const int slotX = btnRect.x - 8 * 5;
+        const int slotY = btnRect.y - 7*5;
 
         SDL2pp::Rect srcFrame(0, 0, slotTex.GetWidth(), slotTex.GetHeight());
         SDL2pp::Rect dstFrame(slotX, slotY,
@@ -43,82 +31,55 @@ void UpgradeScreen::renderPopUp()
 
         renderer.Copy(slotTex, srcFrame, dstFrame);
 
-        // dibujar botón
-        drawer.drawButton(buttons[i].button);
+        drawer.drawButton(upBtn.button);    // Capaz le pueda meter draw?
 
-        // dibujar icono
-        SDL2pp::Rect srcIcon = getUpgradeIconRect(buttons[i].type);
-        SDL2pp::Rect dstIcon(buttons[i].button.rect.x, buttons[i].button.rect.y, 14*5, 14*5);
+        SDL2pp::Rect srcIcon = tm.getHud().getUpgradeIconRect(upBtn.type);
+        SDL2pp::Rect dstIcon(btnRect.x, btnRect.y, 14*5, 14*5);
         renderer.Copy(upgradesSheet, srcIcon, dstIcon);
     }
 }
 
+void UpgradeScreen::handleMouseMotion(const int mouseX, const int mouseY) {
+    for (auto& upBtn : buttons) {
 
-
-SDL2pp::Rect UpgradeScreen::getUpgradeIconRect(const Upgrade type) {
-    switch (type) {
-        case ENGINE_FORCE:
-            return SDL2pp::Rect(29, 1, 17, 17);
-        default:
-            return SDL2pp::Rect(0, 0, 0, 0);
+        upBtn.button.handleHover(mouseX, mouseY);
     }
 }
 
-void UpgradeScreen::handleMouseMotion(int mouseX, int mouseY) {
-    // Actualizar hover de cada botón
+std::pair<bool, Upgrade> UpgradeScreen::handleMouseClick() {
     for (auto& upBtn : buttons) {
-        Button& btn = upBtn.button;
-        btn.hover = (mouseX >= btn.rect.x && mouseX <= btn.rect.x + btn.rect.w &&
-                     mouseY >= btn.rect.y && mouseY <= btn.rect.y + btn.rect.h);
-    }
-}
 
-std::pair<bool, Upgrade> UpgradeScreen::handleMouseClick(int mouseX, int mouseY, std::string& clickedButton) {
-    for (auto& upBtn : buttons) {
-        auto btn = upBtn.button;
-        if (mouseX >= btn.rect.x && mouseX <= btn.rect.x + btn.rect.w &&
-            mouseY >= btn.rect.y && mouseY <= btn.rect.y + btn.rect.h)
-        {
-            clickedButton = btn.text;
+        if (upBtn.button.getHover()) {
             return {true, upBtn.type};
         }
     }
     return {false, NONE};
 }
 
-void UpgradeScreen::createButtons(
-        std::vector<UpgradeDef>& upgradesArray)
+void UpgradeScreen::createButtons(const std::vector<UpgradeDef>& upgradesArray)
 {
-    int panelX = windowWidth/2 - width/2;
-    int panelY = windowHeight/2 - height/2;
+    const int panelX = windowWidth / 2 - width - 20;
+    const int panelY = 85;
     buttons.clear();
     buttons.reserve(upgradesArray.size());
 
     const int spacing = 100;
-    const int baseX = panelX + 50;
-    const int baseY = panelY + 50;
+    const int baseX = panelX + 10;
+    const int baseY = panelY + 20;
 
     for (size_t i = 0; i < upgradesArray.size(); i++) {
-        UpgradeDef& up = upgradesArray[i];
+        const UpgradeDef& up = upgradesArray[i];
 
-        // slot del frame
-        int slotX = baseX;
-        int slotY = baseY + i * spacing;
+        const int slotX = baseX;
+        const int slotY = baseY + i * spacing;
 
-        // botón
-        Button btn;
-        btn.rect.x = slotX + 8*5;
-        btn.rect.y = slotY + 7*5;
-        btn.rect.w = 14*5;
-        btn.rect.h = 14*5;
-        btn.text = upgradeTypeToString(up.type);
-        btn.color = {0,0,0,0};
-        btn.hoverColor = {255,255,255,100};
-        btn.hover = false;
+        const SDL2pp::Rect btnRect(slotX + 8*5, slotY + 7*5, 14*5, 14*5);
 
-        UpgradeButton upBtn;
-        upBtn.button = btn;
-        upBtn.type = up.type;
+        UpgradeButton upBtn{
+            Button(btnRect, "",
+                {0,0,0,0}, {255,255,255,100}),
+            up.type
+        };
 
         buttons.push_back(upBtn);
     }

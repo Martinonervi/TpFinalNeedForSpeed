@@ -1,5 +1,7 @@
 #include "sdl_drawer.h"
 
+#include "../../common_src/constants.h"
+
 SdlDrawer::SdlDrawer(SDL2pp::Renderer& renderer) : renderer(renderer) {
     loadFont();
 }
@@ -52,7 +54,7 @@ void SdlDrawer::loadFont() {
         std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
     }
 
-    font = TTF_OpenFont("../assets/fonts/pixel_font.ttf", 24);
+    font = TTF_OpenFont(FONT_PATH, 24);
     if (!font) {
         std::cerr << "Error cargando fuente: " << TTF_GetError() << std::endl;
     } else {
@@ -60,26 +62,26 @@ void SdlDrawer::loadFont() {
     }
 }
 
-void SdlDrawer::drawButton(const Button button) const {
+void SdlDrawer::drawButton(const Button& button) const {
 
-    SDL_Color color = button.hover ? button.hoverColor : button.color;
+    const SDL2pp::Color color = button.getColor();
 
     renderer.SetDrawColor(color.r, color.g, color.b, color.a);
-    renderer.FillRect(button.rect);
+    renderer.FillRect(button.getRect());
 
-    if (!button.text.empty()) {
+    if (!button.getText().empty()) {
         if (!font) return;
 
-        SDL_Surface* surface = TTF_RenderText_Blended(font, button.text.c_str(), {255,255,255,255});
+        SDL_Surface* surface = TTF_RenderText_Blended(font, button.getText().c_str(), {255,255,255,255});
         if (!surface) return;
 
         int w = surface->w;
         int h = surface->h;
         SDL_FreeSurface(surface);
 
-        int textX = button.rect.x + (button.rect.w - w) / 2;
-        int textY = button.rect.y + (button.rect.h - h) / 2;
+        int textX = button.getRect().x + (button.getRect().w - w) / 2;
+        int textY = button.getRect().y + (button.getRect().h - h) / 2;
 
-        drawText(button.text, textX, textY, {255, 255, 255, 255});
+        drawText(button.getText(), textX, textY, {255, 255, 255, 255});
     }
 }
