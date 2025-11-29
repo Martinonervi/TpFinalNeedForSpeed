@@ -19,21 +19,18 @@
 #include "../../common_src/cli_msg/cli_request_upgrade.h"
 #include "../../common_src/srv_msg/srv_upgrade_logic.h"
 
-#define TIME_STEP 1.0f / 60.0f //cuánto tiempo avanza el mundo en esa llamada.
-#define SUB_STEP_COUNT 4 //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
 #define FILE_YAML_PATH "../server_src/world/map.yaml"
 using Clock = std::chrono::steady_clock;
+const int MAX_PLAYERS = 8; //monitor, hablarlo con feli
 
-const int MAX_PLAYERS = 8;
-const double LOBBY_TIMEOUT_SEC = 5.0;
-const double BETWEEN_RACES_SEC    = 3.0;
-const float MAX_RACE_TIME_SECONDS = 600.0f;
 
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
+config(ConfigParser().load("../server_src/game_logic/config/config.yaml")),
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(playerCars, checkpoints, *this->registry,
             raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking, lastRaceResults),
-        playerManager(worldManager, *this->registry, playerCars, spawnPoints, raceStarted, checkpoints)  {
+upgrades(config.upgrades),
+        playerManager(worldManager, *this->registry, playerCars, spawnPoints, raceStarted, checkpoints, config)  {
     loadMapFromYaml(FILE_YAML_PATH);
 }
 
@@ -70,7 +67,7 @@ void GameLoop::run() {
         runSingleRace();
 
         updateGlobalStatsFromLastRace(); // acumula tiempos globales
-        computeGlobalRanking();
+
 
         raceIndex += 1;
         if (raceIndex < racesToPlay) { //no termino la ultima
@@ -78,6 +75,7 @@ void GameLoop::run() {
         }
     }
     if (should_keep_running()) {
+        computeGlobalRanking();
         playerManager.sendPlayerStats(globalStats);
     }
 }
@@ -130,14 +128,13 @@ void GameLoop::setupRoute() {
 
 
 void GameLoop::waitingForPlayers() {
-    ConstantRateLoop loop(5.0);
+    ConstantRateLoop loop(config.loops.lobbyHz);
 
     startRequested = false;
     raceStarted    = false;
 
     auto start = Clock::now();
-
-    const auto deadline = start + std::chrono::duration<double>(BETWEEN_RACES_SEC);
+    const auto deadline = start + std::chrono::duration<double>(config.lobby.betweenRacesSec);
     while (should_keep_running()) {
         processLobbyCmds();
 
@@ -211,19 +208,19 @@ void GameLoop::resetRaceState() {
 void GameLoop::runSingleRace() {
     raceStartTime = Clock::now();
     try {
-        ConstantRateLoop loop(60.0);
+        ConstantRateLoop loop(config.loops.raceHz);
 
         while (should_keep_running()) {
             checkPlayersStatus();
             processCmds();
-            worldManager.step(TIME_STEP, SUB_STEP_COUNT);
+            worldManager.step(config.physics.timeStep, config.physics.subStepCount);
 
             if (!raceEnded) {
                 auto now = Clock::now();
                 std::chrono::duration<float> elapsed = now - raceStartTime;
                 raceTimeSeconds = elapsed.count();
 
-                if (raceTimeSeconds >= MAX_RACE_TIME_SECONDS) {
+                if (raceTimeSeconds >= config.lobby.maxRaceTimeSec) {
                     this->raceEnded = true;
                     // asignar ranking?
                 }
@@ -291,7 +288,7 @@ void GameLoop::sendCurrentInfo() {
         float speed = std::sqrt(vecVel.x*vecVel.x + vecVel.y*vecVel.y);
         uint8_t totalCheckpoints = checkpoints.size();
         SrvCurrentInfo ci(cp.getId(), cp.getX(), cp.getY(), angle, len,
-                           MAX_RACE_TIME_SECONDS - raceTimeSeconds, raceIndex+1, speed,
+                           config.lobby.maxRaceTimeSec - raceTimeSeconds, raceIndex+1, speed,
                            totalRaces, totalCheckpoints);
 
         auto base = std::static_pointer_cast<SrvMsg>(
@@ -362,7 +359,7 @@ void GameLoop::processCmds() {
 
         switch (cmd.msg->type()) {
             case (Opcode::Movement): {
-                playerManager.handleMovement(cmd, TIME_STEP);
+                playerManager.handleMovement(cmd, config.physics.timeStep);
                 break;
             }
             case (Opcode::INIT_PLAYER): {
@@ -370,6 +367,7 @@ void GameLoop::processCmds() {
                 break;
             }
             case (Opcode::REQUEST_CHEAT): {
+                if (!config.cheats.enabled) break;
                 const auto& cr = dynamic_cast<const CheatRequest&>(*cmd.msg);
                 Cheat cheat = cr.getCheat();
 
@@ -381,10 +379,12 @@ void GameLoop::processCmds() {
                         break;
 
                     case Cheat::WIN_RACE_CHEAT:
+                        if (!config.cheats.allowWinRaceCheat) break;
                         forcePlayerWin(cmd.client_id);
                         break;
 
                     case Cheat::LOST_RACE_CHEAT:
+                        if (!config.cheats.allowLostRaceCheat) break;
                         //forcePlayerLose(cmd.client_id);
                         break;
 
@@ -524,11 +524,16 @@ void GameLoop::updateGlobalStatsFromLastRace() {
 }
 
 void GameLoop::computeGlobalRanking() {
-    // Pasamos el map a un vector para poder ordenarlo
     std::vector<std::pair<ID, PlayerGlobalStats*>> ranking;
     ranking.reserve(globalStats.size());
 
     for (auto& [id, stats] : globalStats) {
+        // le sumo la penalidad TOTAL que acumuló el auto en toda la partida
+        auto it = playerCars.find(id);
+        if (it != playerCars.end()) {
+            stats.totalTime += it->second.getPenalty();
+        }
+
         ranking.push_back({id, &stats});
     }
 
@@ -542,3 +547,5 @@ void GameLoop::computeGlobalRanking() {
         statsPtr->globalPosition = pos++;
     }
 }
+
+

@@ -73,6 +73,11 @@ public:
     void setPosition(float x, float y);
 
     void applyCheat(Cheat cheat);
+    b2Vec2 getPosition() const;
+    float  getAngleRad() const;
+    float getPenalty() const {
+        return upgradePenalty;
+    };
 
 
 private:

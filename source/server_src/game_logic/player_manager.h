@@ -15,6 +15,7 @@
 #include "../../common_src/srv_msg/send_player.h"
 #include "../../common_src/srv_msg/playerstats.h"
 #include "../../common_src/srv_msg/new_player.h"
+#include "config/config_parser.h"
 
 struct PlayerGlobalStats {
     float totalTime = 0.0f;
@@ -28,7 +29,7 @@ public:
                   ClientsRegistry& registry,
                   std::unordered_map<ID, Car>& playerCars,
                   const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
-                  const std::unordered_map<ID,Checkpoint>& checkpoints);
+                  const std::unordered_map<ID,Checkpoint>& checkpoints, const Config& config);
 
     // Devuelve true si se pudo crear el jugador (si había spawn)
     bool initPlayer(Cmd& cmd);
@@ -62,6 +63,8 @@ private:
     std::unordered_map<ID, ID> carToSpawnId;   // carId -> spawnId
 
     bool& raceStarted;
+
+    const Config& config;
 };
 
 

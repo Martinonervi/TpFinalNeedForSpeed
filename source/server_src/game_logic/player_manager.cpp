@@ -10,10 +10,11 @@ PlayerManager::PlayerManager(WorldManager& world,
                              ClientsRegistry& registry,
                              std::unordered_map<ID, Car>& playerCars,
                              const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
-                             const std::unordered_map<ID,Checkpoint>& checkpoints):
+                             const std::unordered_map<ID,Checkpoint>& checkpoints,
+                             const Config& config):
     world(world), registry(registry),
     playerCars(playerCars), spawnPoints(spawnPoints),
-    raceStarted(raceStarted), checkpoints(checkpoints)
+    raceStarted(raceStarted), checkpoints(checkpoints), config(config)
 {}
 
 bool PlayerManager::initPlayer(Cmd& cmd) {
@@ -63,17 +64,18 @@ bool PlayerManager::initPlayer(Cmd& cmd) {
             std::make_shared<SendPlayer>(cmd.client_id,
                                          ip.getCarType(),
                                          spawn.x, spawn.y,
-                                         3 /* placeholder lap o algo */));
+                                         spawn.angle));
     registry.sendTo(cmd.client_id, base);
 
     // le aviso al nuevo cliente dónde están los otros autos
     for (auto [id, car] : playerCars) {
         if (id == cmd.client_id) continue;
 
+        auto posCar = car.getPosition();
         auto newPlayer = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<NewPlayer>(id,
                                             car.getCarType(),
-                                            1, 2, 3)); // TODO: pos reales
+                                            posCar.x, posCar.y, car.getAngleRad()));
         registry.sendTo(cmd.client_id, newPlayer);
     }
 
@@ -102,11 +104,16 @@ void PlayerManager::cheatHandler(Cmd& cmd) {
 
     switch (cheat) {
         case (Cheat::HEALTH_CHEAT):
+            if (!config.cheats.allowHealthCheat) return;;
+            car.applyCheat(cheatRequest.getCheat());
+            break;
         case (Cheat::FREE_SPEED_CHEAT): {
+            if (!config.cheats.allowFreeSpeedCheat) return;;
             car.applyCheat(cheatRequest.getCheat());
             break;
         }
         case (Cheat::NEXT_CHECKPOINT_CHEAT): {
+            if (!config.cheats.allowNextCheckpointCheat) return;
             const auto& actualCheckpoint = car.getActualCheckpoint();
             auto it = checkpoints.find(actualCheckpoint + 1);
             if (it == checkpoints.end()) return;

@@ -107,6 +107,7 @@ void WorldEventHandlers::CarHitBuildingHandler(WorldEvent ev,
             std::make_shared<SrvCarHitMsg>(car.getClientId(), car.getHealth()));
     registry.broadcast(baseCarA);
 }
+
 void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
                                 std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame){
     // normalizamos la pareja (a,b) para que a < b y así no duplicamos

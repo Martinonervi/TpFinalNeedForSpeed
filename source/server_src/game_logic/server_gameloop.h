@@ -17,7 +17,7 @@
 #include "world_event_handlers.h"
 #include <chrono>
 #include "player_manager.h"
-
+#include "config/config_parser.h"
 
 class GameLoop: public Thread {
 
@@ -32,6 +32,8 @@ protected:
     void run() override;
 
 private:
+    Config config;
+
     void loadMapFromYaml(const std::string& path);
     void runSingleRace();
     void setupRoute();
@@ -85,18 +87,11 @@ private:
     bool startRequested = false;
     uint8_t raceIndex = 0;
 
-
     Printer printer;
     void simulatePlayerSpawns(int numPlayers);
 
 
-    std::vector<UpgradeDef> upgrades = {
-            { Upgrade::ENGINE_FORCE, 2.5f, 8.0f },
-            { Upgrade::HEALTH, 1.5f, 5.0f },
-            { Upgrade::SHIELD, 0.7f, 2.0f },
-            { Upgrade::DAMAGE, 2.f, 3.0f },
-    };
-
+    std::vector<UpgradeDef> upgrades;
 
 
     const UpgradeDef& findUpgradeDef(Upgrade type) const {

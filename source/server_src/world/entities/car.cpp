@@ -254,3 +254,13 @@ void Car::applyCheat(const Cheat cheat) {
         }
     }
 }
+
+b2Vec2 Car::getPosition() const {
+    b2Transform xf = b2Body_GetTransform(body);
+    return xf.p;   // (x, y) en el mundo
+}
+
+float Car::getAngleRad() const {
+    b2Transform xf = b2Body_GetTransform(body);
+    return b2Rot_GetAngle(xf.q);  // ángulo en radianes
+}
