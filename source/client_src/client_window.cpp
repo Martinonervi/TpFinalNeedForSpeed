@@ -24,10 +24,11 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
                 START_BTN_WIDTH, START_BTN_HEIGHT
             },
             BTN_TEXT, BTN_GREEN, BTN_GREEN_HOVER ),
+        disScreen(window.GetWidth(), window.GetHeight(), renderer, drawer),
         eventManager(myCarId, nextCheckpoint, totalCheckpoints, checkpointNumber,
             cars, renderer, senderQueue, drawer, tm, checkpoints, hint,
             ups, startBtn, showStart, running, quit, raceTime, totalRaces,
-            raceNumber, playerStats, pathArray, upgradesArray)
+            raceNumber, playerStats, pathArray, upgradesArray, srvDisconnect)
 {}
 
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
@@ -83,11 +84,30 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
             renderer.Present();
             loop.sleep_until_next_frame();
         }
+
+        audio.stopMusic();
+        uint32_t start = SDL_GetTicks();
+        while (SDL_GetTicks() - start < 3000 && srvDisconnect) {
+            SDL_Event e;
+            while (SDL_PollEvent(&e)) {
+                if (e.type == SDL_QUIT) {
+                    srvDisconnect = false;
+                }
+            }
+
+            renderer.SetDrawColor(BLACK);
+            renderer.Clear();
+
+            map.draw(camera);
+            disScreen.draw();
+
+            renderer.Present();
+        }
+
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
     }
 
-    audio.stopMusic();
     TTF_Quit();
     SDL_Quit();
 
