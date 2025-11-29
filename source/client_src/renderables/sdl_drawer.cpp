@@ -19,7 +19,9 @@ void SdlDrawer::drawCircle(const int cx, const int cy, const int radius) const{
     }
 }
 
-void SdlDrawer::drawText(const std::string& text, const int x, const int y, const SDL_Color color) const {
+void SdlDrawer::drawText(const std::string& text, const int x, const int y, const SDL_Color color,
+const float scaleX = 1.0f,
+const float scaleY = 1.0f) const {
     if (!font) return;
 
     SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), color);
@@ -31,6 +33,9 @@ void SdlDrawer::drawText(const std::string& text, const int x, const int y, cons
     int w = surface->w;
     int h = surface->h;
 
+
+    std::cout << surface->w << " " << surface->h << std::endl;
+
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer.Get(), surface);
 
     SDL_FreeSurface(surface);
@@ -40,8 +45,13 @@ void SdlDrawer::drawText(const std::string& text, const int x, const int y, cons
         return;
     }
 
-    SDL_Rect textRect { x, y, w, h };
-    SDL_RenderCopy(renderer.Get(), texture, nullptr, &textRect);
+    SDL_Rect dstRect {
+        x,
+        y,
+        static_cast<int>(w * scaleX),
+        static_cast<int>(h * scaleY)
+    };
+    SDL_RenderCopy(renderer.Get(), texture, nullptr, &dstRect);
     SDL_DestroyTexture(texture);
 }
 
@@ -79,9 +89,9 @@ void SdlDrawer::drawButton(const Button& button) const {
         int h = surface->h;
         SDL_FreeSurface(surface);
 
-        int textX = button.getRect().x + (button.getRect().w - w) / 2;
-        int textY = button.getRect().y + (button.getRect().h - h) / 2;
+        const int textX = button.getRect().x + (button.getRect().w - w) / 2;
+        const int textY = button.getRect().y + (button.getRect().h - h) / 2;
 
-        drawText(button.getText(), textX, textY, {255, 255, 255, 255});
+        drawText(button.getText(), textX, textY, {255, 255, 255, 255}, 1.0f, 1.0f);
     }
 }

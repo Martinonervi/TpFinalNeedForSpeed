@@ -33,24 +33,16 @@
 class EventManager {
 public:
     EventManager(ID& myCarId, ID& nextCheckpoint,
-    std::unordered_map<ID, std::unique_ptr<Car>>& cars,
-                              SDL2pp::Renderer& renderer,
-                              Queue<CliMsgPtr>& senderQueue, SdlDrawer& drawer,
-                              TextureManager& textureManager,
-                              std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
-                              Hint& hint, UpgradeScreen& ups,
-                              Button& startBtn,
-                              bool& showStart,
-                              bool& showUpgradeMenu,
-                              bool& running, bool& showMap, bool& quit,
-                              float& raceTime, uint8_t& totalRaces,
-                              uint8_t& raceNumber,
-                              std::unique_ptr<PlayerStats>& playerStats,
-                              std::vector<RecommendedPoint>& pathArray,
-                              Upgrade& upgrade,
-                              std::vector<UpgradeDef>& upgradesArray);
+                 std::unordered_map<ID, std::unique_ptr<Car>>& cars, SDL2pp::Renderer& renderer,
+                 Queue<CliMsgPtr>& senderQueue, SdlDrawer& drawer, TextureManager& textureManager,
+                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints, Hint& hint,
+                 UpgradeScreen& ups, Button& startBtn, bool& showStart,
+                 bool& running, bool& showMap, bool& quit, float& raceTime, uint8_t& totalRaces,
+                 uint8_t& raceNumber, std::unique_ptr<PlayerStats>& playerStats,
+                 std::vector<RecommendedPoint>& pathArray, Upgrade& upgrade,
+                 std::vector<UpgradeDef>& upgradesArray);
 
-    void handleEvents() const;
+    void handleEvents(AudioManager& audio) const;
     void handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio);
 
 private:
@@ -66,7 +58,6 @@ private:
     UpgradeScreen& ups;
     Button& startBtn;
     bool& showStart;
-    bool& showUpgradeMenu;
     bool& running;
     bool& showMap;
     bool& quit;

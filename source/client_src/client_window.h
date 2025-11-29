@@ -55,7 +55,6 @@ private:
     uint8_t raceNumber = 0;
     Button startBtn;
     EventManager eventManager;
-    bool showUpgradeMenu = false;
     bool running;
     bool quit = false;
     bool showMap = true;

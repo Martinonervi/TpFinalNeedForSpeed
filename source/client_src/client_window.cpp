@@ -34,7 +34,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
             {0, 255, 51, 255}
             ),
         eventManager(myCarId, nextCheckpoint, cars, renderer, senderQueue, drawer,
-            tm, checkpoints, hint, ups, startBtn, showStart, showUpgradeMenu, running, showMap, quit,
+            tm, checkpoints, hint, ups, startBtn, showStart, running, showMap, quit,
             raceTime, totalRaces, raceNumber, playerStats, pathArray, upgrade, upgradesArray) {}
 
 // Hay que manejar FPS
@@ -53,8 +53,6 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
 
     audio.loadMusic("game_music", "../assets/sfx/game-music.wav");
 
-    audio.playMusic("game_music", -1);
-
     try {
         ConstantRateLoop loop(60.0);
 
@@ -67,13 +65,13 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                 break;
             }
 
-            eventManager.handleEvents();
+            eventManager.handleEvents(audio);
 
             renderer.SetDrawColor(0, 0, 0, 255);
             renderer.Clear();
 
             if (showStart) {
-                startScreen.draw(window.GetWidth(), window.GetHeight(), showUpgradeMenu);
+                startScreen.draw(window.GetWidth(), window.GetHeight());
             } else {
                 map.draw(camera);
 
@@ -135,7 +133,8 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
 
 
                 if (showMap)
-                    hud.drawOverlay(window.GetWidth(), window.GetHeight(), cars, myCarId, raceTime, totalRaces, raceNumber, upgrade);  // Por ahora asi
+                    hud.drawOverlay(window.GetWidth(), window.GetHeight(),
+                        cars, myCarId, raceTime, totalRaces, raceNumber, upgrade);  // Por ahora asi
 
             }
 

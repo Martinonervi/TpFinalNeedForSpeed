@@ -11,7 +11,6 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                                 Hint& hint, UpgradeScreen& ups, Button& startBtn,
                                 bool& showStart,
-                                bool& showUpgradeMenu,
                                 bool& running, bool& showMap, bool& quit,
                                 float& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
                                 std::unique_ptr<PlayerStats>& playerStats,
@@ -30,7 +29,6 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         ups(ups),
         startBtn(startBtn),
         showStart(showStart),
-        showUpgradeMenu(showUpgradeMenu),
         running(running),
         showMap(showMap),
         quit(quit),
@@ -43,7 +41,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         upgradesArray(upgradesArray)
 {}
 
-void EventManager::handleEvents() const {
+void EventManager::handleEvents(AudioManager& audio) const {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
@@ -56,38 +54,35 @@ void EventManager::handleEvents() const {
                 senderQueue.push(msg);
             } else if (event.key.keysym.sym == SDLK_m) {
                 showMap = !showMap;
-            } else if (event.key.keysym.sym == SDLK_u) {
-                showUpgradeMenu = !showUpgradeMenu;
             }
         }
 
         if (event.type == SDL_MOUSEMOTION) {
-            if (showUpgradeMenu) {
+            if (showStart) {
                 ups.handleMouseMotion(event.motion.x, event.motion.y);
-            } else if (showStart) {
                 startBtn.handleHover(event.motion.x, event.motion.y);
             }
         }
 
         if (event.type == SDL_MOUSEBUTTONDOWN) {
-            if (showUpgradeMenu) {
+            if (showStart) {
                 auto [bought, upType] = ups.handleMouseClick();
-
                 if (bought) {
                     RequestUpgrade reqUp(upType);
-                    auto msg = std::make_shared<RequestUpgrade>(reqUp);
-                    senderQueue.push(msg);
-                    showUpgradeMenu = false;
+                    senderQueue.push(std::make_shared<RequestUpgrade>(reqUp));
                 }
-            } else if (showStart && startBtn.getHover()) {
-                StartGame strGame;
-                auto msg = std::make_shared<StartGame>(strGame);
-                senderQueue.push(msg);
-                showStart = false;
+
+                if (startBtn.getHover()) {
+                    StartGame strGame;
+                    senderQueue.push(std::make_shared<StartGame>(strGame));
+                    showStart = false;
+                    audio.playMusic("game_music", -1);
+                }
             }
         }
     }
 }
+
 
 
 void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio) {
@@ -158,7 +153,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case CURRENT_INFO: {
             const auto current = dynamic_cast<const SrvCurrentInfo&>(*msg);
             if (current.getRaceNumber() != lastRaceNumber) {
-                std::cout << "Nueva carrera! Limpio checkpoints viejos..." << std::endl;
                 checkpoints.clear();
             }
 
@@ -202,6 +196,8 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             const auto sendUpgrade = dynamic_cast<const SendUpgrade&>(*msg);
             if (sendUpgrade.couldBuy()) {
                 upgrade = sendUpgrade.getUpgrade();
+                audio.stopSound("purchase");
+                audio.playSound("purchase");
             }
             break;
         }
