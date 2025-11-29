@@ -388,7 +388,7 @@ void GameLoop::processCmds() {
 
                     case Cheat::LOST_RACE_CHEAT:
                         if (!config.cheats.allowLostRaceCheat) break;
-                        //forcePlayerLose(cmd.client_id);
+                        forcePlayerLose(cmd.client_id);
                         break;
 
                     default:
@@ -406,6 +406,21 @@ void GameLoop::processCmds() {
     }
 }
 
+void GameLoop::forcePlayerLose(ID id) {
+    auto itCar = playerCars.find(id);
+    if (itCar == playerCars.end()) return;
+
+    Car& car = itCar->second;
+
+    if (car.isFinished()) return;
+
+    eventHandlers.setKillCar(car);
+
+    auto msg = std::static_pointer_cast<SrvMsg>(
+        std::make_shared<SrvCarHitMsg>(id, car.getHealth(), /*totalHealth*/ 100.0f));
+    registry->broadcast(msg);
+    // al final de la carrera, finalizeDNFs() lo va a marcar como DNF.
+}
 
 void GameLoop::forcePlayerWin(ID id) {
     auto itCar = playerCars.find(id);

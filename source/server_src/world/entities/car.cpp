@@ -179,7 +179,7 @@ bool Car::applyUpgrade(const UpgradeDef& up) {
         case HEALTH: {
             if (health > 100.0f) break;
             health = health * up.value;
-            totalHealth += health;
+            totalHealth = health;
             upgradePenalty += up.penaltySec;
             totalUpgrades  += 1;
             apply = true;

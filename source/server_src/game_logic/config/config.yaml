@@ -3,9 +3,9 @@ loops:
   race_hz: 60.0
 
 lobby:
-  max_players: 8
+  max_players: 8 #enunciado: 8
   between_races_sec: 5.0
-  max_race_time_sec: 600.0
+  max_race_time_sec: 600.0 #enunciado: 10mins
 
 physics:
   time_step: 0.0166667   # 1/60

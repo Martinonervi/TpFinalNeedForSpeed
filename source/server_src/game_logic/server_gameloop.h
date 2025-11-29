@@ -109,6 +109,7 @@ private:
     std::unordered_map<ID, PlayerGlobalStats> globalStats;
 
     void forcePlayerWin(ID id);
+    void forcePlayerLose(ID id);
 
 };
 

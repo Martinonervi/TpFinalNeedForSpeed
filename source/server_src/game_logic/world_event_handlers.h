@@ -34,6 +34,7 @@ public:
 
     void onPlayerFinishedRace(ID playerId, float timeSec);
     void CarFinishRace(Car& car);
+    void setKillCar(Car& car);
 
 private:
     std::unordered_map<ID, Car>& playerCars;

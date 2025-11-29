@@ -98,10 +98,7 @@ void WorldEventHandlers::CarHitBuildingHandler(
     car.applyDamage(damage);
 
     if (car.isCarDestroy()) {
-        b2Vec2 zero = {0.f, 0.f};
-        b2Body_SetLinearVelocity(body, zero);
-        b2Body_SetAngularVelocity(body, 0.f);
-        totalCars -= 1;
+        setKillCar(car);
     } else {
         b2Vec2 newVel = {
                 vel.x - ev.nx * impactSpeed * VELOCITY_DAMP,
@@ -115,7 +112,14 @@ void WorldEventHandlers::CarHitBuildingHandler(
                 car.getTotalHealth()));
     registry.broadcast(msg);
 }
-
+void WorldEventHandlers::setKillCar(Car& car) {
+    b2BodyId body = car.getBody();
+    b2Vec2 zero = {0.f, 0.f};
+    b2Body_SetLinearVelocity(body, zero);
+    b2Body_SetAngularVelocity(body, 0.f);
+    car.kill();
+    totalCars -= 1;
+}
 
 void WorldEventHandlers::CarHitCarHandler(
     WorldEvent ev,
@@ -186,20 +190,16 @@ void WorldEventHandlers::CarHitCarHandler(
             vB.y + ev.ny * bAlongN * VELOCITY_DAMP
     };
 
+    b2Body_SetLinearVelocity(bodyA, newVA);
+    b2Body_SetLinearVelocity(bodyB, newVB);
+
     if (carA.isCarDestroy()) {
-        newVA = {0.f, 0.f};
-        b2Body_SetAngularVelocity(bodyA, 0.f);
-        totalCars -= 1;
+        setKillCar(carA);
     }
 
     if (carB.isCarDestroy()) {
-        newVB = {0.f, 0.f};
-        b2Body_SetAngularVelocity(bodyB, 0.f);
-        totalCars -= 1;
+        setKillCar(carB);
     }
-
-    b2Body_SetLinearVelocity(bodyA, newVA);
-    b2Body_SetLinearVelocity(bodyB, newVB);
 
     auto baseCarA = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCarHitMsg>(carA.getClientId(), carA.getHealth(),
