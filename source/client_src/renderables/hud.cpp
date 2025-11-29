@@ -1,11 +1,10 @@
 #include "hud.h"
-#include <iostream>
-#include <cmath>
-#include <algorithm>
 
-#define SIZE_OF_DIAL 150
-#define DIAL_MARGIN 40
-#define MAX_FRAMES 3
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+
+#include "../sdl_constants.h"
 
 Hud::Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, const MapType maptype,
     std::vector<RecommendedPoint>& pathArray)
@@ -27,15 +26,15 @@ void Hud::drawOverlay(const int x, const int y,
     const float px = playerCar.getX();
     const float py = playerCar.getY();
 
-    int mapX = x - 260;
-    int mapY = 10;
+    int mapX = x - MINIMAP_SIZE - HUD_MARGIN;
+    int mapY = HUD_MARGIN;
 
     if (px > x/2 && py < y/2) {
-        mapX = 10;
-        mapY = y - 250 - 10;
+        mapX = HUD_MARGIN;
+        mapY = y - MINIMAP_SIZE - HUD_MARGIN;
     }
 
-    map.draw(mapX, mapY, cars, playerId, 150, 250);
+    map.draw(mapX, mapY, cars, playerId, 150, MINIMAP_SIZE);
 
     const auto upgrades = it->second->getUpgrades();
     const float healthPerc = playerCar.getHealthPercentage();
@@ -70,24 +69,20 @@ void Hud::drawDial(SDL2pp::Renderer& renderer, const float speed, const int wind
 }
 
 float Hud::drawNeedle(const float x, const float y, const SDL2pp::Rect dstRectDial, const float speed) const {
-    constexpr float minSpeed = 0.0f;
-    constexpr float maxSpeed = 80.0f;
-    constexpr float minAngle = -225.0f;
-    constexpr float maxAngle = 45.0f;
-
-    const float clampedSpeed = std::clamp(speed, minSpeed, maxSpeed);
-    const float angle = minAngle + (clampedSpeed - minSpeed) * (maxAngle - minAngle) / (maxSpeed - minSpeed);
+    const float clampedSpeed = std::clamp(speed, MIN_SPEED, MAX_SPEED);
+    const float angle =
+        MIN_NEEDLE_ANGLE + (clampedSpeed - MIN_SPEED) * (MAX_NEEDLE_ANGLE - MIN_NEEDLE_ANGLE) / (MAX_SPEED - MIN_SPEED);
 
     const float needleLength = dstRectDial.w * 0.4f;
     const float rad = angle * M_PI / 180.0f;
     const float endX = x + needleLength * cos(rad);
     const float endY = y + needleLength * sin(rad);
 
-    renderer.SetDrawColor(255, 0, 0, 255);
+    renderer.SetDrawColor(RED);
     renderer.DrawLine(static_cast<int>(x), static_cast<int>(y),
                       static_cast<int>(endX), static_cast<int>(endY));
 
-    renderer.SetDrawColor(0, 0, 0, 255);
+    renderer.SetDrawColor(BLACK);
     constexpr int radius = 4;
     for (int w = 0; w < radius * 2; w++) {
         for (int h = 0; h < radius * 2; h++) {
@@ -106,18 +101,17 @@ void Hud::drawSpeedText(const float clampedSpeed,
                         const float x) const {
 
     const std::string speedText = std::to_string(static_cast<int>(clampedSpeed)) + " km/h";
-    constexpr SDL2pp::Color white = {255, 255, 255, 255};
 
     const int textX = static_cast<int>(x - 50);
     const int textY = dstRectDial.y + dstRectDial.h;
 
-    drawer.drawText(speedText, textX - 26, textY, white, 1.0f, 1.0f);
+    drawer.drawText(speedText, textX - 26, textY, WHITE, 1.0f, 1.0f);
 }
 
 void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const float healthPerc) const {
     constexpr int scale = 3;
     const int x = windowWidth / 3;
-    const int y = 10*scale;
+    constexpr int y = HUD_MARGIN*scale;
 
     SDL2pp::Texture& barsTexture = tm.getHud().getBarsTexture();
 
@@ -146,42 +140,39 @@ void Hud::drawHealthFill(SDL2pp::Renderer& renderer, const float healthPerc, SDL
     };
 
     renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
-    renderer.SetDrawColor(255, 0, 77, 125);
+    renderer.SetDrawColor(RED_HEALTH_FILL);
     renderer.FillRect(dst);
 }
 
 void Hud::drawGameTime(const int totalSeconds) const {
-    const int hours = totalSeconds / 3600;
-    const int minutes = (totalSeconds % 3600) / 60;
-    const int seconds = totalSeconds % 60;
+    const int hours = totalSeconds / HOURS_TO_SECS;
+    const int minutes = (totalSeconds % HOURS_TO_SECS) / MINS_TO_SECS;
+    const int seconds = totalSeconds % MINS_TO_SECS;
 
     char buffer[20];
     snprintf(buffer, sizeof(buffer), "%02d:%02d:%02d", hours, minutes, seconds);
 
-    constexpr SDL2pp::Color yellow = {255, 255, 0, 255};
-    drawer.drawText(buffer, 20, 75, yellow, 0.7f, 0.75f);
+    drawer.drawText(buffer, 20, 75, YELLOW, 0.7f, 0.75f);
 }
 
 // MODULARIZAR
 
-void Hud::drawRaceNumber(int current, int total) const {
-    const std::string txt = "Race " + std::to_string(current) + "/" + std::to_string(total);
-    constexpr SDL2pp::Color white = {255, 255, 255, 255};
+void Hud::drawRaceNumber(const int current, const int total) const {
+    const std::string txt = RACE_TXT + std::to_string(current) + BACK_SLASH + std::to_string(total);
 
-    drawer.drawText(txt, 20, 15, white, 0.8f, 0.8f);
+    drawer.drawText(txt, 20, 15, WHITE, 0.8f, 0.8f);
 }
 
 void Hud::drawCheckpointNumber(const int current, const int total) const {
-    const std::string txt = "Checkpoint " + std::to_string(current) + "/" + std::to_string(total);
-    constexpr SDL2pp::Color white = {255, 255, 255, 255};
+    const std::string txt = CHECK_TXT + std::to_string(current) + BACK_SLASH + std::to_string(total);
 
-    drawer.drawText(txt, 20, 45, white, 0.8f, 0.8f);
+    drawer.drawText(txt, 20, 45, WHITE, 0.8f, 0.8f);
 }
 
 // -- - - -- - - -
 
 void Hud::activeUpgrades(const int windowWidth, const std::vector<Upgrade>& upgrades) const {
-    for (int i = 0; i < MAX_FRAMES; i++) {
+    for (int i = 0; i < MAX_UPGRADE_FRAMES; i++) {
         const Upgrade up = (i < upgrades.size() ? upgrades[i] : NONE);
         drawUpgrade(windowWidth, up, i);
     }
@@ -204,7 +195,7 @@ void Hud::drawUpgrade(const int windowWidth, const Upgrade upgrade, const int i)
 
     constexpr int spacing = 15;
 
-    constexpr int totalWidth = MAX_FRAMES * realW + (MAX_FRAMES - 1) * spacing;
+    constexpr int totalWidth = MAX_UPGRADE_FRAMES * realW + (MAX_UPGRADE_FRAMES - 1) * spacing;
     const int startX = (windowWidth - totalWidth) / 2 + 190;
     const int y = 0;
     const int x = startX + i * (realW + spacing);

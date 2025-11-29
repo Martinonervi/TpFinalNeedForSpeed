@@ -1,4 +1,7 @@
 #include "upgrade_screen.h"
+
+#include "../sdl_constants.h"
+
 #include "button.h"
 
 UpgradeScreen::UpgradeScreen(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm,
@@ -12,7 +15,7 @@ void UpgradeScreen::renderPopUp() const {
     const int panelY = 85;
     const SDL2pp::Rect panel = {panelX, panelY, width, height};
 
-    renderer.SetDrawColor(0, 0, 0, 150);
+    renderer.SetDrawColor(BLACK.r, BLACK.g, BLACK.b, 150);
     renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
     renderer.FillRect(panel);
 
@@ -85,7 +88,8 @@ void UpgradeScreen::createButtons(const std::vector<UpgradeDef>& upgradesArray)
         const SDL2pp::Rect btnRect(slotX + 8 * 5, slotY + 7 * 5, 14 * 5, 14 * 5);
         const SDL2pp::Rect iconRect = tm.getHud().getUpgradeIconRect(up.type);
         UpgradeButton upBtn{
-            Button(btnRect, "", {0,0,0,0}, {255,255,255,100}),
+            Button(btnRect, NO_TEXT, {0,0,0,0},
+                {WHITE.r,WHITE.g,WHITE.b,100}),
             up.type,
             up.penaltySec,
             iconRect
@@ -96,15 +100,13 @@ void UpgradeScreen::createButtons(const std::vector<UpgradeDef>& upgradesArray)
 }
 
 void UpgradeScreen::writeDescription(const float penalty, const std::string& desc, const int x, const int y) const {
-    constexpr SDL2pp::Color white = {255, 255, 255, 255};
-    constexpr SDL2pp::Color red   = {255, 0, 0, 255};
 
-    drawer.drawText(desc, x - 28, y + 40, white, 0.45f, 0.65f);
+    drawer.drawText(desc, x - 28, y + 40, WHITE, 0.45f, 0.65f);
 
     char buf[64];
-    std::snprintf(buf, sizeof(buf), "Time penalty: + %.2f", penalty);
+    std::snprintf(buf, sizeof(buf), TIME_PENALTY, penalty);
 
-    drawer.drawText(buf, x - 25, y + 75, red, 0.45f, 0.65f);
+    drawer.drawText(buf, x - 25, y + 75, RED, 0.45f, 0.65f);
 }
 
 void UpgradeScreen::changeState(const Upgrade upgrade) {
