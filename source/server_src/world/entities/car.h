@@ -7,6 +7,7 @@
 #include "../../../common_src/srv_msg/player_state.h"
 
 #include "entity.h"
+#include "../../game_logic/config/config_parser.h"
 
 const int CAR_MAX_UPGRADES = 3;
 
@@ -33,7 +34,8 @@ public:
         ID clientId,
         b2Vec2 pos,
         float angleRad,
-        CarType carType);
+        CarType carType,
+        const CarHandlingConfig& carCongif);
 
     void applyControlsToBody(const MoveMsg& in, float dt);
 
@@ -84,7 +86,7 @@ private:
     ID clientId;
     CarType carType;
 
-    float health = 100.0f;
+
     ID actualCheckpoint = 0;
     bool finished = false;
     float finishTime = 0.0f;
@@ -102,6 +104,9 @@ private:
     uint8_t totalUpgrades = 0;
 
     float maxSpeedCheat = 1.0f;
+
+    CarHandlingConfig handling;
+    float health;
 
 };
 

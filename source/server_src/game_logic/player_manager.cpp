@@ -57,7 +57,7 @@ bool PlayerManager::initPlayer(Cmd& cmd) {
     b2Vec2 spawnVec = { spawn.x, spawn.y };
     playerCars.emplace(cmd.client_id,
                  Car(this->world, cmd.client_id, spawnVec, spawn.angle,
-                     ip.getCarType()));
+                     ip.getCarType(), config.carHandling));
 
     // le aviso al cliente que ya tiene su auto
     auto base = std::static_pointer_cast<SrvMsg>(

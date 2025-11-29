@@ -12,7 +12,7 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& playerCars,
                                        uint8_t& finishedCarsCount,
                                        uint8_t& totalCars,
                                        bool& raceEnded,  std::vector<ID>& raceRanking,
-                                       std::vector<RaceResult>& lastRaceResults)
+                                       std::vector<RaceResult>& lastRaceResults, Config& config)
         : playerCars(playerCars)
         , checkpoints(checkpoints)
         , registry(registry)
@@ -21,7 +21,8 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& playerCars,
         , totalCars(totalCars)
         , raceEnded(raceEnded)
         ,raceRanking(raceRanking)
-        ,lastRaceResults(lastRaceResults) {}
+        ,lastRaceResults(lastRaceResults)
+        ,config(config) {}
 
 
 void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
@@ -47,8 +48,11 @@ void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
 
 }
 
-void WorldEventHandlers::CarHitBuildingHandler(WorldEvent ev,
-                                     std::unordered_set<ID>& alreadyHitBuildingThisFrame){
+
+void WorldEventHandlers::CarHitBuildingHandler(
+        WorldEvent ev,
+        std::unordered_set<ID>& alreadyHitBuildingThisFrame) {
+
     if (alreadyHitBuildingThisFrame.count(ev.carId)) return;
     alreadyHitBuildingThisFrame.insert(ev.carId);
 
@@ -57,66 +61,70 @@ void WorldEventHandlers::CarHitBuildingHandler(WorldEvent ev,
     Car& car = it->second;
     b2BodyId body = car.getBody();
 
-    b2Vec2 vel = b2Body_GetLinearVelocity(body); //vel auto
+    b2Vec2 vel = b2Body_GetLinearVelocity(body);
 
+    const auto& cfg = config.collisions.building;
+
+    const float MIN_IMPACT            = cfg.minImpactSpeed;
+    const float DAMAGE_FACTOR         = cfg.baseDamageFactor;
+    const float MIN_FRONTAL_ALIGNMENT = cfg.minFrontalAlignment;
+    const float FRONTAL_MULT          = cfg.frontalMultiplier;
+    const float VELOCITY_DAMP         = cfg.velocityDampFactor;
+
+    // velocidad de impacto en la dirección de la normal
     // velocidad en la dirección del choque
     // producto interno
     // n unitario
     float impactSpeed = std::fabs(vel.x * ev.nx + vel.y * ev.ny);
 
-    // si es muy lento pase pase
-    //const float MIN_IMPACT = 1.5f;
-    //if (impactSpeed < MIN_IMPACT) {
-    //  break;
-    //}
+    // si el golpe es muy suave, lo ignoramos
+    if (impactSpeed < MIN_IMPACT) return;
 
-    // ver si fue frontal
+    // ver si el choque fue frontal
     b2Rot rot = b2Body_GetRotation(body);
-    b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
+    b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});  // "para adelante" del auto
+    float frontal = fwd.x * ev.nx + fwd.y * ev.ny; // cos(ángulo) entre fwd y n
     // fwd es unitario
-    float frontal = fwd.x * ev.nx + fwd.y * ev.ny;
     //fwd*n = ||fwd||*||n||*cos(ø)
     //como ambos son unitarios
     //fwd*n = cos(ø)
 
-    // daño base
-    float damage = impactSpeed * 0.5f;
-    if (frontal > 0.7f) { // casi de frente
-        damage *= 2.0f;
+
+    float damage = impactSpeed * DAMAGE_FACTOR;
+    if (frontal > MIN_FRONTAL_ALIGNMENT) { // casi de frente
+        damage *= FRONTAL_MULT;
     }
 
     car.applyDamage(damage);
-
 
     if (car.isCarDestroy()) {
         b2Vec2 zero = {0.f, 0.f};
         b2Body_SetLinearVelocity(body, zero);
         b2Body_SetAngularVelocity(body, 0.f);
-        //tendria q destruir el cuerpo
         totalCars -= 1;
     } else {
-        // frenar un poco empujando contra la normal
         b2Vec2 newVel = {
-                vel.x - ev.nx * impactSpeed * 0.5f,
-                vel.y - ev.ny * impactSpeed * 0.5f
+                vel.x - ev.nx * impactSpeed * VELOCITY_DAMP,
+                vel.y - ev.ny * impactSpeed * VELOCITY_DAMP
         };
         b2Body_SetLinearVelocity(body, newVel);
     }
 
-    auto baseCarA = std::static_pointer_cast<SrvMsg>(
+    auto msg = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCarHitMsg>(car.getClientId(), car.getHealth()));
-    registry.broadcast(baseCarA);
+    registry.broadcast(msg);
 }
 
-void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
-                                std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame){
-    // normalizamos la pareja (a,b) para que a < b y así no duplicamos
+
+void WorldEventHandlers::CarHitCarHandler(
+    WorldEvent ev,
+    std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame) {
     int idA = ev.carId;
     int idB = ev.otherCarId;
     if (idA > idB) std::swap(idA, idB);
 
     uint64_t key = (static_cast<uint64_t>(idA) << 32) |
-               static_cast<uint32_t>(idB);
+                   static_cast<uint32_t>(idB);
 
     if (alreadyHitCarPairThisFrame.count(key)) return;
     alreadyHitCarPairThisFrame.insert(key);
@@ -134,52 +142,63 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
     b2Vec2 vA = b2Body_GetLinearVelocity(bodyA);
     b2Vec2 vB = b2Body_GetLinearVelocity(bodyB);
 
-
     float aAlongN = vA.x * ev.nx + vA.y * ev.ny;
     float bAlongN = vB.x * ev.nx + vB.y * ev.ny;
 
     float aImpact = std::fabs(aAlongN);
     float bImpact = std::fabs(bAlongN);
 
-    const float MIN_IMPACT = 1.0f;
+    const auto& cfg = config.collisions.car;
+
+    const float MIN_IMPACT             = cfg.minImpactSpeed;
+    const float DAMAGE_FACTOR          = cfg.baseDamageFactor;
+    const float MIN_FRONTAL_ALIGNMENT  = cfg.minFrontalAlignment;
+    const float FRONTAL_MULT           = cfg.frontalMultiplier;
+    const float VELOCITY_DAMP          = cfg.velocityDampFactor;
+
+
     if (aImpact < MIN_IMPACT && bImpact < MIN_IMPACT) return;
 
-    // daño cruzado: cada uno sufre por la velocidad del otro
-    // + upgrade damage
-    float damageA = bImpact * 0.4f * carB.getDamage();
-    float damageB = aImpact * 0.4f * carA.getDamage();
+    b2Rot rotA = b2Body_GetRotation(bodyA);
+    b2Vec2 fwdA = b2RotateVector(rotA, {0.f, 1.f});
+    float frontal = fwdA.x * ev.nx + fwdA.y * ev.ny;
 
+    float damageA = bImpact * DAMAGE_FACTOR * carB.getDamage();
+    float damageB = aImpact * DAMAGE_FACTOR * carA.getDamage();
+
+    // si el choque es bastante frontal según A, amplificamos daño para los dos
+    if (frontal > MIN_FRONTAL_ALIGNMENT) {
+        damageA *= FRONTAL_MULT;
+        damageB *= FRONTAL_MULT;
+    }
 
     carA.applyDamage(damageA);
     carB.applyDamage(damageB);
 
-    // frenar un poco
+    // frenar / rebotar un poco en la dirección de la normal
     b2Vec2 newVA = {
-            vA.x - ev.nx * aAlongN * 0.4f,
-            vA.y - ev.ny * aAlongN * 0.4f
+            vA.x - ev.nx * aAlongN * VELOCITY_DAMP,
+            vA.y - ev.ny * aAlongN * VELOCITY_DAMP
     };
     b2Vec2 newVB = {
-            vB.x + ev.nx * bAlongN * 0.4f,
-            vB.y + ev.ny * bAlongN * 0.4f
+            vB.x + ev.nx * bAlongN * VELOCITY_DAMP,
+            vB.y + ev.ny * bAlongN * VELOCITY_DAMP
     };
 
     if (carA.isCarDestroy()) {
         newVA = {0.f, 0.f};
         b2Body_SetAngularVelocity(bodyA, 0.f);
-        //tendria q destruir el cuerpo
         totalCars -= 1;
     }
 
     if (carB.isCarDestroy()) {
         newVB = {0.f, 0.f};
         b2Body_SetAngularVelocity(bodyB, 0.f);
-        //tendria q destruir el cuerpo
         totalCars -= 1;
     }
 
     b2Body_SetLinearVelocity(bodyA, newVA);
     b2Body_SetLinearVelocity(bodyB, newVB);
-
 
     auto baseCarA = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCarHitMsg>(carA.getClientId(), carA.getHealth()));
@@ -189,6 +208,9 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
             std::make_shared<SrvCarHitMsg>(carB.getClientId(), carB.getHealth()));
     registry.broadcast(baseCarB);
 }
+
+
+
 
 void WorldEventHandlers::onPlayerFinishedRace(ID playerId, float timeSec) {
     lastRaceResults.push_back(RaceResult{

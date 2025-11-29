@@ -1,27 +1,38 @@
+loops:
+  lobby_hz: 5.0
+  race_hz: 60.0
+
 lobby:
   max_players: 1
   between_races_sec: 10.0
   max_race_time_sec: 600.0
 
-loops:
-  lobby_hz: 5.0
-  race_hz: 60.0
-
 physics:
   time_step: 0.0166667   # 1/60
   sub_step_count: 4
+
+car_handling:
+  base_health: 100.0
+  max_fwd_speed: 50.0
+  max_bck_speed: -10.0
+  engine_impulse: 800.0
+  brake_accel: 100.0
+  max_angular_vel: 2.5
+  lateral_damp: 9.0
 
 collisions:
   building:
     min_impact_speed: 1.5
     base_damage_factor: 0.5
-    frontal_dot_threshold: 0.7
-    frontal_damage_multiplier: 2.0
+    min_frontal_alignment: 0.7
+    frontal_multiplier: 4.0
     velocity_damp_factor: 0.5
 
   car:
     min_impact_speed: 1.0
-    damage_factor: 0.4
+    base_damage_factor: 0.4
+    min_frontal_alignment: 0.7
+    frontal_multiplier: 4.0
     velocity_damp_factor: 0.4
 
 upgrades:

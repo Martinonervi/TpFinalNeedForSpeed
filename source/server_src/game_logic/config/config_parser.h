@@ -22,6 +22,41 @@ struct PhysicsConfig {
     int     subStepCount; //por cada timeStep resuelve problemas 4 veces mas rapido (ej: colisiones)
 };
 
+struct CarHandlingConfig {
+    float baseHealth;
+    // longitudinal
+    float maxFwdSpeed;
+    float maxBckSpeed;
+    float engineImpulse;
+    // lateral
+    float brakeAccel;
+    float maxAngularVel; // podria probar 2.5–3.5
+    float lateralDamp; // probá 6–12
+};
+
+
+struct BuildingCollisionConfig {
+    float minImpactSpeed;
+    float baseDamageFactor;
+    float minFrontalAlignment;
+    float frontalMultiplier;
+    float velocityDampFactor;
+};
+
+struct CarCollisionConfig {
+    float minImpactSpeed;
+    float baseDamageFactor;
+    float minFrontalAlignment;
+    float frontalMultiplier;
+    float velocityDampFactor;
+};
+
+struct CollisionsConfig {
+    BuildingCollisionConfig building;
+    CarCollisionConfig car;
+};
+
+
 struct CheatsConfig {
     bool enabled = true;
     bool allowHealthCheat = true;
@@ -32,11 +67,14 @@ struct CheatsConfig {
 };
 
 struct Config {
+    LoopsConfig loops;
     LobbyConfig  lobby;
     PhysicsConfig physics;
-    LoopsConfig loops;
+    CarHandlingConfig carHandling;
+    CollisionsConfig collisions;
     std::vector<UpgradeDef> upgrades;
     CheatsConfig  cheats;
+
 };
 
 

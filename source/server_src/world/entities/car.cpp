@@ -9,10 +9,10 @@ Car::Car(WorldManager& world,
          ID clientId,
          b2Vec2 pos,
          float angleRad,
-         CarType carType)
+         CarType carType, const CarHandlingConfig& carCongif)
         : Entity(EntityType::Car, b2_nullBodyId, 0),
           clientId(clientId),
-          carType(carType)
+          carType(carType), handling(carCongif), health(handling.baseHealth)
 
 {
 
@@ -30,15 +30,6 @@ Car::Car(WorldManager& world,
     b2Body_SetUserData(this->body, ud);
 }
 
-// longitudinal
-const float MAX_FWD_SPEED  = 50.0f;
-const float MAX_BCK_SPEED  = -10.0f;
-const float ENGINE_IMPULSE = 800.0f;
-
-// lateral
-const float BRAKE_ACCEL    = 100.0f;
-const float MAX_ANGULAR_VEL = 2.5f; // podria probar 2.5–3.5
-const float LATERAL_DAMP    = 9.0f; // probá 6–12
 
 
 void Car::applyControlsToBody(const MoveMsg& in, float dt) {
@@ -55,12 +46,13 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     float vLong = vel.x * fwd.x + vel.y * fwd.y;
 
 
-    if (throttle > 0.0f && vLong < (MAX_FWD_SPEED * maxSpeedFactor * maxSpeedCheat)) {
-        b2Vec2 j = { fwd.x * (ENGINE_IMPULSE * engineFactor) * dt, fwd.y * ENGINE_IMPULSE * dt };
+    if (throttle > 0.0f && vLong < (handling.maxFwdSpeed * maxSpeedFactor * maxSpeedCheat)) {
+        b2Vec2 j = { fwd.x * (handling.engineImpulse * engineFactor) * dt,
+            fwd.y * handling.engineImpulse * engineFactor * dt };
         b2Body_ApplyLinearImpulseToCenter(body, j, true);
     }
-    if (throttle < 0.0f && vLong > MAX_BCK_SPEED) {
-        b2Vec2 j = { -fwd.x * ENGINE_IMPULSE * dt, -fwd.y * ENGINE_IMPULSE * dt };
+    if (throttle < 0.0f && vLong > handling.maxBckSpeed) {
+        b2Vec2 j = { -fwd.x * handling.engineImpulse * dt, -fwd.y * handling.engineImpulse * dt };
         b2Body_ApplyLinearImpulseToCenter(body, j, true);
     }
 
@@ -70,7 +62,7 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
         float speed = std::sqrt(curVel.x * curVel.x + curVel.y * curVel.y);
         if (speed > 0.0f) {
 
-            float dv = BRAKE_ACCEL * brake * dt;      // cuánto quiero bajar la speed este frame
+            float dv = handling.brakeAccel * brake * dt;      // cuánto quiero bajar la speed este frame
             float newSpeed = std::max(0.0f, speed - dv);
             float factor = newSpeed / speed;          // entre 0 y 1
 
@@ -81,7 +73,7 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     }
 
     // giro
-    float targetAV = steer * MAX_ANGULAR_VEL;
+    float targetAV = steer * handling.maxAngularVel;
     b2Body_SetAngularVelocity(body, targetAV);
 
     // freno lateral para q derrape todo
@@ -94,7 +86,7 @@ void Car::applyControlsToBody(const MoveMsg& in, float dt) {
     float vLat   = v.x * right2.x + v.y * right2.y;
 
     // frenamos laterlamente casi todo
-    float factor = std::max(0.0f, 1.0f - LATERAL_DAMP * dt);
+    float factor = std::max(0.0f, 1.0f - handling.lateralDamp * dt);
     float vLatNew = vLat * factor;
 
     // para q el auto no quede temblando

@@ -6,6 +6,7 @@
 #include "../server_client_registry.h"
 #include "../world/entities/car.h"
 #include "../world/entities/checkpoint.h"
+#include "config/config_parser.h"
 
 struct RaceResult {
     ID playerId;
@@ -24,7 +25,7 @@ public:
                        uint8_t& totalCars,
                        bool& raceEnded,
                        std::vector<ID>& raceRanking,
-                       std::vector<RaceResult>& lastRaceResults);
+                       std::vector<RaceResult>& lastRaceResults, Config& config);
 
 
     void CarHitCheckpointHandler(WorldEvent ev);
@@ -45,6 +46,8 @@ private:
     bool& raceEnded;
     std::vector<ID>& raceRanking;
     std::vector<RaceResult>& lastRaceResults;
+
+    Config& config;
 };
 
 

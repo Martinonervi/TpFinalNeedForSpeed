@@ -28,7 +28,7 @@ GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<Clients
 config(ConfigParser().load("../server_src/game_logic/config/config.yaml")),
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(playerCars, checkpoints, *this->registry,
-            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking, lastRaceResults),
+            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking, lastRaceResults, config),
 upgrades(config.upgrades),
         playerManager(worldManager, *this->registry, playerCars, spawnPoints, raceStarted, checkpoints, config)  {
     loadMapFromYaml(FILE_YAML_PATH);
