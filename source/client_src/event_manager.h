@@ -38,7 +38,7 @@ public:
                  UpgradeScreen& ups, Button& startBtn, bool& showStart,
                  bool& running, bool& quit, float& raceTime, uint8_t& totalRaces,
                  uint8_t& raceNumber, std::unique_ptr<PlayerStats>& playerStats,
-                 std::vector<RecommendedPoint>& pathArray, Upgrade& upgrade,
+                 std::vector<RecommendedPoint>& pathArray,
                  std::vector<UpgradeDef>& upgradesArray);
 
     void handleEvents(AudioManager& audio) const;
@@ -67,7 +67,6 @@ private:
     uint8_t& raceNumber;
     uint8_t lastRaceNumber = 0x0;
     std::vector<RecommendedPoint>& pathArray;
-    Upgrade& upgrade;
     std::vector<UpgradeDef>& upgradesArray;
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
@@ -83,7 +82,6 @@ private:
     };
 
 };
-
 
 
 #endif //EVENT_MANAGER_H

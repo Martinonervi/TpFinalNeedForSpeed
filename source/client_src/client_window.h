@@ -61,7 +61,6 @@ private:
     bool quit = false;
     bool showStart = true;
     std::vector<RecommendedPoint> pathArray;
-    Upgrade upgrade = NONE;
     std::vector<UpgradeDef> upgradesArray;
 
 };

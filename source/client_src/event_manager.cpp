@@ -16,7 +16,6 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 float& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
                                 std::unique_ptr<PlayerStats>& playerStats,
                                 std::vector<RecommendedPoint>& pathArray,
-                                Upgrade& upgrade,
                                 std::vector<UpgradeDef>& upgradesArray)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
@@ -39,7 +38,6 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         totalRaces(totalRaces),
         raceNumber(raceNumber),
         pathArray(pathArray),
-        upgrade(upgrade),
         upgradesArray(upgradesArray)
 {}
 
@@ -125,11 +123,14 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case COLLISION: {
             const auto ch = dynamic_cast<const SrvCarHitMsg&>(*msg);
             if (cars.count(ch.getPlayerId())) {
+                float healthDiff = cars[ch.getPlayerId()]->getHealth() - ch.getCarHealth();
                 cars[ch.getPlayerId()]->setHealth(ch.getCarHealth());
                 if (ch.getPlayerId()==myCarId) {
                     if (ch.getCarHealth() == 0) {
+                        audio.stopSound("explosion");
                         audio.playSound("explosion");
-                    } else {
+                    } else if (healthDiff > 1) {
+                        audio.stopSound("crash");
                         audio.playSound("crash");
                     }
                 }
@@ -149,6 +150,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case CHECKPOINT_HIT: {
             const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
             if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
+                audio.stopSound("checkpoint");
                 audio.playSound("checkpoint");
                 checkpoints[nextCheckpoint]->setInactive();
                 checkpointNumber = check_hit.getCheckpointId();
@@ -202,9 +204,11 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case UPGRADE_SEND: {
             const auto sendUpgrade = dynamic_cast<const SendUpgrade&>(*msg);
             if (sendUpgrade.couldBuy()) {
-                upgrade = sendUpgrade.getUpgrade();
+                const auto upgrade = sendUpgrade.getUpgrade();
                 audio.stopSound("purchase");
                 audio.playSound("purchase");
+                ups.changeState(upgrade);
+                cars[myCarId]->addUpgrade(upgrade);
             }
             break;
         }
