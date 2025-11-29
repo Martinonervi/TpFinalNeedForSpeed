@@ -17,7 +17,8 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 int& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
                                 std::unique_ptr<PlayerStats>& playerStats,
                                 std::vector<RecommendedPoint>& pathArray,
-                                std::vector<UpgradeDef>& upgradesArray)
+                                std::vector<UpgradeDef>& upgradesArray,
+                                bool& srvDisconnect)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
         totalCheckpoints(totalCheckpoints),
@@ -39,7 +40,8 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         totalRaces(totalRaces),
         raceNumber(raceNumber),
         pathArray(pathArray),
-        upgradesArray(upgradesArray)
+        upgradesArray(upgradesArray),
+        srvDisconnect(srvDisconnect)
 {}
 
 void EventManager::handleEvents(AudioManager& audio) const {
@@ -224,6 +226,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case SRV_DISCONNECTION: {
             std::cout << "Server Disconnection" << std::endl;
+            srvDisconnect = true;
             running = false;
             break;
         }

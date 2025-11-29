@@ -34,7 +34,7 @@
 #define RACE_TXT "Race "
 #define CHECK_TXT "Checkpoint "
 #define NO_TEXT ""
-
+#define SRV_DISC_TXT "Server disconnection"
 #define TIME_PENALTY "Time penalty: + %.2f"
 
 
