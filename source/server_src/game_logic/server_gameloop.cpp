@@ -18,6 +18,7 @@
 #include "../../common_src/srv_msg/srv_send_upgrade.h"
 #include "../../common_src/cli_msg/cli_request_upgrade.h"
 #include "../../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../../common_src/srv_msg/srv_starting_game.h"
 
 #define FILE_YAML_PATH "../server_src/world/map.yaml"
 using Clock = std::chrono::steady_clock;
@@ -307,7 +308,9 @@ void GameLoop::processLobbyCmds() {
         switch (cmd.msg->type()) {
             case (Opcode::START_GAME): {
                 startRequested = true;
-                //comentar tiempo break
+                auto base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<StartingGame>());
+                registry->broadcast(base);
                 break;
             }
             case (Opcode::UPGRADE_REQUEST): {

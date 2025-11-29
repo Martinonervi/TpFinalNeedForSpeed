@@ -556,6 +556,22 @@ int ServerProtocol::sendCarConfirmation(CarSelect& car_select) {
     }
 }
 
+int ServerProtocol::sendSartingGame(StartingGame& sg) {
+    try{
+        Op opcode = sg.type();
+
+        std::vector<char> buf(sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
 
 CheatRequest ServerProtocol::recvCheat() {
     Cheat cheat;

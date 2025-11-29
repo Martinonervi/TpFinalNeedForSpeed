@@ -10,6 +10,7 @@
 #include "../common_src/srv_msg/srv_current_info.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
 #include "../common_src/srv_msg/srv_recommended_path.h"
+#include "../common_src/srv_msg/srv_starting_game.h"
 
 Sender::Sender(Socket& peer_socket, SendQPtr queue):
         peer(peer_socket), msg_queue(std::move(queue)), protocol(peer) {}
@@ -98,7 +99,10 @@ void Sender::run() {
                 }
                 case Opcode::CAR_SELECT: {
                     n = protocol.sendCarConfirmation(dynamic_cast<CarSelect&>(*msg));
-                    std::cout << "[Server Sender] mande opcode"<< std::endl;
+                    break;
+                }
+                case Opcode::STARTING_GAME: {
+                    n = protocol.sendSartingGame(dynamic_cast<StartingGame&>(*msg));
                     break;
                 }
                 default: {

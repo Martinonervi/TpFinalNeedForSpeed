@@ -28,6 +28,7 @@ enum Opcode : Op {
     CAR_SELECT = 0x19,
     SRV_DISCONNECTION = 0x20,
     REQUEST_CHEAT = 0x21,
+    STARTING_GAME = 0x22,
 };
 
 enum err_code : Op {
