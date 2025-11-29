@@ -179,6 +179,7 @@ bool Car::applyUpgrade(const UpgradeDef& up) {
         case HEALTH: {
             if (health > 100.0f) break;
             health = health * up.value;
+            totalHealth += health;
             upgradePenalty += up.penaltySec;
             totalUpgrades  += 1;
             apply = true;
@@ -234,7 +235,8 @@ void Car::setPosition(float x, float y) {
 void Car::applyCheat(const Cheat cheat) {
     switch (cheat) {
         case (Cheat::HEALTH_CHEAT): {
-            health = 100000.0f;
+            health = CHEAT_HEALTH;
+            totalHealth = CHEAT_HEALTH;
             break;
         }
         case (Cheat::FREE_SPEED_CHEAT): {

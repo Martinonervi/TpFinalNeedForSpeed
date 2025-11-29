@@ -279,10 +279,12 @@ SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
     size_t n = 0;
     ID player_id_BE;
     uint32_t health_BE;
+    uint32_t total_health_BE;
 
     try {
-        n = peer.recvall(&player_id_BE, sizeof(uint32_t));
-        n += peer.recvall(&health_BE, sizeof(uint32_t));
+        n = peer.recvall(&player_id_BE, sizeof(ID));
+        n += peer.recvall(&health_BE, sizeof(health_BE));
+        n += peer.recvall(&total_health_BE, sizeof(total_health_BE));
 
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
@@ -293,7 +295,8 @@ SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
 
     ID player_id = ntohl(player_id_BE);
     float health = decodeFloatBE(health_BE);
-    return SrvCarHitMsg(player_id, health);
+    float totalHealth = decodeFloatBE(total_health_BE);
+    return SrvCarHitMsg(player_id, health, totalHealth);
 }
 
 SrvCheckpointHitMsg ClientProtocol::recvCheckpointHitEvent(){

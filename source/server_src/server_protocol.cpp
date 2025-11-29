@@ -221,9 +221,10 @@ int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
         Op type = COLLISION;
         ID player_id_BE = htonl(msg.getPlayerId());
         uint32_t health_BE = encodeFloatBE(msg.getCarHealth());
+        uint32_t total_health_BE = encodeFloatBE(msg.getTotalHealth());
 
 
-        std::vector<char> buf(sizeof(Op) + sizeof(ID) + sizeof(uint32_t));
+        std::vector<char> buf(sizeof(Op) + sizeof(ID) + 2*sizeof(uint32_t));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
@@ -233,7 +234,10 @@ int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
         offset += sizeof(ID);
 
         memcpy(buf.data() + offset, &health_BE, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
+        offset += sizeof(health_BE);
+
+        memcpy(buf.data() + offset, &total_health_BE, sizeof(uint32_t));
+        offset += sizeof(total_health_BE);
 
         int n = peer.sendall(buf.data(), offset);
         return n;

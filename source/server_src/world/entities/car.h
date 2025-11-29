@@ -81,6 +81,9 @@ public:
         return upgradePenalty;
     };
 
+    float getTotalHealth() const {
+        return totalHealth;
+    }
 
 private:
     ID clientId;
@@ -106,7 +109,12 @@ private:
     float maxSpeedCheat = 1.0f;
 
     CarHandlingConfig handling;
+
     float health;
+    const float CHEAT_HEALTH = 10000.0f;
+    float totalHealth = handling.baseHealth;
+
+
 
 };
 

@@ -111,7 +111,8 @@ void WorldEventHandlers::CarHitBuildingHandler(
     }
 
     auto msg = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SrvCarHitMsg>(car.getClientId(), car.getHealth()));
+            std::make_shared<SrvCarHitMsg>(car.getClientId(), car.getHealth(),
+                car.getTotalHealth()));
     registry.broadcast(msg);
 }
 
@@ -201,11 +202,13 @@ void WorldEventHandlers::CarHitCarHandler(
     b2Body_SetLinearVelocity(bodyB, newVB);
 
     auto baseCarA = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SrvCarHitMsg>(carA.getClientId(), carA.getHealth()));
+            std::make_shared<SrvCarHitMsg>(carA.getClientId(), carA.getHealth(),
+                carA.getTotalHealth()));
     registry.broadcast(baseCarA);
 
     auto baseCarB = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<SrvCarHitMsg>(carB.getClientId(), carB.getHealth()));
+            std::make_shared<SrvCarHitMsg>(carB.getClientId(), carB.getHealth(),
+                carB.getTotalHealth()));
     registry.broadcast(baseCarB);
 }
 
