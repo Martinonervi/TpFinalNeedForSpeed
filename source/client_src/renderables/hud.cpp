@@ -15,7 +15,8 @@ Hud::Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, cons
 void Hud::drawOverlay(const int x, const int y,
                       std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                       const ID playerId, const float raceTime,
-                      const uint8_t totalRaces, const uint8_t raceNumber, Upgrade upgrade) const {
+                      const uint8_t totalRaces, const uint8_t raceNumber, const Upgrade upgrade,
+                      const uint8_t totalCheckpoints, const ID checkpointNumber) const {
 
     map.draw(x - 260, 10, cars, playerId, 150, 250);
 
@@ -30,6 +31,7 @@ void Hud::drawOverlay(const int x, const int y,
     drawDial(renderer, speed, x, y);
 
     drawRaceNumber(raceNumber, totalRaces);
+    drawCheckpointNumber(checkpointNumber, totalCheckpoints);
     drawGameTime(raceTime);
     activeUpgrade(x, upgrade);
 }
@@ -96,7 +98,7 @@ void Hud::drawSpeedText(const float clampedSpeed,
     int textX = static_cast<int>(x - 50);
     int textY = dstRectDial.y + dstRectDial.h;
 
-    drawer.drawText(speedText, textX - 26, textY, white);
+    drawer.drawText(speedText, textX - 26, textY, white, 1.0f, 1.0f);
 }
 
 void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const float health) const {
@@ -181,24 +183,35 @@ void Hud::drawEnergyFill(SDL2pp::Renderer& renderer, float percent,
 
 }
 
-void Hud::drawGameTime(int totalSeconds) const {
-    int hours = totalSeconds / 3600;
-    int minutes = (totalSeconds % 3600) / 60;
-    int seconds = totalSeconds % 60;
+void Hud::drawGameTime(const int totalSeconds) const {
+    const int hours = totalSeconds / 3600;
+    const int minutes = (totalSeconds % 3600) / 60;
+    const int seconds = totalSeconds % 60;
 
     char buffer[20];
     snprintf(buffer, sizeof(buffer), "%02d:%02d:%02d", hours, minutes, seconds);
 
-    SDL_Color yellow = {255, 255, 0, 255};
-    drawer.drawText(buffer, 20, 45, yellow);
+    constexpr SDL2pp::Color yellow = {255, 255, 0, 255};
+    drawer.drawText(buffer, 20, 75, yellow, 1.0f, 1.0f);
 }
+
+// MODULARIZAR
 
 void Hud::drawRaceNumber(int current, int total) const {
     std::string txt = "Race " + std::to_string(current) + "/" + std::to_string(total);
-    SDL_Color white = {255, 255, 255, 255};
+    constexpr SDL2pp::Color white = {255, 255, 255, 255};
 
-    drawer.drawText(txt, 20, 15, white);
+    drawer.drawText(txt, 20, 15, white, 1.0f, 1.0f);
 }
+
+void Hud::drawCheckpointNumber(const int current, const int total) const {
+    std::string txt = "Checkpoint " + std::to_string(current) + "/" + std::to_string(total);
+    constexpr SDL2pp::Color white = {255, 255, 255, 255};
+
+    drawer.drawText(txt, 20, 45, white, 1.0f, 1.0f);
+}
+
+// -- - - -- - - -
 
 void Hud::activeUpgrade(const int windowWidth, Upgrade upgrade) const {
     SDL2pp::Texture& frameTex = tm.getHud().getUpgradeFrame();

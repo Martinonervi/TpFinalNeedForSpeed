@@ -16,8 +16,8 @@ public:
     Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, MapType mapType,
         std::vector<RecommendedPoint>& pathArray);
     void drawOverlay(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId,
-    float raceTime, uint8_t totalRaces,
-                          uint8_t raceNumber, Upgrade upgrade) const;
+    float raceTime, uint8_t totalRaces, uint8_t raceNumber, Upgrade upgrade,
+    uint8_t totalCheckpoints, ID checkpointNumber) const;
 
 private:
     Minimap map;
@@ -36,6 +36,7 @@ private:
                         int scale) const;
     void drawGameTime(int totalSeconds) const;
     void drawRaceNumber(int current, int total) const;
+    void drawCheckpointNumber(int current, int total) const;
     void activeUpgrade(int windowWidth, Upgrade upgrade) const;
 };
 

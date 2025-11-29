@@ -12,7 +12,7 @@ StartScreen::StartScreen(
         ups(ups), startBtn(startBtn)
 {}
 
-void StartScreen::draw(const int windowWidth, const int windowHeight, const bool showUpgradeMenu) {
+void StartScreen::draw(const int windowWidth, const int windowHeight) {
     SDL2pp::Texture& tex = tm.getCities().getStartBackTexture();
 
     SDL2pp::Rect dst(
@@ -42,7 +42,5 @@ void StartScreen::draw(const int windowWidth, const int windowHeight, const bool
 
     map.draw(windowWidth/2 + 20, 100, emptyCars, -1, 150, 450);
 
-    if (showUpgradeMenu) {
-        ups.renderPopUp();
-    }
+    ups.renderPopUp();
 }
