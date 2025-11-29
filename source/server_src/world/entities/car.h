@@ -62,7 +62,11 @@ public:
     void resetForNewRace(float x, float y, float angleDeg);
 
     ID getSpawnId() const { return spawnId; }
-    bool hasMaxUpgrade() const { return totalUpgrades >= CAR_MAX_UPGRADES; }
+    bool hasMaxUpgrade() const {
+        //std::cout << "[Car] hasMaxUpgrade? total=" << (int)totalUpgrades
+          //    << " max=" << CAR_MAX_UPGRADES << "\n";
+              return totalUpgrades >= CAR_MAX_UPGRADES;
+    }
 
     float getShield();
     float getDamage();

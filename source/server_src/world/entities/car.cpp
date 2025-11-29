@@ -172,6 +172,8 @@ void Car::resetForNewRace(float x, float y, float angleRad) {
 
 bool Car::applyUpgrade(const UpgradeDef& up) {
     bool apply = false;
+    //std::cout << "[Car] applyUpgrade: type=" << (int)up.type
+      //        << " totalUpgrades(before)=" << (int)totalUpgrades << "\n";
 
     switch (up.type) {
         case Upgrade::ENGINE_FORCE: {
@@ -210,6 +212,15 @@ bool Car::applyUpgrade(const UpgradeDef& up) {
             break;
         }
     }
+
+/*
+    if (apply) {
+        std::cout << "[Car]   APPLIED, totalUpgrades(after)="
+                  << (int)totalUpgrades << "\n";
+    } else {
+        std::cout << "[Car]   NOT APPLIED\n";
+    }
+    */
     return apply;
 }
 

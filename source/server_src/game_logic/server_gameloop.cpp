@@ -324,9 +324,12 @@ void GameLoop::processLobbyCmds() {
                 const UpgradeDef& def = findUpgradeDef(ur.getUpgrade());
 
                 if (car.hasMaxUpgrade() || !car.applyUpgrade(def)) {
+                    //std::cout << "[GameLoop] upgrade rechazado para id=" << cmd.client_id << "\n";
                     up = NONE;
                     success = false;
                 } else {
+                    //std::cout << "[GameLoop] upgrade ACEPTADO para id=" << cmd.client_id
+              //<< " upgrade=" << (int)ur.getUpgrade() << "\n";
                     up = ur.getUpgrade();
                     success = true;
                 }
