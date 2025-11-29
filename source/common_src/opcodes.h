@@ -47,11 +47,11 @@ enum Upgrade : Op {
 };
 
 enum Cheat : Op {
-    HEALTH_CHEAT = 0x01,
-    WIN_RACE_CHEAT = 0x02,
-    FREE_SPEED_CHEAT = 0x03,
-    LOST_RACE_CHEAT = 0x04,
-    NEXT_CHECKPOINT_CHEAT = 0x05,
+    HEALTH_CHEAT = 0x01, //t
+    WIN_RACE_CHEAT = 0x02, //r
+    FREE_SPEED_CHEAT = 0x03, //u
+    LOST_RACE_CHEAT = 0x04, //c
+    NEXT_CHECKPOINT_CHEAT = 0x05, //o
 };
 
 #endif

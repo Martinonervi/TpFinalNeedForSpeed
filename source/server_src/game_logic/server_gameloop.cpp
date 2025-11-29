@@ -518,12 +518,8 @@ void GameLoop::finalizeDNFs() {
 
 void GameLoop::updateGlobalStatsFromLastRace() {
     for (const auto& r : lastRaceResults) {
-        // Solo sumamos los que realmente terminaron la carrera
-        if (!r.finished) continue;
-
         auto& gs = globalStats[r.playerId];  // crea la entrada si no existe
         gs.totalTime += r.raceTime;
-        // globalPosition lo calculamos aparte en computeGlobalRanking()
     }
 }
 
