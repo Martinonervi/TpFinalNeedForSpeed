@@ -30,15 +30,14 @@ void UpgradeScreen::renderPopUp() const {
                               slotTex.GetHeight()*5);
 
         renderer.Copy(slotTex, srcFrame, dstFrame);
-        SDL2pp::Rect srcIcon = tm.getHud().getUpgradeIconRect(upBtn.type);
 
-        const int dstX = btnRect.x + (btnRect.w - srcIcon.w*4)/2;
-        const int dstY = btnRect.y + (btnRect.h - srcIcon.h*4)/2;
+        const int dstX = btnRect.x + (btnRect.w - upBtn.iconRect.w*4)/2;
+        const int dstY = btnRect.y + (btnRect.h - upBtn.iconRect.h*4)/2;
         SDL2pp::Rect dstIcon(
             dstX, dstY,
-            srcIcon.w*4, srcIcon.h*4)
+            upBtn.iconRect.w*4, upBtn.iconRect.h*4)
         ;
-        renderer.Copy(upgradesSheet, srcIcon, dstIcon);
+        renderer.Copy(upgradesSheet, upBtn.iconRect, dstIcon);
 
         drawer.drawButton(upBtn.button);    // Capaz le pueda meter draw?
 
@@ -83,12 +82,13 @@ void UpgradeScreen::createButtons(const std::vector<UpgradeDef>& upgradesArray)
         const int slotX = baseX;
         const int slotY = baseY + buttons.size() * spacing;
 
-        const SDL2pp::Rect btnRect(slotX + 8*5, slotY + 7*5, 14*5, 14*5);
-
+        const SDL2pp::Rect btnRect(slotX + 8 * 5, slotY + 7 * 5, 14 * 5, 14 * 5);
+        const SDL2pp::Rect iconRect = tm.getHud().getUpgradeIconRect(up.type);
         UpgradeButton upBtn{
             Button(btnRect, "", {0,0,0,0}, {255,255,255,100}),
             up.type,
-            up.penaltySec
+            up.penaltySec,
+            iconRect
         };
 
         buttons.push_back(upBtn);
@@ -101,9 +101,18 @@ void UpgradeScreen::writeDescription(const float penalty, const std::string& des
 
     drawer.drawText(desc, x - 28, y + 40, white, 0.45f, 0.65f);
 
-    char buf[16];
-    std::snprintf(buf, sizeof(buf), "-%.2f", penalty);
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "Time penalty: + %.2f", penalty);
 
     drawer.drawText(buf, x - 25, y + 75, red, 0.45f, 0.65f);
+}
+
+void UpgradeScreen::changeState(const Upgrade upgrade) {
+    for (auto& upBtn : buttons) {
+        if (upBtn.type == upgrade) {
+            auto rect = upBtn.iconRect;
+            upBtn.iconRect = {rect.x + rect.w, rect.y, rect.w, rect.h};
+        }
+    }
 }
 

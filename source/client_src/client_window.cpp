@@ -35,7 +35,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
             ),
         eventManager(myCarId, nextCheckpoint, totalCheckpoints, checkpointNumber, cars, renderer, senderQueue, drawer,
             tm, checkpoints, hint, ups, startBtn, showStart, running, quit,
-            raceTime, totalRaces, raceNumber, playerStats, pathArray, upgrade, upgradesArray) {}
+            raceTime, totalRaces, raceNumber, playerStats, pathArray, upgradesArray) {}
 
 // Hay que manejar FPS
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
@@ -132,7 +132,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                 }
 
                 hud.drawOverlay(window.GetWidth(), window.GetHeight(),
-                    cars, myCarId, raceTime, totalRaces, raceNumber, upgrade,
+                    cars, myCarId, raceTime, totalRaces, raceNumber,
                     totalCheckpoints, checkpointNumber);  // Por ahora asi
 
             }
