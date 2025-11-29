@@ -26,13 +26,16 @@ public:
     void stop() override;
     virtual ~GameLoop();
     bool isRaceStarted() const;
-
+    uint8_t getMaxPlayers() const { return maxPlayers; }
 
 protected:
     void run() override;
 
 private:
     Config config;
+    uint8_t maxPlayers;
+
+
 
     void loadMapFromYaml(const std::string& path);
     void runSingleRace();

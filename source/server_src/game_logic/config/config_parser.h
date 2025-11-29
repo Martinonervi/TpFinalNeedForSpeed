@@ -6,15 +6,16 @@
 #include "../../../common_src/constants.h"
 
 
+struct LoopsConfig {
+    int maxPlayers;
+    double lobbyHz;
+    double raceHz;
+};
+
 struct LobbyConfig {
     int   maxPlayers;
     double betweenRacesSec;
     float maxRaceTimeSec;
-};
-
-struct LoopsConfig {
-    double lobbyHz;
-    double raceHz;
 };
 
 struct PhysicsConfig {

@@ -21,11 +21,11 @@
 
 #define FILE_YAML_PATH "../server_src/world/map.yaml"
 using Clock = std::chrono::steady_clock;
-const int MAX_PLAYERS = 8; //monitor, hablarlo con feli
 
 
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry):
 config(ConfigParser().load("../server_src/game_logic/config/config.yaml")),
+maxPlayers(config.lobby.maxPlayers),
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(playerCars, checkpoints, *this->registry,
             raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking, lastRaceResults, config),
