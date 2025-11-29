@@ -68,6 +68,10 @@ void Car::drawExplosion(const Camera& camera) {
     }
 }
 
+void Car::setMaxHealth(const float newMaxHealth) {
+    maxHealth = newMaxHealth;
+}
+
 CarState Car::getState() const { return carState; }
 
 float Car::getAngle() const { return angle; }
@@ -87,3 +91,5 @@ std::vector<Upgrade> Car::getUpgrades() {
 }
 
 float Car::getHealth() const { return health; }
+
+float Car::getMaxHealth() const { return maxHealth; }

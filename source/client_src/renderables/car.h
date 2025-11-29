@@ -16,6 +16,7 @@ public:
     void update(float newX, float newY, float newAngle);
     void draw(const Camera& camera) override;
     void drawExplosion(const Camera& camera);
+    void setMaxHealth(float newMaxHealth);
 
     void setAngle(float newAngle);
     void setCarType(CarType newCarType);
@@ -29,6 +30,7 @@ public:
     void addUpgrade(Upgrade newUp);
     std::vector<Upgrade> getUpgrades();
     float getHealth() const;
+    float getMaxHealth() const;
 
 private:
     float health = 100.0f;

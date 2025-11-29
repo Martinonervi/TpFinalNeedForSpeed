@@ -1,6 +1,7 @@
 #include "event_manager.h"
 
 #include "../common_src/cli_msg/cli_start_game.h"
+#include "../common_src/srv_msg/srv_starting_game.h"
 
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 uint8_t& totalCheckpoints, ID& checkpointNumber,
@@ -123,13 +124,16 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case COLLISION: {
             const auto ch = dynamic_cast<const SrvCarHitMsg&>(*msg);
             if (cars.count(ch.getPlayerId())) {
-                float healthDiff = cars[ch.getPlayerId()]->getHealth() - ch.getCarHealth();
+                const float healthDiff = cars[ch.getPlayerId()]->getHealth() - ch.getCarHealth();
+                const float maxHealthDiff = ch.getTotalHealth() - cars[ch.getPlayerId()]->getMaxHealth();
+                cars[ch.getPlayerId()]->setMaxHealth(ch.getTotalHealth());
                 cars[ch.getPlayerId()]->setHealth(ch.getCarHealth());
+
                 if (ch.getPlayerId()==myCarId) {
                     if (ch.getCarHealth() == 0) {
                         audio.stopSound("explosion");
                         audio.playSound("explosion");
-                    } else if (healthDiff > 1) {
+                    } else if (healthDiff > 1 || maxHealthDiff > 0) {
                         audio.stopSound("crash");
                         audio.playSound("crash");
                     }
@@ -218,10 +222,13 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             ups.createButtons(upgradesArray);
             break;
         }
-        case SRV_DISCONNECTION:{
+        case SRV_DISCONNECTION: {
             std::cout << "Server Disconnection" << std::endl;
             running = false;
             break;
+        }
+        case STARTING_GAME: {
+            showStart = false;
         }
         default:
             break;
