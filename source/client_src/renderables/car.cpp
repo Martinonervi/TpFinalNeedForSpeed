@@ -72,7 +72,18 @@ CarState Car::getState() const { return carState; }
 
 float Car::getAngle() const { return angle; }
 
-float Car::getHealth() const { return health; }
+float Car::getHealthPercentage() const { return health/maxHealth; }
 
 float Car::getSpeed() const { return speed; }
 void Car::setSpeed(const float newSpeed) { speed=newSpeed; }
+
+void Car::addUpgrade(const Upgrade newUp) {
+    if (upgrades.size() == 3) return;
+    upgrades.push_back(newUp);
+}
+
+std::vector<Upgrade> Car::getUpgrades() {
+    return upgrades;
+}
+
+float Car::getHealth() const { return health; }

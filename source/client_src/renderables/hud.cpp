@@ -5,35 +5,49 @@
 
 #define SIZE_OF_DIAL 150
 #define DIAL_MARGIN 40
+#define MAX_FRAMES 3
 
 Hud::Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, const MapType maptype,
     std::vector<RecommendedPoint>& pathArray)
-    : map(maptype, renderer, tm, pathArray), renderer(renderer), drawer(drawer), tm(tm)
+    : map(maptype, renderer, tm, pathArray), drawer(drawer), renderer(renderer), tm(tm)
 {}
 
 
 void Hud::drawOverlay(const int x, const int y,
                       std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                       const ID playerId, const float raceTime,
-                      const uint8_t totalRaces, const uint8_t raceNumber, const Upgrade upgrade,
+                      const uint8_t totalRaces, const uint8_t raceNumber,
                       const uint8_t totalCheckpoints, const ID checkpointNumber) const {
-
-    map.draw(x - 260, 10, cars, playerId, 150, 250);
 
     const auto it = cars.find(playerId);
     if (it == cars.end() || !it->second) return;
 
     const Car& playerCar = *it->second;
-    const float health = playerCar.getHealth();
+
+    float px = playerCar.getX();
+    float py = playerCar.getY();
+
+    int mapX = x - 260;
+    int mapY = 10;
+
+    if (px > x/2 && py < y/2) {
+        mapX = 10;
+        mapY = y - 250 - 10;
+    }
+
+    map.draw(mapX, mapY, cars, playerId, 150, 250);
+
+    const auto upgrades = it->second->getUpgrades();
+    const float healthPerc = playerCar.getHealthPercentage();
     float speed = playerCar.getSpeed();
 
-    drawBars(renderer, x, health);
+    drawBars(renderer, x, healthPerc);
     drawDial(renderer, speed, x, y);
 
     drawRaceNumber(raceNumber, totalRaces);
     drawCheckpointNumber(checkpointNumber, totalCheckpoints);
     drawGameTime(raceTime);
-    activeUpgrade(x, upgrade);
+    activeUpgrades(x, upgrades);
 }
 
 void Hud::drawDial(SDL2pp::Renderer& renderer, const float speed, const int windowWidth,
@@ -52,7 +66,7 @@ void Hud::drawDial(SDL2pp::Renderer& renderer, const float speed, const int wind
 
     const float clampedSpeed = drawNeedle(centerX, centerY, dstRectDial, speedKmh);
 
-    drawSpeedText(clampedSpeed, dstRectDial, centerX);
+    drawSpeedText(speedKmh, dstRectDial, centerX);
 }
 
 float Hud::drawNeedle(const float x, const float y, const SDL2pp::Rect dstRectDial, const float speed) const {
@@ -91,17 +105,16 @@ void Hud::drawSpeedText(const float clampedSpeed,
                         const SDL2pp::Rect dstRectDial,
                         const float x) const {
 
-    std::string speedText = std::to_string(static_cast<int>(clampedSpeed)) + " km/h";
-    SDL_Color white = {255, 255, 255, 255};
+    const std::string speedText = std::to_string(static_cast<int>(clampedSpeed)) + " km/h";
+    constexpr SDL2pp::Color white = {255, 255, 255, 255};
 
-    // Coordenadas donde querés que aparezca
-    int textX = static_cast<int>(x - 50);
-    int textY = dstRectDial.y + dstRectDial.h;
+    const int textX = static_cast<int>(x - 50);
+    const int textY = dstRectDial.y + dstRectDial.h;
 
     drawer.drawText(speedText, textX - 26, textY, white, 1.0f, 1.0f);
 }
 
-void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const float health) const {
+void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const float healthPerc) const {
     constexpr int scale = 3;
     const int x = windowWidth / 3;
     const int y = 10*scale;
@@ -113,7 +126,7 @@ void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const floa
     const SDL2pp::Rect healthSrc = tm.getHud().getHealthBar();
     SDL2pp::Rect healthDst(x, y, healthSrc.w*scale, healthSrc.h*scale);
 
-    drawHealthFill(renderer, health, healthDst, scale);
+    drawHealthFill(renderer, healthPerc, healthDst, scale);
     renderer.Copy(barsTexture,
                   healthSrc,
                   healthDst);
@@ -133,12 +146,12 @@ void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const floa
 }
 
 
-void Hud::drawHealthFill(SDL2pp::Renderer& renderer, const float health, SDL2pp::Rect healthDst,
+void Hud::drawHealthFill(SDL2pp::Renderer& renderer, const float healthPerc, SDL2pp::Rect healthDst,
                          const int scale) const
 {
     int startFillX = 14 * scale;
     int startFillY = 4 * scale;
-    int filledW = (healthDst.w - startFillX - scale) * (health / 100.0f);
+    int filledW = (healthDst.w - startFillX - scale) * healthPerc;
 
     const SDL2pp::Rect dst = {
         healthDst.x + startFillX,
@@ -192,52 +205,74 @@ void Hud::drawGameTime(const int totalSeconds) const {
     snprintf(buffer, sizeof(buffer), "%02d:%02d:%02d", hours, minutes, seconds);
 
     constexpr SDL2pp::Color yellow = {255, 255, 0, 255};
-    drawer.drawText(buffer, 20, 75, yellow, 1.0f, 1.0f);
+    drawer.drawText(buffer, 20, 75, yellow, 0.7f, 0.75f);
 }
 
 // MODULARIZAR
 
 void Hud::drawRaceNumber(int current, int total) const {
-    std::string txt = "Race " + std::to_string(current) + "/" + std::to_string(total);
+    const std::string txt = "Race " + std::to_string(current) + "/" + std::to_string(total);
     constexpr SDL2pp::Color white = {255, 255, 255, 255};
 
-    drawer.drawText(txt, 20, 15, white, 1.0f, 1.0f);
+    drawer.drawText(txt, 20, 15, white, 0.8f, 0.8f);
 }
 
 void Hud::drawCheckpointNumber(const int current, const int total) const {
-    std::string txt = "Checkpoint " + std::to_string(current) + "/" + std::to_string(total);
+    const std::string txt = "Checkpoint " + std::to_string(current) + "/" + std::to_string(total);
     constexpr SDL2pp::Color white = {255, 255, 255, 255};
 
-    drawer.drawText(txt, 20, 45, white, 1.0f, 1.0f);
+    drawer.drawText(txt, 20, 45, white, 0.8f, 0.8f);
 }
 
 // -- - - -- - - -
 
-void Hud::activeUpgrade(const int windowWidth, Upgrade upgrade) const {
-    SDL2pp::Texture& frameTex = tm.getHud().getUpgradeFrame();
-
-    const int frameScale = 4;  // escalamos 4x
-    const int x = windowWidth / 2;
-    const int y = 0;
-    SDL2pp::Rect srcFrame(0, 0, frameTex.GetWidth(), frameTex.GetHeight());
-    SDL2pp::Rect dstFrame(x, y, frameTex.GetWidth() * frameScale, frameTex.GetHeight() * frameScale);
-
-    renderer.Copy(frameTex, srcFrame, dstFrame);
-    if (upgrade == NONE) return;
-
-    SDL2pp::Rect srcIcon = tm.getHud().getUpgradeIconRect(upgrade);
-    const int iconScale = 4;  // mismo scale que el frame
-    SDL2pp::Rect dstIcon(
-        x + 8 * iconScale,  // offset dentro del frame
-        y + 7 * iconScale,  // offset dentro del frame
-        14 * iconScale,
-        14 * iconScale
-    );
-
-    SDL2pp::Texture& iconTex = tm.getHud().getUpgrades();
-    renderer.Copy(iconTex, srcIcon, dstIcon);
+void Hud::activeUpgrades(const int windowWidth, const std::vector<Upgrade>& upgrades) const {
+    for (int i = 0; i < MAX_FRAMES; i++) {
+        const Upgrade up = (i < upgrades.size() ? upgrades[i] : NONE);
+        drawUpgrade(windowWidth, up, i);
+    }
 }
 
+
+
+void Hud::drawUpgrade(const int windowWidth, const Upgrade upgrade, const int i) const {
+    SDL2pp::Texture& slotTex = tm.getHud().getUpgradeFrame();
+    auto& upgradesSheet = tm.getHud().getUpgrades();
+
+    constexpr int frameScale = 4;
+    constexpr int iconScale  = 3;
+
+    const int frameW = slotTex.GetWidth()  * frameScale;
+    const int frameH = slotTex.GetHeight() * frameScale;
+
+    constexpr int realW = 18 * frameScale;
+    constexpr int realH = 18 * frameScale;
+
+    constexpr int spacing = 15;
+
+    constexpr int totalWidth = MAX_FRAMES * realW + (MAX_FRAMES - 1) * spacing;
+    const int startX = (windowWidth - totalWidth) / 2 + 190;
+    const int y = 0;
+    const int x = startX + i * (realW + spacing);
+
+    SDL2pp::Rect srcFrame(0, 0, slotTex.GetWidth(), slotTex.GetHeight());
+    SDL2pp::Rect dstFrame(x, y, frameW, frameH);
+    renderer.Copy(slotTex, srcFrame, dstFrame);
+
+    SDL2pp::Rect srcIcon = tm.getHud().getUpgradeIconRect(upgrade);
+
+    const int dstX = x + 6*frameScale + (realW - srcIcon.w*iconScale)/2;
+    const int dstY = y + 5*frameScale + (realH - srcIcon.h*iconScale)/2;
+
+    SDL2pp::Rect dstIcon(
+        dstX,
+        dstY,
+        srcIcon.w * iconScale,
+        srcIcon.h * iconScale
+    );
+
+    renderer.Copy(upgradesSheet, srcIcon, dstIcon);
+}
 
 
 

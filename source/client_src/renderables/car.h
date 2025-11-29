@@ -23,19 +23,24 @@ public:
 
     CarState getState() const;
     float getAngle() const;
-    float getHealth() const;
+    float getHealthPercentage() const;
     float getSpeed() const;
     void setSpeed(float newSpeed);
+    void addUpgrade(Upgrade newUp);
+    std::vector<Upgrade> getUpgrades();
+    float getHealth() const;
 
 private:
     float health = 100.0f;
+    float maxHealth = 100.0f;
     float speed;
     float angle;
     CarType carType;
     CarState carState;
     int explosionFrame = 0;
-    int frameTicks = 0;         // cuántos ticks pasó en el mismo frame
-    static constexpr int TICKS_PER_FRAME = 4;   // ajustá a gusto (2–6 suele quedar bien)
+    int frameTicks = 0;
+    static constexpr int TICKS_PER_FRAME = 4;
+    std::vector<Upgrade> upgrades;
 
 
 };
