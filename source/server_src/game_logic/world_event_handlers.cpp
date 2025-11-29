@@ -39,14 +39,7 @@ void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
     auto& cp = itCheck->second;
 
     if (cp.getKind() == CheckpointKind::Finish and !car.isFinished()) {
-        //carFinishHandler(car);
-        finishedCarsCount++;
-        car.markFinished(raceTimeSeconds, finishedCarsCount);
-        onPlayerFinishedRace(car.getClientId(), raceTimeSeconds);
-        raceRanking.push_back(car.getClientId());
-        if (finishedCarsCount == totalCars) {
-            this->raceEnded = true;
-        }
+        CarFinishRace(car);
     }
     auto msg = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCheckpointHitMsg>(ev.carId, ev.checkpointId));
@@ -204,3 +197,14 @@ void WorldEventHandlers::onPlayerFinishedRace(ID playerId, float timeSec) {
             true
     });
 }
+
+void WorldEventHandlers::CarFinishRace(Car& car) {
+    finishedCarsCount++;
+    car.markFinished(raceTimeSeconds, finishedCarsCount);
+    onPlayerFinishedRace(car.getClientId(), raceTimeSeconds);
+    raceRanking.push_back(car.getClientId());
+    if (finishedCarsCount == totalCars) {
+        raceEnded = true;
+    }
+}
+

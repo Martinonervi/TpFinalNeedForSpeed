@@ -32,6 +32,7 @@ public:
     void CarHitCarHandler(WorldEvent ev, std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame);
 
     void onPlayerFinishedRace(ID playerId, float timeSec);
+    void CarFinishRace(Car& car);
 
 private:
     std::unordered_map<ID, Car>& playerCars;

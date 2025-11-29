@@ -10,7 +10,7 @@ PlayerManager::PlayerManager(WorldManager& world,
                              ClientsRegistry& registry,
                              std::unordered_map<ID, Car>& playerCars,
                              const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
-                             const std::unordered_map<ID,Checkpoint> checkpoints):
+                             const std::unordered_map<ID,Checkpoint>& checkpoints):
     world(world), registry(registry),
     playerCars(playerCars), spawnPoints(spawnPoints),
     raceStarted(raceStarted), checkpoints(checkpoints)
@@ -104,12 +104,6 @@ void PlayerManager::cheatHandler(Cmd& cmd) {
         case (Cheat::HEALTH_CHEAT):
         case (Cheat::FREE_SPEED_CHEAT): {
             car.applyCheat(cheatRequest.getCheat());
-            break;
-        }
-        case (Cheat::WIN_RACE_CHEAT): {
-            break;
-        }
-        case (Cheat::LOST_RACE_CHEAT): {
             break;
         }
         case (Cheat::NEXT_CHECKPOINT_CHEAT): {

@@ -110,6 +110,8 @@ private:
     std::vector<RaceResult> lastRaceResults;
     std::unordered_map<ID, PlayerGlobalStats> globalStats;
 
+    void forcePlayerWin(ID id);
+
 };
 
 

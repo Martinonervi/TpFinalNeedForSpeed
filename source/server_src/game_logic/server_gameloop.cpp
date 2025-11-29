@@ -369,7 +369,28 @@ void GameLoop::processCmds() {
                 break;
             }
             case (Opcode::REQUEST_CHEAT): {
-                playerManager.cheatHandler(cmd);
+                const auto& cr = dynamic_cast<const CheatRequest&>(*cmd.msg);
+                Cheat cheat = cr.getCheat();
+
+                switch (cheat) {
+                    case Cheat::HEALTH_CHEAT:
+                    case Cheat::FREE_SPEED_CHEAT:
+                    case Cheat::NEXT_CHECKPOINT_CHEAT:
+                        playerManager.cheatHandler(cmd); // cheats “del auto”
+                        break;
+
+                    case Cheat::WIN_RACE_CHEAT:
+                        forcePlayerWin(cmd.client_id);
+                        break;
+
+                    case Cheat::LOST_RACE_CHEAT:
+                        //forcePlayerLose(cmd.client_id);
+                        break;
+
+                    default:
+                        std::cout << "[GameLoop] cheat desconocido: " << (int)cheat << "\n";
+                        break;
+                }
                 break;
             }
 
@@ -380,6 +401,19 @@ void GameLoop::processCmds() {
 
     }
 }
+
+
+void GameLoop::forcePlayerWin(ID id) {
+    auto itCar = playerCars.find(id);
+    if (itCar == playerCars.end()) return;
+
+    Car& car = itCar->second;
+    if (car.isFinished()) return;
+
+    car.setCheckpoint(checkpoints.size());
+    eventHandlers.CarFinishRace(car);
+}
+
 
 void GameLoop::processWorldEvents() {
     std::unordered_set<ID> alreadyHitBuildingThisFrame;

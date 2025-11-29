@@ -28,7 +28,7 @@ public:
                   ClientsRegistry& registry,
                   std::unordered_map<ID, Car>& playerCars,
                   const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
-                  const std::unordered_map<ID,Checkpoint> checkpoints);
+                  const std::unordered_map<ID,Checkpoint>& checkpoints);
 
     // Devuelve true si se pudo crear el jugador (si había spawn)
     bool initPlayer(Cmd& cmd);
