@@ -47,6 +47,8 @@ private:
     Camera camera;
     ID myCarId;
     ID nextCheckpoint;
+    uint8_t totalCheckpoints = 0;
+    ID checkpointNumber = 0x0;
     Hint hint;
     std::unique_ptr<PlayerStats> playerStats = nullptr;
     UpgradeScreen ups;
@@ -57,7 +59,6 @@ private:
     EventManager eventManager;
     bool running;
     bool quit = false;
-    bool showMap = true;
     bool showStart = true;
     std::vector<RecommendedPoint> pathArray;
     Upgrade upgrade = NONE;

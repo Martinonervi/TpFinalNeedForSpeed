@@ -3,6 +3,7 @@
 #include "../common_src/cli_msg/cli_start_game.h"
 
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
+                                uint8_t& totalCheckpoints, ID& checkpointNumber,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                                 SDL2pp::Renderer& renderer,
                                 Queue<CliMsgPtr>& senderQueue,
@@ -11,7 +12,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                                 Hint& hint, UpgradeScreen& ups, Button& startBtn,
                                 bool& showStart,
-                                bool& running, bool& showMap, bool& quit,
+                                bool& running, bool& quit,
                                 float& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
                                 std::unique_ptr<PlayerStats>& playerStats,
                                 std::vector<RecommendedPoint>& pathArray,
@@ -19,6 +20,8 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::vector<UpgradeDef>& upgradesArray)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
+        totalCheckpoints(totalCheckpoints),
+        checkpointNumber(checkpointNumber),
         cars(cars),
         checkpoints(checkpoints),
         renderer(renderer),
@@ -30,7 +33,6 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         startBtn(startBtn),
         showStart(showStart),
         running(running),
-        showMap(showMap),
         quit(quit),
         playerStats(playerStats),
         raceTime(raceTime),
@@ -48,12 +50,14 @@ void EventManager::handleEvents(AudioManager& audio) const {
             running = false;
             quit = false;
         } else if (event.type == SDL_KEYDOWN && myCarId != -1) {
-            auto it = keyToMove.find(event.key.keysym.sym);
-            if (it != keyToMove.end()) {
-                auto msg = std::make_shared<MoveMsg>(it->second);
+            auto itMove = keyToMove.find(event.key.keysym.sym);
+            auto itCheat = keyToCheat.find(event.key.keysym.sym);
+            if (itMove != keyToMove.end()) {
+                auto msg = std::make_shared<MoveMsg>(itMove->second);
                 senderQueue.push(msg);
-            } else if (event.key.keysym.sym == SDLK_m) {
-                showMap = !showMap;
+            } else if (itCheat != keyToCheat.end()) {
+                auto msg = std::make_shared<CheatRequest>(itCheat->second);
+                senderQueue.push(msg);
             }
         }
 
@@ -147,6 +151,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
                 audio.playSound("checkpoint");
                 checkpoints[nextCheckpoint]->setInactive();
+                checkpointNumber = check_hit.getCheckpointId();
             }
             break;
         }
@@ -154,6 +159,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             const auto current = dynamic_cast<const SrvCurrentInfo&>(*msg);
             if (current.getRaceNumber() != lastRaceNumber) {
                 checkpoints.clear();
+                checkpointNumber = 0;
             }
 
             lastRaceNumber = current.getRaceNumber();
@@ -177,6 +183,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             raceTime = current.getRaceTimeSeconds();
             raceNumber = current.getRaceNumber();
             totalRaces = current.getTotalRaces();
+            totalCheckpoints = current.getTotalCheckpoints();
 
             break;
         }
