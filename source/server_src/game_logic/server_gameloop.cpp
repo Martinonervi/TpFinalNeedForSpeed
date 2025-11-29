@@ -118,12 +118,13 @@ void GameLoop::setupRoute() {
     spawnPoints = routeCfg.spawnPoints;
     recommendedPath = routeCfg.recommendedPath;
 
-    std::cout << "[GameLoop] setupRoute: usando ruta '"
+    /*std::cout << "[GameLoop] setupRoute: usando ruta '"
               << routeCfg.nameRoute
               << "' (index=" << routeIndex
               << "), checkpoints=" << checkpoints.size()
               << ", spawns=" << spawnPoints.size()
               << "\n";
+              */
 }
 
 
@@ -135,16 +136,13 @@ void GameLoop::waitingForPlayers() {
     raceStarted    = false;
 
     auto start = Clock::now();
-    double timeout = (raceIndex == 0) ? LOBBY_TIMEOUT_SEC
-                                        : BETWEEN_RACES_SEC;
 
-    const auto deadline = start + std::chrono::duration<double>(timeout);
+    const auto deadline = start + std::chrono::duration<double>(BETWEEN_RACES_SEC);
     while (should_keep_running()) {
         processLobbyCmds();
 
         if (startRequested) break;
-        //if (raceIndex == 0 && registry->size() >= MAX_PLAYERS) break;
-        if (Clock::now() >= deadline) break;
+        if (raceIndex != 0 and Clock::now() >= deadline) break;
 
         auto now = Clock::now();
         float remaining_sec = std::chrono::duration_cast<std::chrono::duration<float>>(
@@ -328,6 +326,7 @@ void GameLoop::processLobbyCmds() {
                     success = false;
                 } else {
                     auto& ur = dynamic_cast<RequestUpgrade&>(*cmd.msg);
+                    //std::cout << "[gameloop] upgrade: " << static_cast<int>(ur.getUpgrade()) << "\n";
                     const UpgradeDef& def = findUpgradeDef(ur.getUpgrade());
                     car.applyUpgrade(def);
                     up = ur.getUpgrade();

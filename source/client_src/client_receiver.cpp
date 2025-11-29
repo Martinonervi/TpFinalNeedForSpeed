@@ -105,6 +105,7 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                             std::make_shared<SendUpgrade>(std::move(msg)));
                 receiverQueue.push(base);
+                //std::cout << "[client Receiver] upgrade: " << static_cast<int>(msg.getUpgrade()) << "\n";
                 break;
             }
             case Opcode::UPGRADE_LOGIC: {

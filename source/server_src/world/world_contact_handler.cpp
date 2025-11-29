@@ -83,8 +83,8 @@ void WorldContactHandler::handleHitContact(b2ContactHitEvent ev) {
                 .ny = ev.normal.y,
         };
         worldEvents.push(evOut);
-        std::cout << "[WorldContactHandler] carA choco con carB (carAId=" << udA->id
-                  << ", carBId=" << udB->id << ")\n";
+       // std::cout << "[WorldContactHandler] carA choco con carB (carAId=" << udA->id
+         //         << ", carBId=" << udB->id << ")\n";
         return;
     }
 
@@ -109,7 +109,7 @@ void WorldContactHandler::handleHitContact(b2ContactHitEvent ev) {
             .ny = ev.normal.y,
     };
     worldEvents.push(evOut);
-    std::cout << "[WorldContactHandler] auto choco con edificio\n";
+    //std::cout << "[WorldContactHandler] auto choco con edificio\n";
 }
 
 
