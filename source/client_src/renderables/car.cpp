@@ -36,7 +36,7 @@ void Car::setCarType(const CarType newCarType) {
 }
 
 void Car::setHealth(const float newHealth) {
-    if (newHealth <= 0 && carState == LOW_HEALTH) {
+    if (newHealth <= 0 && (carState == LOW_HEALTH || carState == ALIVE)) {
         explosionFrame = 1;
         carState = EXPLODING;
     } else if (newHealth <= 20 && carState == ALIVE) {
