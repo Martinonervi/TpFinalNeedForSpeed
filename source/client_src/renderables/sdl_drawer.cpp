@@ -33,9 +33,6 @@ const float scaleY = 1.0f) const {
     int w = surface->w;
     int h = surface->h;
 
-
-    std::cout << surface->w << " " << surface->h << std::endl;
-
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer.Get(), surface);
 
     SDL_FreeSurface(surface);

@@ -39,7 +39,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
 
 // Hay que manejar FPS
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
-    Hud hud(renderer, drawer, tm, MAP_LIBERTY, pathArray);
+    const Hud hud(renderer, drawer, tm, MAP_LIBERTY, pathArray);
     Map map(renderer, tm, MAP_LIBERTY);
     StartScreen startScreen(renderer, drawer, tm, MAP_LIBERTY, pathArray, ups, startBtn);
 

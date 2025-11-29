@@ -23,13 +23,14 @@ SDL2pp::Rect CarTexture::getFrame(const CarType type, const float angle) const {
         normalized += 2.0f * M_PI;
 
     const int frameIndex =
-        static_cast<int>(normalized / (2.0f * M_PI) * FRAMES_PER_CAR) % FRAMES_PER_CAR;
+        static_cast<int>(std::round(normalized / (2.0f * M_PI) * FRAMES_PER_CAR)) % FRAMES_PER_CAR;
+
 
     const int col = frameIndex % FRAMES_PER_DIRECTION;
     const int row = frameIndex >= FRAMES_PER_DIRECTION ? 1 : 0;
     const int x = col * width;
     const int y = yOffset + row * height;
-
+    
     return {x, y, width, height};
 }
 
