@@ -15,7 +15,7 @@ Hud::Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, cons
 
 void Hud::drawOverlay(const int x, const int y,
                       std::unordered_map<ID, std::unique_ptr<Car>>& cars,
-                      const ID playerId, const float raceTime,
+                      const ID playerId, const int raceTime,
                       const uint8_t totalRaces, const uint8_t raceNumber,
                       const uint8_t totalCheckpoints, const ID checkpointNumber) const {
 
@@ -24,8 +24,8 @@ void Hud::drawOverlay(const int x, const int y,
 
     const Car& playerCar = *it->second;
 
-    float px = playerCar.getX();
-    float py = playerCar.getY();
+    const float px = playerCar.getX();
+    const float py = playerCar.getY();
 
     int mapX = x - 260;
     int mapY = 10;
@@ -39,7 +39,7 @@ void Hud::drawOverlay(const int x, const int y,
 
     const auto upgrades = it->second->getUpgrades();
     const float healthPerc = playerCar.getHealthPercentage();
-    float speed = playerCar.getSpeed();
+    const float speed = playerCar.getSpeed();
 
     drawBars(renderer, x, healthPerc);
     drawDial(renderer, speed, x, y);
@@ -121,8 +121,6 @@ void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const floa
 
     SDL2pp::Texture& barsTexture = tm.getHud().getBarsTexture();
 
-    constexpr float energyPercent = 50.0f/100; // 50% energía
-
     const SDL2pp::Rect healthSrc = tm.getHud().getHealthBar();
     SDL2pp::Rect healthDst(x, y, healthSrc.w*scale, healthSrc.h*scale);
 
@@ -130,19 +128,6 @@ void Hud::drawBars(SDL2pp::Renderer& renderer, const int windowWidth, const floa
     renderer.Copy(barsTexture,
                   healthSrc,
                   healthDst);
-
-    // Esto es para dibujar una barra similar a la de vida, al final no lo usamos pero lo dejo por las dudas
-
-    /*
-    const SDL2pp::Rect energySrc = tm.getHud().getEnergyBar();
-    const int energyX = x + healthSrc.w*scale + 10;
-    const int energyY = 5*scale;
-
-    SDL2pp::Rect energyDst(energyX, energyY, energySrc.w*scale, energySrc.h*scale);
-
-    drawEnergyFill(renderer, energyPercent, energyDst, scale);
-    renderer.Copy(barsTexture, energySrc, energyDst);
-    */
 }
 
 
@@ -163,37 +148,6 @@ void Hud::drawHealthFill(SDL2pp::Renderer& renderer, const float healthPerc, SDL
     renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
     renderer.SetDrawColor(255, 0, 77, 125);
     renderer.FillRect(dst);
-}
-
-void Hud::drawEnergyFill(SDL2pp::Renderer& renderer, float percent,
-    const SDL2pp::Rect energyDst, int scale) const
-{
-    // Por fila: cuántos px hay realmente (forma escalera)
-    static constexpr int ROW_W[5] = {53, 53, 51, 49, 47};
-    constexpr int ROWS = 5;
-
-    int startFillX = 10 * scale;
-    int startFillY = 9 * scale;
-    int filledW =  (energyDst.w - startFillX) * percent;
-
-    int rowY = startFillY + energyDst.y;
-    int rowH = (energyDst.h - startFillY)/ROWS;
-    int rowW = filledW;
-
-    for (int row = 0; row < ROWS; row++) {
-        SDL2pp::Rect dst = {
-            energyDst.x + startFillX,
-            rowY,
-            rowW,
-            rowH,
-        };
-        rowY += rowH;
-        rowW -= scale;
-        renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
-        renderer.SetDrawColor(255, 255, 0, 125);
-        renderer.FillRect(dst);
-    }
-
 }
 
 void Hud::drawGameTime(const int totalSeconds) const {

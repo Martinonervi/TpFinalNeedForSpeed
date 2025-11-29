@@ -13,7 +13,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 Hint& hint, UpgradeScreen& ups, Button& startBtn,
                                 bool& showStart,
                                 bool& running, bool& quit,
-                                float& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
+                                int& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
                                 std::unique_ptr<PlayerStats>& playerStats,
                                 std::vector<RecommendedPoint>& pathArray,
                                 std::vector<UpgradeDef>& upgradesArray)
@@ -182,7 +182,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             }
 
 
-            raceTime = current.getRaceTimeSeconds();
+            raceTime = static_cast<int>(current.getRaceTimeSeconds());
             raceNumber = current.getRaceNumber();
             totalRaces = current.getTotalRaces();
             totalCheckpoints = current.getTotalCheckpoints();

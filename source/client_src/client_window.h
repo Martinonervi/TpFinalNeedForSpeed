@@ -52,7 +52,7 @@ private:
     Hint hint;
     std::unique_ptr<PlayerStats> playerStats = nullptr;
     UpgradeScreen ups;
-    float raceTime = 0.0f;
+    int raceTime = 0;
     uint8_t totalRaces = 0;
     uint8_t raceNumber = 0;
     Button startBtn;

@@ -16,7 +16,7 @@ public:
     Hud(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, MapType mapType,
         std::vector<RecommendedPoint>& pathArray);
     void drawOverlay(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId,
-    float raceTime, uint8_t totalRaces, uint8_t raceNumber,
+    int raceTime, uint8_t totalRaces, uint8_t raceNumber,
     uint8_t totalCheckpoints, ID checkpointNumber) const;
 
 private:
@@ -31,8 +31,6 @@ private:
     void drawSpeedText(float clampedSpeed, SDL2pp::Rect dstRectDial, float x) const;
     void drawBars(SDL2pp::Renderer& renderer, int windowWidth, float healthPerc) const;
     void drawHealthFill(SDL2pp::Renderer& renderer, float healthPerc, SDL2pp::Rect healthDst,
-                        int scale) const;
-    void drawEnergyFill(SDL2pp::Renderer& renderer, float percent, SDL2pp::Rect energyDst,
                         int scale) const;
     void drawGameTime(int totalSeconds) const;
     void drawRaceNumber(int current, int total) const;
