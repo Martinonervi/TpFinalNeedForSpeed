@@ -38,7 +38,7 @@ public:
     void applyControlsToBody(const MoveMsg& in, float dt);
 
     PlayerState snapshotState();
-    void applyUpgrade(const UpgradeDef& up);
+    bool applyUpgrade(const UpgradeDef& up);
 
     ID getClientId() const {return this->clientId; };
     CarType getCarType() const {return this->carType; }

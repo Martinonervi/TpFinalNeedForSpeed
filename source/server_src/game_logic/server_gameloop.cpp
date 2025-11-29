@@ -315,20 +315,18 @@ void GameLoop::processLobbyCmds() {
             }
             case (Opcode::UPGRADE_REQUEST): {
                 auto it = playerCars.find(cmd.client_id);
-                if (it == playerCars.end()) return;
+                if (it == playerCars.end()) continue;
                 Car& car = it->second;
                 bool success;
                 Upgrade up;
-                // puede comprar multiples mejoras?
-                // tendria que hacer upgradePenalty += y cre0 quu esta
-                if (car.hasMaxUpgrade()) {
+
+                auto& ur = dynamic_cast<RequestUpgrade&>(*cmd.msg);
+                const UpgradeDef& def = findUpgradeDef(ur.getUpgrade());
+
+                if (car.hasMaxUpgrade() || !car.applyUpgrade(def)) {
                     up = NONE;
                     success = false;
                 } else {
-                    auto& ur = dynamic_cast<RequestUpgrade&>(*cmd.msg);
-                    //std::cout << "[gameloop] upgrade: " << static_cast<int>(ur.getUpgrade()) << "\n";
-                    const UpgradeDef& def = findUpgradeDef(ur.getUpgrade());
-                    car.applyUpgrade(def);
                     up = ur.getUpgrade();
                     success = true;
                 }

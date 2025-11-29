@@ -155,27 +155,31 @@ void Car::resetForNewRace(float x, float y, float angleRad) {
     finished         = false;
     finishTime       = 0.f;
     ranking          = 0;
-    //multa = 0
     spawnId = 0;
-    upgradePenalty = 0.f;
-    upgrade = NONE;
-    engineFactor     = 1.0f;
-    maxSpeedFactor   = 1.0f;
-    shield   = 1.0f;
-    damage = 1.0f;
-    totalUpgrades = 0;
+
+    //habria q dejar comparar mejoras cada lobby (entre carreras)
+    //upgradePenalty = 0.f;
+    //upgrade = NONE;
+    //engineFactor     = 1.0f;
+    //maxSpeedFactor   = 1.0f;
+    //shield   = 1.0f;
+    //damage = 1.0f;
+    //totalUpgrades = 0;
 }
 
 
 
 
-void Car::applyUpgrade(const UpgradeDef& up) {
+bool Car::applyUpgrade(const UpgradeDef& up) {
+    bool apply = false;
+
     switch (up.type) {
         case Upgrade::ENGINE_FORCE: {
             if (engineFactor != 1.0f) break; //para q no pueda elegir la misma devuelta
             engineFactor   = up.value;
             upgradePenalty += up.penaltySec;
             totalUpgrades  += 1;
+            apply = true;
             break;
         }
         case HEALTH: {
@@ -183,6 +187,7 @@ void Car::applyUpgrade(const UpgradeDef& up) {
             health = health * up.value;
             upgradePenalty += up.penaltySec;
             totalUpgrades  += 1;
+            apply = true;
             break;
         }
         case SHIELD: {
@@ -190,6 +195,7 @@ void Car::applyUpgrade(const UpgradeDef& up) {
             shield = up.value;
             upgradePenalty += up.penaltySec;
             totalUpgrades  += 1;
+            apply = true;
             break;
         }
         case DAMAGE: {
@@ -197,12 +203,14 @@ void Car::applyUpgrade(const UpgradeDef& up) {
             damage = up.value;
             upgradePenalty += up.penaltySec;
             totalUpgrades  += 1;
+            apply = true;
             break;
         }
         case Upgrade::NONE: {
             break;
         }
     }
+    return apply;
 }
 
 
