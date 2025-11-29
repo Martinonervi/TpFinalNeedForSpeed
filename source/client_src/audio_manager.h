@@ -24,6 +24,7 @@ private:
     std::unordered_map<std::string, int> channels;
 
     bool init();
+    void initSfx();
     void close();
 };
 

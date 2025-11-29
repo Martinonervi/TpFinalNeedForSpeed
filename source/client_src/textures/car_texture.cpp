@@ -43,9 +43,9 @@ SDL2pp::Texture& CarTexture::getSpeedometer() const {
 }
 
 SDL2pp::Rect CarTexture::getDialFrame() const {
-    const int WIDTH = 87;
-    const int HEIGHT = 87;
-    const int X = 10;
-    const int Y = 29;
-    return SDL2pp::Rect(X, Y, WIDTH, HEIGHT);
+    const int w = 87;
+    const int h = 87;
+    const int x = 10;
+    const int y = 29;
+    return SDL2pp::Rect(x, y, w, h);
 }

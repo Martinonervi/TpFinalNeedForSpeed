@@ -10,7 +10,20 @@ bool AudioManager::init() {
         std::cout << "SDL_mixer error: " << Mix_GetError() << std::endl;
         return false;
     }
+    initSfx();
+
     return true;
+}
+
+void AudioManager::initSfx() {
+    loadSound("explosion", "../assets/sfx/explosion.wav");
+    loadSound("crash", "../assets/sfx/crash.wav");
+    loadSound("checkpoint", "../assets/sfx/checkpoint.wav");
+    loadSound("countdown", "../assets/sfx/countdown.wav");
+    loadSound("engine", "../assets/sfx/engine.wav");
+    loadSound("purchase", "../assets/sfx/purchase.wav");
+
+    loadMusic("game_music", "../assets/sfx/game-music.wav");
 }
 
 void AudioManager::close() {
