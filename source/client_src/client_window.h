@@ -8,6 +8,7 @@
 #include <SDL2pp/SDL2pp.hh>
 #include <SDL2pp/Window.hh>
 #include <unistd.h>
+#include "./renderables/server_dis_screen.h"
 
 #include "../common_src/cli_msg/move_Info.h"
 #include "../common_src/constants.h"
@@ -64,10 +65,12 @@ private:
     uint8_t totalRaces = DEFAULT;
     uint8_t raceNumber = DEFAULT;
     Button startBtn;
+    ServerDisScreen disScreen;
     EventManager eventManager;
     bool running;
     bool quit = false;
     bool showStart = true;
+    bool srvDisconnect = false;
     std::vector<RecommendedPoint> pathArray;
     std::vector<UpgradeDef> upgradesArray;
     AudioManager audio;
