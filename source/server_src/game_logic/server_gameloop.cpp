@@ -144,7 +144,7 @@ void GameLoop::waitingForPlayers() {
 
         if (startRequested) break;
         //if (raceIndex == 0 && registry->size() >= MAX_PLAYERS) break;
-        if (Clock::now() >= deadline) break;
+        if (raceIndex != 0 && Clock::now() >= deadline) break;
 
         auto now = Clock::now();
         float remaining_sec = std::chrono::duration_cast<std::chrono::duration<float>>(

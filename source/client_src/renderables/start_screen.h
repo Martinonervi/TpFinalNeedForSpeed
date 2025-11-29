@@ -15,7 +15,7 @@ class StartScreen {
 public:
     StartScreen(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, MapType mapType,
                 std::vector<RecommendedPoint>& pathArray, UpgradeScreen& ups, Button& startBtn);
-    void draw(int windowWidth, int windowHeight, bool showUpgradeMenu);
+    void draw(int windowWidth, int windowHeight);
 
 private:
     Minimap map;

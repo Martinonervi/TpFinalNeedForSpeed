@@ -354,7 +354,7 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         const uint8_t totalCheckpoints = msg.getTotalCheckpoints();
 
         std::vector<char> buf;
-        buf.reserve(sizeof(Op) + 2*sizeof(uint8_t) + 7 * sizeof(uint32_t));
+        buf.reserve(sizeof(Op) + 3*sizeof(uint8_t) + 7 * sizeof(uint32_t));
 
         auto append = [&buf](const void* p, std::size_t n) {
             const std::size_t old = buf.size();
