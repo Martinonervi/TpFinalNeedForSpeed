@@ -173,7 +173,7 @@ NewPlayer ClientProtocol::recvNewPlayer() {
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
-    float player_id = ntohs(player_id_BE);
+    uint16_t player_id = ntohs(player_id_BE);
     float x = decodeFloatBE(x_BE);
     float y = decodeFloatBE(y_BE);
     float angleRad = decodeFloatBE(angleRad_BE);

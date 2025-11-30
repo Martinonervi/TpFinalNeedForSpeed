@@ -191,7 +191,6 @@ int ServerProtocol::sendGames(const MetadataGames& games) {
         }
 
         int n = peer.sendall(buf.data(), buf.size());
-        std::cout << "[Server Protocol] Games sent" << std::endl;
         return n;
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
@@ -546,7 +545,7 @@ int ServerProtocol::sendCarConfirmation(CarSelect& car_select) {
         memcpy(buf.data() + offset, &opcode, sizeof(Op));
         offset += sizeof(Op);
 
-        memcpy(buf.data() + offset, &success, sizeof(Upgrade));
+        memcpy(buf.data() + offset, &success, sizeof(bool));
         offset += sizeof(bool);
 
         return peer.sendall(buf.data(), offset);
