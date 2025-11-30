@@ -8,7 +8,7 @@
 #include "../world/entities/car.h"
 #include "../world/world_manager.h"
 #include "../server_client_registry.h"
-#include "../world/map_parser.h"   // por SpawnPointConfig
+#include "../world/map_parser.h"
 #include "../../common_src/cli_msg/move_Info.h"
 #include "../../common_src/cli_msg/init_player.h"
 #include "../../common_src/srv_msg/player_state.h"
@@ -48,8 +48,6 @@ public:
     // Envía stats de todos los jugadores
     void sendPlayerStats(const std::unordered_map<ID, PlayerGlobalStats>& globalStats);
 
-    // Entre carreras: limpiar info de spawns usados, etc.
-    void resetForNewRace();
 
 private:
     WorldManager& world;
@@ -57,15 +55,21 @@ private:
     std::unordered_map<ID, Car>& playerCars;
     const std::unordered_map<ID,Checkpoint>& checkpoints;
     const std::vector<SpawnPointConfig>& spawnPoints;
+    bool& raceStarted;
 
     // manejo de spawns
     std::unordered_set<ID> usedSpawnIds;       // spawnId ocupados
     std::unordered_map<ID, ID> carToSpawnId;   // carId -> spawnId
 
-    bool& raceStarted;
-
     const Config& config;
+
+    // herlpers initPlayer
+    int  findFreeSpawnIndex() const;
+    void createCarForClient(ID clientId, const InitPlayer& ip, const SpawnPointConfig& spawn);
+    void notifyClientExistingCars(ID newClientId);
+    void notifyOthersAboutNewCar(ID newClientId, CarType carType, const SpawnPointConfig& spawn);
 };
+
 
 
 #endif

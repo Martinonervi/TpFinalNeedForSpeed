@@ -4,27 +4,11 @@
 void WorldContactHandler::checkContactEvents() {
     b2ContactEvents contacts = b2World_GetContactEvents(this->world);
 
-    /*
-    std::cout << "begin: " << contacts.beginCount
-              << " end: " << contacts.endCount
-              << " hit: " << contacts.hitCount << "\n";
-    */
-    // colision autos
+    // colisiones autos
     for (int i = 0; i < contacts.hitCount; ++i) {
         const b2ContactHitEvent& ev = contacts.hitEvents[i];
         handleHitContact(ev);
     }
-
-    /* los dejo por si en un futuro los necesito
-    for (int i = 0; i < contacts.beginCount; ++i) {
-        const b2ContactBeginTouchEvent& ev = contacts.beginEvents[i];
-        handleBeginContact(ev);
-    }
-     for (int i = 0; i < contacts.endCount; ++i) {
-        const b2ContactEndTouchEvent& ev = contacts.endEvents[i];
-        handleEndContact(ev);
-    }
-    */
 
     //checkpoints
     b2SensorEvents sensors = b2World_GetSensorEvents(this->world);
@@ -32,7 +16,6 @@ void WorldContactHandler::checkContactEvents() {
         const b2SensorBeginTouchEvent& ev = sensors.beginEvents[i];
         handleSensorBegin(ev);
     }
-
 }
 
 void WorldContactHandler::handleSensorBegin(const b2SensorBeginTouchEvent& ev) {
@@ -43,7 +26,6 @@ void WorldContactHandler::handleSensorBegin(const b2SensorBeginTouchEvent& ev) {
     auto* udV = static_cast<PhysicsUserData*>(b2Body_GetUserData(visitorBody));
 
     if (!udS || !udV) return;
-
     PhysicsUserData* car = nullptr;
     PhysicsUserData* cp  = nullptr;
 
@@ -83,20 +65,14 @@ void WorldContactHandler::handleHitContact(b2ContactHitEvent ev) {
                 .ny = ev.normal.y,
         };
         worldEvents.push(evOut);
-       // std::cout << "[WorldContactHandler] carA choco con carB (carAId=" << udA->id
-         //         << ", carBId=" << udB->id << ")\n";
         return;
     }
 
     PhysicsUserData* car = nullptr;
-    PhysicsUserData* building = nullptr;
-
     if (udA->type == PhysicsType::Car && udB->type == PhysicsType::Building) {
         car = udA;
-        //building = udB;
     } else if (udB->type == PhysicsType::Car && udA->type == PhysicsType::Building) {
         car = udB;
-        //building = udA;
     } else {
         return;
     }
@@ -109,7 +85,6 @@ void WorldContactHandler::handleHitContact(b2ContactHitEvent ev) {
             .ny = ev.normal.y,
     };
     worldEvents.push(evOut);
-    //std::cout << "[WorldContactHandler] auto choco con edificio\n";
 }
 
 

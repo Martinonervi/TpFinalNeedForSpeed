@@ -29,6 +29,7 @@ enum Opcode : Op {
     SRV_DISCONNECTION = 0x20,
     REQUEST_CHEAT = 0x21,
     STARTING_GAME = 0x22,
+    RACE_FINISHED = 0x23,
 };
 
 enum err_code : Op {

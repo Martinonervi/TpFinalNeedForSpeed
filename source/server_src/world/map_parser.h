@@ -55,7 +55,6 @@ public:
     MapData load(const std::string& path);
 
 private:
-
     void parseCheckpointList(const YAML::Node& cpList,
                                         std::vector<CheckpointConfig>& out) const;
     void parseSpawnPoints(const YAML::Node& spList,

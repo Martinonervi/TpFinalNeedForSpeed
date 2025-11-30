@@ -3,17 +3,18 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
+#include <stdexcept>
 #include "../../../common_src/constants.h"
-
+#include <yaml-cpp/yaml.h>
 
 struct LoopsConfig {
-    int maxPlayers;
     double lobbyHz;
     double raceHz;
 };
 
 struct LobbyConfig {
-    int   maxPlayers;
+    uint8_t   maxPlayers;
     double betweenRacesSec;
     float maxRaceTimeSec;
 };
@@ -25,14 +26,12 @@ struct PhysicsConfig {
 
 struct CarHandlingConfig {
     float baseHealth;
-    // longitudinal
     float maxFwdSpeed;
     float maxBckSpeed;
     float engineImpulse;
-    // lateral
     float brakeAccel;
-    float maxAngularVel; // podria probar 2.5–3.5
-    float lateralDamp; // probá 6–12
+    float maxAngularVel; // 2.5–3.5
+    float lateralDamp; // 6–12
 };
 
 
@@ -83,6 +82,15 @@ class ConfigParser {
 public:
     ConfigParser() = default;
     Config load(const std::string& path);
+
+private:
+    void loadLoops(const YAML::Node& root, Config& cfg);
+    void loadLobby(const YAML::Node& root, Config& cfg);
+    void loadPhysics(const YAML::Node& root, Config& cfg);
+    void loadCarHandling(const YAML::Node& root, Config& cfg);
+    void loadCollisionOverrides(const YAML::Node& root, Config& cfg);
+    void loadUpgradesFromYaml(const YAML::Node& root, Config& cfg);
+    void loadCheats(const YAML::Node& root, Config& cfg);
 };
 
 

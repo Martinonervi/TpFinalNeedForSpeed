@@ -9,24 +9,27 @@
 #include "entity.h"
 #include "../../game_logic/config/config_parser.h"
 
-const int CAR_MAX_UPGRADES = 3;
+constexpr int CAR_MAX_UPGRADES = 3;
+constexpr float CHEAT_HEALTH = 10000.0f;
 
 struct RaceState {
-    float health = 100.0f;
+    float health = 0.0f;
     ID actualCheckpoint = 0;
     bool finished = false;
     float finishTime = 0.0f;
     uint8_t ranking = 0;
     ID spawnId = 0;
-    float speed = 0;
 
     float upgradePenalty = 0.f;
-    Upgrade upgrade = NONE;
     float engineFactor   = 1.0f;
     float maxSpeedFactor = 1.0f;
     float shield         = 1.0f;
     float damage         = 1.0f;
+    float maxSpeedCheat = 1.0f;
+    uint8_t totalUpgrades = 0;
+    float totalHealth = 0.0f;
 };
+
 
 class Car : public Entity {
 public:
@@ -38,83 +41,70 @@ public:
         const CarHandlingConfig& carCongif);
 
     void applyControlsToBody(const MoveMsg& in, float dt);
-
     PlayerState snapshotState();
-    bool applyUpgrade(const UpgradeDef& up);
 
+    bool applyUpgrade(const UpgradeDef& up);
+    void applyCheat(Cheat cheat);
+    void applyDamage(float damage);
+    void resetForNewRace(float x, float y, float angleDeg);
+    void kill();
+    void markFinished(float t, uint8_t finishedCarsCount) {
+        raceState.finished = true;
+        raceState.finishTime = t;
+        raceState.ranking = finishedCarsCount;
+    }
+
+    // booleanos
+    bool isCarDestroy() const {
+        return this->raceState.health == 0;
+    }
+    bool isFinished() const { return raceState.finished; }
+    bool hasMaxUpgrade() const {return raceState.totalUpgrades >= CAR_MAX_UPGRADES;}
+
+
+    // getters
     ID getClientId() const {return this->clientId; };
     CarType getCarType() const {return this->carType; }
-    float getHealth() const {return this->health; }
-    ID getActualCheckpoint() const {return this->actualCheckpoint; };
-    void setCheckpoint(ID checkpoint) { this->actualCheckpoint = checkpoint; }
-
-    void applyDamage(const float damage);
-    void kill();
-    bool isCarDestroy();
-
-    void markFinished(float t, u_int8_t finishedCarsCount) {
-        finished = true;
-        finishTime = t;
-        ranking = finishedCarsCount;
+    float getHealth() const {return this->raceState.health; }
+    ID getActualCheckpoint() const {return this->raceState.actualCheckpoint; };
+    float getFinishTime() const { return raceState.finishTime + raceState.upgradePenalty; }
+    uint8_t getRanking() const { return raceState.ranking; }
+    ID getSpawnId() const { return raceState.spawnId; }
+    b2Vec2 getPosition() const {
+        b2Transform xf = b2Body_GetTransform(body);
+        return xf.p;
     }
-    bool isFinished() const { return finished; }
-    float getFinishTime() const { return finishTime + upgradePenalty; }
-    uint8_t getRanking() const { return ranking; }
-
-    void resetForNewRace(float x, float y, float angleDeg);
-
-    ID getSpawnId() const { return spawnId; }
-    bool hasMaxUpgrade() const {
-        //std::cout << "[Car] hasMaxUpgrade? total=" << (int)totalUpgrades
-          //    << " max=" << CAR_MAX_UPGRADES << "\n";
-              return totalUpgrades >= CAR_MAX_UPGRADES;
+    float getAngleRad() const {
+        b2Transform xf = b2Body_GetTransform(body);
+        return b2Rot_GetAngle(xf.q);
     }
 
-    float getShield();
-    float getDamage();
-    void setPosition(float x, float y);
-
-    void applyCheat(Cheat cheat);
-    b2Vec2 getPosition() const;
-    float  getAngleRad() const;
     float getPenalty() const {
-        return upgradePenalty;
+        return raceState.upgradePenalty;
     };
-
     float getTotalHealth() const {
-        return totalHealth;
+        return raceState.totalHealth;
     }
+    float getShield() const {return raceState.shield;}
+    float getDamage() const {return raceState.damage;}
+
+    // setters
+    void setCheckpoint(ID checkpoint) { this->raceState.actualCheckpoint = checkpoint; }
+    void setPosition(float x, float y);
 
 private:
     ID clientId;
     CarType carType;
-
-
-    ID actualCheckpoint = 0;
-    bool finished = false;
-    float finishTime = 0.0f;
-    uint8_t ranking = 0;
-    ID spawnId = 0;
-
-    // logica de mejoras
-    // factores de mejora (empiezan en 1.0 = sin mejora)
-    float upgradePenalty = 0.f;
-    Upgrade upgrade = NONE;
-    float engineFactor     = 1.0f;
-    float maxSpeedFactor   = 1.0f;
-    float shield   = 1.0f;
-    float damage = 1.0f;
-    uint8_t totalUpgrades = 0;
-
-    float maxSpeedCheat = 1.0f;
-
     CarHandlingConfig handling;
+    RaceState raceState;
 
-    float health;
-    const float CHEAT_HEALTH = 10000.0f;
-    float totalHealth = handling.baseHealth;
+    void resetRaceState(float baseHealth);
 
-
+    // helpers de applyControlsToBody
+    void applyThrottle(float throttle, float dt);
+    void applyBrake(float brake, float dt);
+    void applySteering(float steer);
+    void applyLateralFriction(float dt);
 
 };
 
