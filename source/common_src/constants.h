@@ -25,12 +25,16 @@
 #define RETURN_SUCCESS  0
 #define RETURN_FAILURE  1
 
+#define FPS 60.0
+
 #define FRAMES_PER_CAR 16
 #define FRAMES_PER_DIRECTION 8
 #define SMALL_CAR 32
 #define MEDIUM_CAR 40
 #define LARGE_CAR 48
 #define PIXELS_PER_METER 10
+#define WORLD_WIDTH 4640.0
+#define WORLD_HEIGHT 4672.0
 
 // OTRO ARCHIVO
 #define CARS_PATH  "../assets/cars/cars.png"
@@ -43,8 +47,12 @@
 #define CHECKPOINT_PATH "../assets/extras/checkpoint.png"
 #define HEALTH_NITRO_PATH "../assets/extras/health-and-nitro.png"
 #define SWORD_SHIELD_PATH "../assets/extras/sword-and-shield.png"
+#define START_BACK_PATH "../assets/extras/start-background.png"
 #define UPGRADES_PATH "../assets/extras/upgrades.png"
 #define LIBERTY_OVER_PATH "../assets/cities/liberty_city_over.png"
+#define FONT_PATH "../client_src/lobby/resources/fonts/pressstart2p.ttf"
+
+// #define FONT_PATH "../assets/fonts/pixel_font.ttf"
 
 using ID = std::uint32_t;
 
@@ -106,6 +114,8 @@ enum class EntityLayer {
     GROUND,
     BRIDGE
 };
+
+
 
 // Helpers para el protocolo
 

@@ -6,6 +6,7 @@
 
 #include <arpa/inet.h>
 
+#include "../common_src/cli_msg/cli_cheat_request.h"
 #include "../common_src/cli_msg/requestgame.h"
 #include "../common_src/srv_msg/srv_time_left.h"
 
@@ -219,9 +220,10 @@ int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
         Op type = COLLISION;
         ID player_id_BE = htonl(msg.getPlayerId());
         uint32_t health_BE = encodeFloatBE(msg.getCarHealth());
+        uint32_t total_health_BE = encodeFloatBE(msg.getTotalHealth());
 
 
-        std::vector<char> buf(sizeof(Op) + sizeof(ID) + sizeof(uint32_t));
+        std::vector<char> buf(sizeof(Op) + sizeof(ID) + 2*sizeof(uint32_t));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
@@ -231,7 +233,10 @@ int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
         offset += sizeof(ID);
 
         memcpy(buf.data() + offset, &health_BE, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
+        offset += sizeof(health_BE);
+
+        memcpy(buf.data() + offset, &total_health_BE, sizeof(uint32_t));
+        offset += sizeof(total_health_BE);
 
         int n = peer.sendall(buf.data(), offset);
         return n;
@@ -349,9 +354,10 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         const uint32_t angleHint = encodeFloatBE(msg.getAngleHint());
         const uint32_t distanceToChekpoint = encodeFloatBE(msg.getDistanceToCheckpoint());
         const uint8_t totalRaces = msg.getTotalRaces();
+        const uint8_t totalCheckpoints = msg.getTotalCheckpoints();
 
         std::vector<char> buf;
-        buf.reserve(sizeof(Op) + 2*sizeof(uint8_t) + 7 * sizeof(uint32_t));
+        buf.reserve(sizeof(Op) + 3*sizeof(uint8_t) + 7 * sizeof(uint32_t));
 
         auto append = [&buf](const void* p, std::size_t n) {
             const std::size_t old = buf.size();
@@ -369,6 +375,7 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         append(&angleHint, sizeof(angleHint));
         append(&distanceToChekpoint, sizeof(distanceToChekpoint));
         append(&totalRaces, sizeof(totalRaces));
+        append(&totalCheckpoints, sizeof(totalCheckpoints));
 
         return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {
@@ -546,4 +553,36 @@ int ServerProtocol::sendCarConfirmation(CarSelect& car_select) {
         std::cerr << e.what() << '\n';
         throw("Error sending");
     }
+}
+
+int ServerProtocol::sendSartingGame(StartingGame& sg) {
+    try{
+        Op opcode = sg.type();
+
+        std::vector<char> buf(sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+CheatRequest ServerProtocol::recvCheat() {
+    Cheat cheat;
+    int n = 0;
+    try {
+        n += peer.recvall(&cheat, sizeof(cheat));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+
+    return CheatRequest(cheat);
 }

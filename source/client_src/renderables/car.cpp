@@ -36,7 +36,7 @@ void Car::setCarType(const CarType newCarType) {
 }
 
 void Car::setHealth(const float newHealth) {
-    if (newHealth <= 0 && carState == LOW_HEALTH) {
+    if (newHealth <= 0 && (carState == LOW_HEALTH || carState == ALIVE)) {
         explosionFrame = 1;
         carState = EXPLODING;
     } else if (newHealth <= 20 && carState == ALIVE) {
@@ -68,11 +68,28 @@ void Car::drawExplosion(const Camera& camera) {
     }
 }
 
+void Car::setMaxHealth(const float newMaxHealth) {
+    maxHealth = newMaxHealth;
+}
+
 CarState Car::getState() const { return carState; }
 
 float Car::getAngle() const { return angle; }
 
-float Car::getHealth() const { return health; }
+float Car::getHealthPercentage() const { return health/maxHealth; }
 
 float Car::getSpeed() const { return speed; }
 void Car::setSpeed(const float newSpeed) { speed=newSpeed; }
+
+void Car::addUpgrade(const Upgrade newUp) {
+    if (upgrades.size() == 3) return;
+    upgrades.push_back(newUp);
+}
+
+std::vector<Upgrade> Car::getUpgrades() {
+    return upgrades;
+}
+
+float Car::getHealth() const { return health; }
+
+float Car::getMaxHealth() const { return maxHealth; }

@@ -8,6 +8,7 @@
 #include <SDL2pp/SDL2pp.hh>
 #include <SDL2pp/Window.hh>
 #include <unistd.h>
+#include "./renderables/server_dis_screen.h"
 
 #include "../common_src/cli_msg/move_Info.h"
 #include "../common_src/constants.h"
@@ -23,6 +24,14 @@
 
 #include "client_camera.h"
 #include "event_manager.h"
+#include "../common_src/constant_rate_loop.h"
+#include "./renderables/checkpoint.h"
+#include "renderables/hint.h"
+#include "renderables/start_screen.h"
+#include "renderables/upgrade_screen.h"
+
+#include "audio_manager.h"
+#include "sdl_constants.h"
 
 class ClientWindow {
 public:
@@ -47,21 +56,28 @@ private:
     Camera camera;
     ID myCarId;
     ID nextCheckpoint;
+    uint8_t totalCheckpoints = DEFAULT;
+    ID checkpointNumber = DEFAULT;
     Hint hint;
     std::unique_ptr<PlayerStats> playerStats = nullptr;
     UpgradeScreen ups;
-    float raceTime = 0.0f;
-    uint8_t totalRaces = 0;
-    uint8_t raceNumber = 0;
+    int raceTime = DEFAULT;
+    uint8_t totalRaces = DEFAULT;
+    uint8_t raceNumber = DEFAULT;
+    Button startBtn;
+    ServerDisScreen disScreen;
     EventManager eventManager;
-    bool showUpgradeMenu = false;
     bool running;
     bool quit = false;
-    bool showMap = true;
+    bool showStart = true;
+    bool srvDisconnect = false;
     std::vector<RecommendedPoint> pathArray;
-    Upgrade upgrade = NONE;
     std::vector<UpgradeDef> upgradesArray;
+    AudioManager audio;
 
+
+    void drawCars(ID id, const std::unique_ptr<Car>& car);
+    void carHasLowHealth();
 };
 
 #endif // CLIENTWINDOW_H

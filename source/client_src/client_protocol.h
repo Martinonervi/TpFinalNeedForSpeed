@@ -22,6 +22,7 @@
 #include "../common_src/srv_msg/srv_send_upgrade.h"
 #include "../common_src/srv_msg/srv_time_left.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/cli_msg/cli_cheat_request.h"
 
 #include "client_types.h"
 
@@ -51,6 +52,7 @@ public:
     int sendInitPlayer(const InitPlayer& ip) const;
     int sendRequestGame(RequestGame& join_game);
     int sendStartGame(const StartGame& sg);
+    int sendCheat(const CheatRequest& up);
 
     /* ---------- Deserialización de datos ---------- */
 

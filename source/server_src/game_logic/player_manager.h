@@ -8,13 +8,14 @@
 #include "../world/entities/car.h"
 #include "../world/world_manager.h"
 #include "../server_client_registry.h"
-#include "../world/map_parser.h"   // por SpawnPointConfig
+#include "../world/map_parser.h"
 #include "../../common_src/cli_msg/move_Info.h"
 #include "../../common_src/cli_msg/init_player.h"
 #include "../../common_src/srv_msg/player_state.h"
 #include "../../common_src/srv_msg/send_player.h"
 #include "../../common_src/srv_msg/playerstats.h"
 #include "../../common_src/srv_msg/new_player.h"
+#include "config/config_parser.h"
 
 struct PlayerGlobalStats {
     float totalTime = 0.0f;
@@ -27,13 +28,19 @@ public:
     PlayerManager(WorldManager& world,
                   ClientsRegistry& registry,
                   std::unordered_map<ID, Car>& playerCars,
-                  const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted);
+                  const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
+                  const std::unordered_map<ID,Checkpoint>& checkpoints,
+                  const std::vector<UpgradeDef>& upgrades, const Config& config);
 
     // Devuelve true si se pudo crear el jugador (si había spawn)
     bool initPlayer(Cmd& cmd);
 
     // Aplica comandos de movimiento
     void handleMovement(Cmd& cmd, float dt);
+
+    void handleRequestUpgrade(Cmd& cmd);
+
+    void cheatHandler(Cmd& cmd);
 
     // Borra auto + cuerpo físico + libera spawn
     void disconnectPlayer(ID id);
@@ -44,21 +51,32 @@ public:
     // Envía stats de todos los jugadores
     void sendPlayerStats(const std::unordered_map<ID, PlayerGlobalStats>& globalStats);
 
-    // Entre carreras: limpiar info de spawns usados, etc.
-    void resetForNewRace();
 
 private:
     WorldManager& world;
     ClientsRegistry& registry;
     std::unordered_map<ID, Car>& playerCars;
+    const std::unordered_map<ID,Checkpoint>& checkpoints;
     const std::vector<SpawnPointConfig>& spawnPoints;
+    bool& raceStarted;
 
     // manejo de spawns
     std::unordered_set<ID> usedSpawnIds;       // spawnId ocupados
     std::unordered_map<ID, ID> carToSpawnId;   // carId -> spawnId
 
-    bool& raceStarted;
+    const std::vector<UpgradeDef>& upgrades;
+
+    const Config& config;
+
+    // herlpers initPlayer
+    int  findFreeSpawnIndex() const;
+    void createCarForClient(ID clientId, const InitPlayer& ip, const SpawnPointConfig& spawn);
+    void notifyClientExistingCars(ID newClientId);
+    void notifyOthersAboutNewCar(ID newClientId, CarType carType, const SpawnPointConfig& spawn);
+
+    const UpgradeDef& findUpgradeDef(Upgrade type) const;
 };
+
 
 
 #endif

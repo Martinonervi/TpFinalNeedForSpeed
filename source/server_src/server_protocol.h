@@ -21,8 +21,10 @@
 #include "../common_src/srv_msg/srv_send_upgrade.h"
 #include "../common_src/srv_msg/srv_time_left.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/cli_msg/cli_cheat_request.h"
 
 #include "server_types.h"
+#include "../common_src/srv_msg/srv_starting_game.h"
 
 
 class ServerProtocol {
@@ -48,6 +50,7 @@ public:
     int sendTimeLeft(TimeLeft& msg);
     int sendUpgrade(SendUpgrade& up);
     int sendCarConfirmation(CarSelect& car_select);
+    int sendSartingGame(StartingGame& sg);
 
     /* ---------- Deserialización de datos ---------- */
 
@@ -57,6 +60,7 @@ public:
     RequestGame recvGameInfo();
     DisconnectReq recvDisconnectReq();
     RequestUpgrade recvUpgradeReq();
+    CheatRequest recvCheat();
 
     // Helpers
 

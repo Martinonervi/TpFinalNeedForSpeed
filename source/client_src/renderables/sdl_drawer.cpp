@@ -1,5 +1,7 @@
 #include "sdl_drawer.h"
 
+#include "../../common_src/constants.h"
+
 SdlDrawer::SdlDrawer(SDL2pp::Renderer& renderer) : renderer(renderer) {
     loadFont();
 }
@@ -17,7 +19,9 @@ void SdlDrawer::drawCircle(const int cx, const int cy, const int radius) const{
     }
 }
 
-void SdlDrawer::drawText(const std::string& text, const int x, const int y, const SDL_Color color) const {
+void SdlDrawer::drawText(const std::string& text, const int x, const int y, const SDL_Color color,
+const float scaleX = 1.0f,
+const float scaleY = 1.0f) const {
     if (!font) return;
 
     SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), color);
@@ -38,8 +42,13 @@ void SdlDrawer::drawText(const std::string& text, const int x, const int y, cons
         return;
     }
 
-    SDL_Rect textRect { x, y, w, h };
-    SDL_RenderCopy(renderer.Get(), texture, nullptr, &textRect);
+    SDL_Rect dstRect {
+        x,
+        y,
+        static_cast<int>(w * scaleX),
+        static_cast<int>(h * scaleY)
+    };
+    SDL_RenderCopy(renderer.Get(), texture, nullptr, &dstRect);
     SDL_DestroyTexture(texture);
 }
 
@@ -52,7 +61,7 @@ void SdlDrawer::loadFont() {
         std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
     }
 
-    font = TTF_OpenFont("../assets/fonts/pixel_font.ttf", 24);
+    font = TTF_OpenFont(FONT_PATH, 24);
     if (!font) {
         std::cerr << "Error cargando fuente: " << TTF_GetError() << std::endl;
     } else {
@@ -60,26 +69,26 @@ void SdlDrawer::loadFont() {
     }
 }
 
-void SdlDrawer::drawButton(const Button button) const {
+void SdlDrawer::drawButton(const Button& button) const {
 
-    SDL_Color color = button.hover ? button.hoverColor : button.color;
+    const SDL2pp::Color color = button.getColor();
 
     renderer.SetDrawColor(color.r, color.g, color.b, color.a);
-    renderer.FillRect(button.rect);
+    renderer.FillRect(button.getRect());
 
-    if (!button.text.empty()) {
+    if (!button.getText().empty()) {
         if (!font) return;
 
-        SDL_Surface* surface = TTF_RenderText_Blended(font, button.text.c_str(), {255,255,255,255});
+        SDL_Surface* surface = TTF_RenderText_Blended(font, button.getText().c_str(), {255,255,255,255});
         if (!surface) return;
 
         int w = surface->w;
         int h = surface->h;
         SDL_FreeSurface(surface);
 
-        int textX = button.rect.x + (button.rect.w - w) / 2;
-        int textY = button.rect.y + (button.rect.h - h) / 2;
+        const int textX = button.getRect().x + (button.getRect().w - w) / 2;
+        const int textY = button.getRect().y + (button.getRect().h - h) / 2;
 
-        drawText(button.text, textX, textY, {255, 255, 255, 255});
+        drawText(button.getText(), textX, textY, {255, 255, 255, 255}, 1.0f, 1.0f);
     }
 }

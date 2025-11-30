@@ -8,18 +8,20 @@
 class SrvCarHitMsg: public SrvMsg {
 public:
 
-    SrvCarHitMsg(ID id, float health) noexcept
-            : player_id(id), health(health) {}
+    SrvCarHitMsg(ID id, float health, float totalHealth) noexcept
+            : player_id(id), health(health), totalHealth(totalHealth) {}
 
     Op type() const override { return Opcode::COLLISION; }
 
-    uint16_t getPlayerId() const { return this->player_id; }
+    ID getPlayerId() const { return this->player_id; }
     float getCarHealth() const { return this->health; }
+    float getTotalHealth() const { return this->totalHealth; }
 
 
 private:
     ID player_id;
     float health;
+    float totalHealth;
 };
 
 #endif

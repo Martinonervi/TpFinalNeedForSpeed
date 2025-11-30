@@ -2,11 +2,11 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/source/cmake-build-debug-docker/_deps/box2d-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/source/cmake-build-debug-docker/_deps/libsdl2pp-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/source/cmake-build-debug-docker/_deps/yaml-cpp-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/source/cmake-build-debug/_deps/box2d-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/source/cmake-build-debug/_deps/libsdl2pp-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/source/cmake-build-debug/_deps/yaml-cpp-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/source/cmake-build/_deps/box2d-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/source/cmake-build/_deps/libsdl2pp-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/source/cmake-build/_deps/yaml-cpp-src" vcs="Git" />
   </component>
 </project>

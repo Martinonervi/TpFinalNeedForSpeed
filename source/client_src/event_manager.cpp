@@ -1,21 +1,28 @@
 #include "event_manager.h"
 
+#include "../common_src/cli_msg/cli_start_game.h"
+#include "../common_src/srv_msg/srv_starting_game.h"
+
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
+                                uint8_t& totalCheckpoints, ID& checkpointNumber,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                                 SDL2pp::Renderer& renderer,
                                 Queue<CliMsgPtr>& senderQueue,
                                 SdlDrawer& drawer,
                                 TextureManager& textureManager,
                                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
-                                Hint& hint, UpgradeScreen& ups, bool& showUpgradeMenu,
-                                bool& running, bool& showMap, bool& quit,
-                                float& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
+                                Hint& hint, UpgradeScreen& ups, Button& startBtn,
+                                bool& showStart,
+                                bool& running, bool& quit,
+                                int& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
                                 std::unique_ptr<PlayerStats>& playerStats,
                                 std::vector<RecommendedPoint>& pathArray,
-                                Upgrade& upgrade,
-                                std::vector<UpgradeDef>& upgradesArray)
+                                std::vector<UpgradeDef>& upgradesArray,
+                                bool& srvDisconnect)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
+        totalCheckpoints(totalCheckpoints),
+        checkpointNumber(checkpointNumber),
         cars(cars),
         checkpoints(checkpoints),
         renderer(renderer),
@@ -24,56 +31,63 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         tm(textureManager),
         hint(hint),
         ups(ups),
-        showUpgradeMenu(showUpgradeMenu),
+        startBtn(startBtn),
+        showStart(showStart),
         running(running),
-        showMap(showMap),
         quit(quit),
-        totalRaces(totalRaces),
-        raceTime(raceTime),
-        raceNumber(raceNumber),
         playerStats(playerStats),
+        raceTime(raceTime),
+        totalRaces(totalRaces),
+        raceNumber(raceNumber),
         pathArray(pathArray),
-        upgrade(upgrade),
-        upgradesArray(upgradesArray)
+        upgradesArray(upgradesArray),
+        srvDisconnect(srvDisconnect)
 {}
 
-void EventManager::handleEvents() const {
+void EventManager::handleEvents(AudioManager& audio) const {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             running = false;
             quit = false;
         } else if (event.type == SDL_KEYDOWN && myCarId != -1) {
-            auto it = keyToMove.find(event.key.keysym.sym);
-            if (it != keyToMove.end()) {
-                auto msg = std::make_shared<MoveMsg>(it->second);
+            auto itMove = keyToMove.find(event.key.keysym.sym);
+            auto itCheat = keyToCheat.find(event.key.keysym.sym);
+            if (itMove != keyToMove.end()) {
+                auto msg = std::make_shared<MoveMsg>(itMove->second);
                 senderQueue.push(msg);
-            } else if (event.key.keysym.sym == SDLK_m) {
-                showMap = !showMap;
-            } else if (event.key.keysym.sym == SDLK_u) {
-                showUpgradeMenu = !showUpgradeMenu;
+            } else if (itCheat != keyToCheat.end()) {
+                auto msg = std::make_shared<CheatRequest>(itCheat->second);
+                senderQueue.push(msg);
             }
         }
-        if (showUpgradeMenu) {
-            // Manejar hover
-            if (event.type == SDL_MOUSEMOTION) {
-                ups.handleMouseMotion(event.motion.x, event.motion.y);
-            }
 
-            // Manejar click
-            if (event.type == SDL_MOUSEBUTTONDOWN) {
-                std::string clickedButton;
-                auto [bought, upType] = ups.handleMouseClick(event.button.x, event.button.y, clickedButton);
+        if (event.type == SDL_MOUSEMOTION) {
+            if (showStart) {
+                ups.handleMouseMotion(event.motion.x, event.motion.y);
+                startBtn.handleHover(event.motion.x, event.motion.y);
+            }
+        }
+
+        if (event.type == SDL_MOUSEBUTTONDOWN) {
+            if (showStart) {
+                auto [bought, upType] = ups.handleMouseClick();
                 if (bought) {
                     RequestUpgrade reqUp(upType);
-                    auto msg = std::make_shared<RequestUpgrade>(reqUp);
-                    senderQueue.push(msg);
-                    showUpgradeMenu = false;
+                    senderQueue.push(std::make_shared<RequestUpgrade>(reqUp));
+                }
+
+                if (startBtn.getHover()) {
+                    StartGame strGame;
+                    senderQueue.push(std::make_shared<StartGame>(strGame));
+                    showStart = false;
+                    audio.playMusic("game_music", -1);
                 }
             }
         }
     }
 }
+
 
 
 void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio) {
@@ -112,11 +126,17 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case COLLISION: {
             const auto ch = dynamic_cast<const SrvCarHitMsg&>(*msg);
             if (cars.count(ch.getPlayerId())) {
+                const float healthDiff = cars[ch.getPlayerId()]->getHealth() - ch.getCarHealth();
+                const float maxHealthDiff = ch.getTotalHealth() - cars[ch.getPlayerId()]->getMaxHealth();
+                cars[ch.getPlayerId()]->setMaxHealth(ch.getTotalHealth());
                 cars[ch.getPlayerId()]->setHealth(ch.getCarHealth());
+
                 if (ch.getPlayerId()==myCarId) {
                     if (ch.getCarHealth() == 0) {
+                        audio.stopSound("explosion");
                         audio.playSound("explosion");
-                    } else {
+                    } else if (healthDiff > 1 || maxHealthDiff > 0) {
+                        audio.stopSound("crash");
                         audio.playSound("crash");
                     }
                 }
@@ -136,16 +156,18 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case CHECKPOINT_HIT: {
             const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
             if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
+                audio.stopSound("checkpoint");
                 audio.playSound("checkpoint");
                 checkpoints[nextCheckpoint]->setInactive();
+                checkpointNumber = check_hit.getCheckpointId();
             }
             break;
         }
         case CURRENT_INFO: {
             const auto current = dynamic_cast<const SrvCurrentInfo&>(*msg);
             if (current.getRaceNumber() != lastRaceNumber) {
-                std::cout << "Nueva carrera! Limpio checkpoints viejos..." << std::endl;
                 checkpoints.clear();
+                checkpointNumber = 0;
             }
 
             lastRaceNumber = current.getRaceNumber();
@@ -166,9 +188,10 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             }
 
 
-            raceTime = current.getRaceTimeSeconds();
+            raceTime = static_cast<int>(current.getRaceTimeSeconds());
             raceNumber = current.getRaceNumber();
             totalRaces = current.getTotalRaces();
+            totalCheckpoints = current.getTotalCheckpoints();
 
             break;
         }
@@ -186,23 +209,29 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case UPGRADE_SEND: {
             const auto sendUpgrade = dynamic_cast<const SendUpgrade&>(*msg);
-            std::cout << "Send Upgrade" << std::endl;
             if (sendUpgrade.couldBuy()) {
-                upgrade = sendUpgrade.getUpgrade();
+                const auto upgrade = sendUpgrade.getUpgrade();
+                audio.stopSound("purchase");
+                audio.playSound("purchase");
+                ups.changeState(upgrade);
+                cars[myCarId]->addUpgrade(upgrade);
             }
             break;
         }
         case UPGRADE_LOGIC: {
             const auto upgrades = dynamic_cast<const UpgradeLogic&>(*msg);
             upgradesArray = upgrades.getUpgrades();
-            std::cout << "Upgrade logic" << std::endl;
             ups.createButtons(upgradesArray);
             break;
         }
-        case SRV_DISCONNECTION:{
-            // acá habría que tirar un mensaje de que se perdió la conexión
-            // y cerrar todo.
+        case SRV_DISCONNECTION: {
+            std::cout << "Server Disconnection" << std::endl;
+            srvDisconnect = true;
+            running = false;
             break;
+        }
+        case STARTING_GAME: {
+            showStart = false;
         }
         default:
             break;

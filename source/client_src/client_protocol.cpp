@@ -279,10 +279,12 @@ SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
     size_t n = 0;
     ID player_id_BE;
     uint32_t health_BE;
+    uint32_t total_health_BE;
 
     try {
-        n = peer.recvall(&player_id_BE, sizeof(uint32_t));
-        n += peer.recvall(&health_BE, sizeof(uint32_t));
+        n = peer.recvall(&player_id_BE, sizeof(ID));
+        n += peer.recvall(&health_BE, sizeof(health_BE));
+        n += peer.recvall(&total_health_BE, sizeof(total_health_BE));
 
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
@@ -293,7 +295,8 @@ SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
 
     ID player_id = ntohl(player_id_BE);
     float health = decodeFloatBE(health_BE);
-    return SrvCarHitMsg(player_id, health);
+    float totalHealth = decodeFloatBE(total_health_BE);
+    return SrvCarHitMsg(player_id, health, totalHealth);
 }
 
 SrvCheckpointHitMsg ClientProtocol::recvCheckpointHitEvent(){
@@ -367,6 +370,7 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
         uint32_t angleHint_BE;
         uint32_t distanceToChekpoint_BE;
         uint8_t totalRaces;
+        uint8_t totalCheckpoints;
 
         peer.recvall(&speed_BE, sizeof(speed_BE));
         peer.recvall(&raceTimeSeconds_BE, sizeof(raceTimeSeconds_BE));
@@ -377,6 +381,7 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
         peer.recvall(&angleHint_BE, sizeof(angleHint_BE));
         peer.recvall(&distanceToChekpoint_BE, sizeof(distanceToChekpoint_BE));
         peer.recvall(&totalRaces, sizeof(totalRaces));
+        peer.recvall(&totalCheckpoints, sizeof(totalCheckpoints));
 
         float speed = decodeFloatBE(speed_BE);
         float raceTimeSecond = decodeFloatBE(raceTimeSeconds_BE);
@@ -388,7 +393,7 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
 
 
         return SrvCurrentInfo(nextCheckpointID, checkX, checkY, angleHint,
-                          distanceToheckpoint, raceTimeSecond, raceNumber, speed, totalRaces);
+                          distanceToheckpoint, raceTimeSecond, raceNumber, speed, totalRaces, totalCheckpoints);
 
     } catch (const std::exception& e) {
         std::cerr << "client_main error: " << e.what() << "\n";
@@ -583,4 +588,25 @@ CarSelect ClientProtocol::recvCarConfirmation() {
     }
 
     return CarSelect(confirmation);
+}
+
+int ClientProtocol::sendCheat(const CheatRequest& up) {
+    try{
+        Op opcode = up.type();
+        Cheat cheat = up.getCheat();
+
+        std::vector<char> buf(sizeof(opcode) + sizeof(cheat));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &cheat, sizeof(cheat));
+        offset += sizeof(cheat);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
 }

@@ -58,7 +58,6 @@ EntityId WorldManager::createCarBody(b2Vec2 pos, float angleRad) {
     bd.linearDamping = 0.6f; // [0.8, 1.2]
     bd.angularDamping = 3.f; //reduce velocidad anguar (mientras +alto)
 
-    // creo body
     b2BodyId body = b2CreateBody(world, &bd);
 
     //creo shape
@@ -118,7 +117,6 @@ EntityId WorldManager::createBuilding(float x, float y,
 
     b2BodyId body = b2CreateBody(this->world, &bd);
 
-    // media base y media altura
     b2Polygon box = b2MakeBox(w * 0.5f, h * 0.5f);
 
     b2ShapeDef sd = b2DefaultShapeDef();

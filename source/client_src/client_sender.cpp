@@ -33,6 +33,10 @@ void ClientSender::run(){
                     protocol.sendStartGame(dynamic_cast<const StartGame&>(*cliMsg));
                     break;
                 }
+                case (Opcode::REQUEST_CHEAT): {
+                    protocol.sendCheat(dynamic_cast<const CheatRequest&>(*cliMsg));
+                    break;
+                }
 
                 default: {
                     std::cout << "comando desconocido: " << cliMsg->type() << "\n";

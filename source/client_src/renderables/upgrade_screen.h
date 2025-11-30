@@ -2,25 +2,30 @@
 #define UPGRADE_SCREEN_H
 
 #include <SDL2pp/SDL2pp.hh>
-
 #include "../textures/texture_manager.h"
-
+#include <unordered_map>
 #include "sdl_drawer.h"
+#include "button.h"
 
 struct UpgradeButton {
     Button button;
     Upgrade type;
+    float penalty;
+    SDL2pp::Rect iconRect;
 };
 
 class UpgradeScreen {
 public:
     UpgradeScreen(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, int width,
                   int height, int windowWidth, int windowHeight);
-    void renderPopUp();
-    SDL2pp::Rect getUpgradeIconRect(Upgrade type);
+    void renderPopUp() const;
+
     void handleMouseMotion(int mouseX, int mouseY);
-    std::pair<bool, Upgrade> handleMouseClick(int mouseX, int mouseY, std::string& clickedButton);
-    void createButtons(std::vector<UpgradeDef>& upgradesArray);
+    std::pair<bool, Upgrade> handleMouseClick();
+
+    void createButtons(const std::vector<UpgradeDef>& upgradesArray);
+    void changeState(Upgrade upgrade);
+
 
 private:
     SDL2pp::Renderer& renderer;
@@ -33,6 +38,16 @@ private:
 
     int width;
     int height;
+
+    void writeDescription(float penalty, const std::string& name, int x, int y) const;
+
+    const std::unordered_map<Upgrade, std::string> upgradeDescriptions = {
+        { HEALTH, "Increases the car's health" },
+        { ENGINE_FORCE, "Boosts acceleration" },
+        { SHIELD, "Adds collision resistance" },
+        { DAMAGE, "Increases damage on impact" },
+    };
+
 };
 
 

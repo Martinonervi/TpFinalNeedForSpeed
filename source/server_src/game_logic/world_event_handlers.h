@@ -6,12 +6,13 @@
 #include "../server_client_registry.h"
 #include "../world/entities/car.h"
 #include "../world/entities/checkpoint.h"
+#include "config/config_parser.h"
 
 struct RaceResult {
     ID playerId;
-    float raceTime;       // tiempo en esta carrera (en segundos)
-    int racePosition;     // 1,2,3,... según orden de llegada
-    bool finished;        // por si alguno no terminó
+    float raceTime;
+    int racePosition;
+    bool finished;
 };
 
 class WorldEventHandlers {
@@ -24,16 +25,28 @@ public:
                        uint8_t& totalCars,
                        bool& raceEnded,
                        std::vector<ID>& raceRanking,
-                       std::vector<RaceResult>& lastRaceResults);
+                       std::vector<RaceResult>& lastRaceResults, Config& config);
 
-
+    // checkpoints
     void CarHitCheckpointHandler(WorldEvent ev);
+
+    // colisiones
     void CarHitBuildingHandler(WorldEvent ev, std::unordered_set<ID>& alreadyHitBuildingThisFrame);
     void CarHitCarHandler(WorldEvent ev, std::unordered_set<uint64_t>& alreadyHitCarPairThisFrame);
 
-    void onPlayerFinishedRace(ID playerId, float timeSec);
+    // fin carrera / auto destruido
+    void CarFinishRace(Car& car);
+    void setKillCar(Car& car);
 
 private:
+    void onPlayerFinishedRace(ID playerId, float timeSec);
+    void broadcastCarHealth(const Car& car);
+    float velocityAlongNormal(const Car& car,float nx, float ny) const;//proyección sobre la normal
+    float frontalAlignment(const Car& car, float nx, float ny) const;
+    void applyVelocityDamp(b2BodyId body, float nx, float ny,
+        float alongN, float damp, float directionSign);
+
+    // referencias al estado del juego
     std::unordered_map<ID, Car>& playerCars;
     std::unordered_map<ID, Checkpoint>& checkpoints;
     ClientsRegistry& registry;
@@ -44,6 +57,8 @@ private:
     bool& raceEnded;
     std::vector<ID>& raceRanking;
     std::vector<RaceResult>& lastRaceResults;
+
+    Config& config;
 };
 
 

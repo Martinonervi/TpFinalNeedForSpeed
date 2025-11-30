@@ -89,9 +89,7 @@ target_link_libraries(client
 # --- Servidor ---
 file(GLOB_RECURSE SERVER_SOURCES "server_src/*.cpp")
 list(APPEND SERVER_SOURCES "server_main.cpp")
-add_executable(server ${SERVER_SOURCES}
-        server_src/game_logic/world_event_handlers.cpp
-        server_src/game_logic/world_event_handlers.h)
+add_executable(server ${SERVER_SOURCES})
 target_link_libraries(server PRIVATE common pthread yaml-cpp)
 
 # --- Testing ---
