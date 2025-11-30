@@ -93,3 +93,33 @@ add_executable(server ${SERVER_SOURCES}
         server_src/game_logic/world_event_handlers.cpp
         server_src/game_logic/world_event_handlers.h)
 target_link_libraries(server PRIVATE common pthread yaml-cpp)
+
+# --- Testing ---
+include(CTest)
+enable_testing()
+
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG v1.14.0
+)
+set(gtest_force_shared_crt OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+add_executable(protocol_tests
+        tests/main.cpp
+        tests/tests.cpp
+)
+
+target_include_directories(protocol_tests PRIVATE . common_src client_src server_src)
+
+target_sources(protocol_tests PRIVATE
+        client_src/client_protocol.cpp
+        server_src/server_protocol.cpp
+)
+
+target_link_libraries(protocol_tests PRIVATE GTest::gtest common)
+
+include(GoogleTest)
+gtest_discover_tests(protocol_tests)

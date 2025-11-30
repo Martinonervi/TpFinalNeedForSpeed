@@ -190,7 +190,6 @@ int ServerProtocol::sendGames(const MetadataGames& games) {
         }
 
         int n = peer.sendall(buf.data(), buf.size());
-        std::cout << "[Server Protocol] Games sent" << std::endl;
         return n;
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
