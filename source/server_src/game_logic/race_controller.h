@@ -33,7 +33,8 @@ public:
                    bool& raceEnded,
                    uint8_t& totalCars,
                    uint8_t& finishedCarsCount,
-                   std::vector<RaceResult>& lastRaceResults);
+                   std::vector<RaceResult>& lastRaceResults,
+                   std::unordered_map<ID, Car>& npcCars);
 
     void runRace(uint8_t raceIndex,
                  uint8_t totalRaces,
@@ -42,11 +43,13 @@ public:
 private:
     // helpers del loop de carrera
     std::list<Cmd> emptyQueue();
+    void broadcastNpcCars();
     void checkPlayersStatus();
     void processCmds();
     void processWorldEvents();
     void sendCurrentInfo(uint8_t raceIndex, uint8_t totalRaces);
     void finalizeDNFs();
+    void sendRaceFinish();
 
     void disconnectHandler(ID id);
     void forcePlayerWin(ID id);
@@ -61,6 +64,7 @@ private:
     std::unordered_map<ID, Checkpoint>& checkpoints;
     PlayerManager&                 playerManager;
     WorldEventHandlers&            eventHandlers;
+    std::unordered_map<ID, Car>&        npcCars;
     const Config&                  config;
 
     // estado compartido con GameLoop / WorldEventHandlers

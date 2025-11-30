@@ -45,12 +45,15 @@ GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue,
                      worldEvents,playerCars,checkpoints,
                      playerManager, eventHandlers, config,
                      raceTimeSeconds, raceEnded, totalCars,
-                     finishedCarsCount, lastRaceResults)
+                     finishedCarsCount, lastRaceResults, npcCars)
 {
     loadMapFromYaml(FILE_YAML_PATH);
 }
-
-
+CarType carTypeFromString(const std::string& s) {
+    if (s == "green")  return CarType::CAR_GREEN;
+    if (s == "red")    return CarType::CAR_RED;
+    return CarType::CAR_GREEN;
+}
 
 // crea mapa con edificios y guarda la demas info
 // parsea todos los recorridos del yaml
@@ -68,6 +71,7 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
         buildings.push_back(std::move(building));
     }
     this->mapData = data;
+    //createNpcCars();
 }
 
 // loop principal de distinas carreras
@@ -101,6 +105,35 @@ void GameLoop::run() {
         playerManager.sendPlayerStats(globalStats);
     }
 }
+
+void GameLoop::createNpcCars() {
+    const ID NPC_BASE_ID = 100;
+
+    npcCars.clear();
+
+    for (size_t i = 0; i < mapData.npcParked.size(); ++i) {
+        const auto& cfg = mapData.npcParked[i];
+        ID npcId = NPC_BASE_ID + static_cast<ID>(i);
+
+        b2Vec2 pos{ cfg.x, cfg.y };
+        float angleRad = cfg.angle;
+        CarType type = carTypeFromString(cfg.carType);
+
+        auto [it, ok] = npcCars.emplace(
+            npcId,
+            Car(worldManager, npcId, pos, angleRad, type, config.carHandling)
+        );
+
+        if (ok) {
+            b2BodyId body = it->second.getBody();
+            std::cout << "[NPC] creado id=" << npcId
+                      << " body=" << body.index1
+                      << " pos=(" << pos.x << "," << pos.y << ")\n";
+        }
+    }
+}
+
+
 
 //setea el proximo recorrido
 void GameLoop::setupRoute() {
@@ -215,6 +248,9 @@ void GameLoop::computeGlobalRanking() {
         statsPtr->globalPosition = pos++;
     }
 }
+
+
+
 
 void GameLoop::stop() {
     Thread::stop();

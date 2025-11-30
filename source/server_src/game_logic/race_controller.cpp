@@ -1,14 +1,15 @@
 #include "race_controller.h"
 
-#include <cmath>
 #include <chrono>
+#include <cmath>
 
 #include <box2d/box2d.h>
 
+#include "../../common_src/cli_msg/cli_cheat_request.h"
 #include "../../common_src/srv_msg/client_disconnect.h"
 #include "../../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../../common_src/srv_msg/srv_current_info.h"
-#include "../../common_src/cli_msg/cli_cheat_request.h"
+#include "../../common_src/srv_msg/srv_race_finished.h"
 
 using Clock = std::chrono::steady_clock;
 
@@ -25,7 +26,8 @@ RaceController::RaceController(std::shared_ptr<gameLoopQueue> queue,
                                bool& raceEnded,
                                uint8_t& totalCars,
                                uint8_t& finishedCarsCount,
-                               std::vector<RaceResult>& lastRaceResults)
+                               std::vector<RaceResult>& lastRaceResults,
+                               std::unordered_map<ID, Car>& npcCars)
     : queue(std::move(queue))
     , registry(registry)
     , worldManager(worldManager)
@@ -40,6 +42,7 @@ RaceController::RaceController(std::shared_ptr<gameLoopQueue> queue,
     , totalCars(totalCars)
     , finishedCarsCount(finishedCarsCount)
     , lastRaceResults(lastRaceResults)
+    , npcCars(npcCars)
 {}
 
 void RaceController::runRace(uint8_t raceIndex,
@@ -49,7 +52,6 @@ void RaceController::runRace(uint8_t raceIndex,
     raceEnded       = false;
 
     auto raceStartTime = Clock::now();
-
     try {
         ConstantRateLoop loop(config.loops.raceHz);
 
@@ -60,6 +62,8 @@ void RaceController::runRace(uint8_t raceIndex,
             worldManager.step(config.physics.timeStep,
                               config.physics.subStepCount);
 
+            processWorldEvents();
+
             if (!raceEnded) {
                 auto now = Clock::now();
                 std::chrono::duration<float> elapsed = now - raceStartTime;
@@ -68,9 +72,11 @@ void RaceController::runRace(uint8_t raceIndex,
                 if (raceTimeSeconds >= config.lobby.maxRaceTimeSec) {
                     raceEnded = true;
                 }
+                if (totalCars <= 0) {
+                    raceEnded = true;
+                }
             }
 
-            processWorldEvents();
             if (raceEnded) break;
 
             playerManager.broadcastSnapshots();
@@ -84,7 +90,17 @@ void RaceController::runRace(uint8_t raceIndex,
         std::cerr << "[RaceController] fatal: unknown\n";
     }
 
-    finalizeDNFs();
+    if (shouldKeepRunning){
+        finalizeDNFs();
+        sendRaceFinish();
+    }
+
+}
+
+void RaceController::sendRaceFinish() {
+    auto msg = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<RaceFinished>());
+    registry.broadcast(msg);
 }
 
 std::list<Cmd> RaceController::emptyQueue() {
@@ -98,6 +114,21 @@ std::list<Cmd> RaceController::emptyQueue() {
         // queue cerrada: no hay más comandos
     }
     return cmd_list;
+}
+
+void RaceController::broadcastNpcCars() {
+    for (auto& [id, npc] : npcCars) {
+        auto pos = npc.getPosition();
+        auto msg = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<NewPlayer>(
+                id,
+                npc.getCarType(),
+                pos.x, pos.y,
+                npc.getAngleRad()
+            )
+        );
+        registry.broadcast(msg);
+    }
 }
 
 void RaceController::checkPlayersStatus() {
@@ -150,7 +181,6 @@ void RaceController::processCmds() {
                     case Cheat::HEALTH_CHEAT:
                     case Cheat::FREE_SPEED_CHEAT:
                     case Cheat::NEXT_CHECKPOINT_CHEAT:
-                        // cheats “del auto”
                         playerManager.cheatHandler(cmd);
                         break;
 
@@ -234,7 +264,7 @@ void RaceController::sendCurrentInfo(uint8_t raceIndex,
             angle,
             len,
             config.lobby.maxRaceTimeSec - raceTimeSeconds,
-            static_cast<uint8_t>(raceIndex + 1),
+            raceIndex + 1,
             speed,
             totalRaces,
             totalCheckpoints

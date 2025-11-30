@@ -12,6 +12,9 @@ MapData MapParser::load(const std::string& path) {
     if (root["buildings"]) {
         parseBuildings(root["buildings"], data.buildings);
     }
+    if (root["npc_cars"]) {
+        parseNpcCars(root["npc_cars"], data.npcParked);
+    }
     if (root["routes"] && root["routes"].IsSequence()) {
         for (auto routeNode : root["routes"]) {
             RouteConfig currentRoute;
@@ -184,4 +187,39 @@ void MapParser::parseBuildings(const YAML::Node& buildingsNode,
         out.push_back(cfg);
     }
 }
+
+void MapParser::parseNpcCars(const YAML::Node& npcList,
+                             std::vector<NpcConfig>& out) const {
+    if (!npcList || !npcList.IsSequence()) return;
+
+    for (auto node : npcList) {
+        float x_px, y_px, ang_deg;
+        try {
+            x_px    = node["x"].as<float>();
+            y_px    = node["y"].as<float>();
+            ang_deg = node["angle"].as<float>();
+        } catch (...) {
+            continue;
+        }
+
+        if (!std::isfinite(x_px) || !std::isfinite(y_px) || !std::isfinite(ang_deg)) {
+            continue;
+        }
+
+        NpcConfig cfg;
+        cfg.x     = x_px * PIXEL_TO_METER;
+        cfg.y     = y_px * PIXEL_TO_METER;
+        cfg.angle = ang_deg * M_PI / 180.0f;
+
+        if (node["carType"]) {
+            cfg.carType = node["carType"].as<std::string>();
+        } else {
+            cfg.carType = "green";
+        }
+
+        out.push_back(cfg);
+    }
+}
+
+
 

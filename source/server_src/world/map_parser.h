@@ -33,7 +33,12 @@ struct SpawnPointConfig {
     float angle; // en radianes
 };
 
-
+struct NpcConfig {
+    float x;
+    float y;
+    float angle;
+    std::string carType;
+};
 
 struct RouteConfig {
     std::string nameCity;
@@ -48,6 +53,8 @@ struct MapData {
     std::string city;
     std::vector<BuildingConfig> buildings;
     std::vector<RouteConfig> routes;
+
+    std::vector<NpcConfig> npcParked;
 };
 
 class MapParser {
@@ -64,6 +71,9 @@ private:
 
     void parseBuildings(const YAML::Node& buildingsNode,
                         std::vector<BuildingConfig>& out) const;
+
+    void parseNpcCars(const YAML::Node& npcList,
+                      std::vector<NpcConfig>& out) const;
 };
 
 #endif

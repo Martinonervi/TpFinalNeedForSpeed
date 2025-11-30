@@ -4832,6 +4832,15 @@ buildings:
     h: 6.02159170740811
     angle: 0.0
 
+npc_cars:
+  - x: 84.6534238538261
+    y: 830.609337021205
+    angle: 180.0
+    carType: green
+  - x: 1000.00
+    y: 833.1747542023469
+    angle: 90.0
+    carType: red
 
 routes:
   - name: recorido1

@@ -7,9 +7,10 @@
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
 #include "../common_src/srv_msg/srv_disconnection.h"
+#include "../common_src/srv_msg/srv_race_finished.h"
 #include "../common_src/srv_msg/srv_recommended_path.h"
-#include "../common_src/srv_msg/srv_upgrade_logic.h"
 #include "../common_src/srv_msg/srv_starting_game.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -131,6 +132,13 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<StartingGame>());
                 receiverQueue.push(base);
+                break;
+            }
+            case Opcode::RACE_FINISHED: {
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<RaceFinished>());
+                receiverQueue.push(base);
+                std::cout << "[client Receiver] RACE_FINISHED\n";
                 break;
             }
 

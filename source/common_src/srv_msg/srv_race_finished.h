@@ -4,9 +4,9 @@
 #include "server_msg.h"
 #include "../constants.h"
 
-class SrvRaceFinished : public SrvMsg {
+class RaceFinished : public SrvMsg {
 public:
-    SrvRaceFinished() noexcept = default;
+    RaceFinished() noexcept = default;
 
     Op type() const override { return Opcode::RACE_FINISHED; }
 };

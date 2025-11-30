@@ -11,6 +11,7 @@
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
 #include "../common_src/srv_msg/srv_recommended_path.h"
 #include "../common_src/srv_msg/srv_starting_game.h"
+#include "../common_src/srv_msg/srv_race_finished.h"
 
 Sender::Sender(Socket& peer_socket, SendQPtr queue):
         peer(peer_socket), msg_queue(std::move(queue)), protocol(peer) {}
@@ -103,6 +104,10 @@ void Sender::run() {
                 }
                 case Opcode::STARTING_GAME: {
                     n = protocol.sendSartingGame(dynamic_cast<StartingGame&>(*msg));
+                    break;
+                }
+                case Opcode::RACE_FINISHED: {
+                    n = protocol.sendRaceFinished(dynamic_cast<RaceFinished&>(*msg));
                     break;
                 }
                 default: {

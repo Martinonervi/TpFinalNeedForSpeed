@@ -47,10 +47,13 @@ private:
 
     // otros helpers
     void disconnectHandler(ID id);
+    void broadcastNpcCars();
 
     // stats globales de la sesión
     void updateGlobalStatsFromLastRace();  // acumula tiempos totales
     void computeGlobalRanking();           // ordena por tiempo total + penalidades
+
+    void createNpcCars();
 
     Config  config;
     uint8_t maxPlayers;
@@ -69,7 +72,7 @@ private:
     std::vector<std::unique_ptr<Building>> buildings;
     std::vector<SpawnPointConfig>      spawnPoints;
     std::vector<RecommendedPoint>      recommendedPath;
-    std::vector<Car>                   npcParkedCars;
+    std::unordered_map<ID, Car>        npcCars;
 
     // upgrades
     std::vector<UpgradeDef> upgrades;
