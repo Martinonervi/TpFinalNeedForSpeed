@@ -102,6 +102,7 @@ void Sender::run() {
                     break;
                 }
                 case Opcode::STARTING_GAME: {
+                    if (!playing){continue;}
                     n = protocol.sendSartingGame(dynamic_cast<StartingGame&>(*msg));
                     break;
                 }
