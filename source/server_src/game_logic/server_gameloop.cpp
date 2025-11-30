@@ -29,9 +29,19 @@ config(ConfigParser().load("../server_src/game_logic/config/config.yaml")),
 maxPlayers(config.lobby.maxPlayers),
 worldEvents(), worldManager(worldEvents),queue(std::move(queue)),
 registry(std::move(registry)), eventHandlers(playerCars, checkpoints, *this->registry,
-            raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking, lastRaceResults, config),
+raceTimeSeconds, finishedCarsCount, totalCars, raceEnded, raceRanking, lastRaceResults, config),
 upgrades(config.upgrades),
-        playerManager(worldManager, *this->registry, playerCars, spawnPoints, raceStarted, checkpoints, config)  {
+playerManager(worldManager, *this->registry, playerCars, spawnPoints,
+    raceStarted, checkpoints, upgrades, config),
+lobbyController(this->queue,
+                      *this->registry,
+                      playerManager,
+                      playerCars,
+                      upgrades,
+                      config,
+                      startRequested,
+                      raceStarted,
+                      totalCars)   {
     loadMapFromYaml(FILE_YAML_PATH);
 }
 
@@ -63,8 +73,8 @@ void GameLoop::run() {
     const int racesToPlay = mapData.routes.size();
 
     while (raceIndex < racesToPlay && should_keep_running()) {
-
-        waitingForPlayers();
+        lobbyController.runLobbyLoop(raceIndex, recommendedPath,
+            [this]() { return this->should_keep_running(); });
         runSingleRace();
 
         updateGlobalStatsFromLastRace(); // acumula tiempos globales
@@ -124,51 +134,6 @@ void GameLoop::setupRoute() {
               << ", spawns=" << spawnPoints.size()
               << "\n";
               */
-}
-
-
-
-void GameLoop::waitingForPlayers() {
-    ConstantRateLoop loop(config.loops.lobbyHz);
-
-    startRequested = false;
-    raceStarted    = false;
-
-    auto start = Clock::now();
-    const auto deadline = start + std::chrono::duration<double>(config.lobby.betweenRacesSec);
-    while (should_keep_running()) {
-        processLobbyCmds();
-
-        if (startRequested) break;
-        if (raceIndex != 0 and Clock::now() >= deadline) break;
-
-        auto now = Clock::now();
-        float remaining_sec = std::chrono::duration_cast<std::chrono::duration<float>>(
-                                      deadline - now
-                                      ).count();
-
-        if (remaining_sec < 0.f) remaining_sec = 0.f;
-
-
-        // (2.9 → 2, 2.1 → 2, 1.9 → 1)
-        uint8_t timeToSend = static_cast<uint8_t>(std::floor(remaining_sec));
-
-        auto msg = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<TimeLeft>(timeToSend));
-        registry->broadcast(msg);
-
-        // mando el recommendedPath
-        auto rp = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<RecommendedPath>(recommendedPath));
-        registry->broadcast(rp);
-
-        auto ul = std::static_pointer_cast<SrvMsg>(
-                std::make_shared<UpgradeLogic>(upgrades));
-        registry->broadcast(ul);
-
-        loop.sleep_until_next_frame();
-    }
-    this->raceStarted = true;
 }
 
 void GameLoop::resetRaceState() {
@@ -295,61 +260,6 @@ void GameLoop::sendCurrentInfo() {
         auto base = std::static_pointer_cast<SrvMsg>(
                 std::make_shared<SrvCurrentInfo>(std::move(ci)));
         registry->sendTo(id, base);
-    }
-}
-
-void GameLoop::processLobbyCmds() {
-    std::list<Cmd> to_process = emptyQueue();
-    for (Cmd& cmd: to_process) {
-        if (!isConnected(cmd.client_id)) {
-            continue;
-        }
-
-        switch (cmd.msg->type()) {
-            case (Opcode::START_GAME): {
-                startRequested = true;
-                auto base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<StartingGame>());
-                registry->broadcast(base);
-                break;
-            }
-            case (Opcode::UPGRADE_REQUEST): {
-                auto it = playerCars.find(cmd.client_id);
-                if (it == playerCars.end()) continue;
-                Car& car = it->second;
-                bool success;
-                Upgrade up;
-
-                auto& ur = dynamic_cast<RequestUpgrade&>(*cmd.msg);
-                const UpgradeDef& def = findUpgradeDef(ur.getUpgrade());
-
-                if (car.hasMaxUpgrade() || !car.applyUpgrade(def)) {
-                    //std::cout << "[GameLoop] upgrade rechazado para id=" << cmd.client_id << "\n";
-                    up = NONE;
-                    success = false;
-                } else {
-                    //std::cout << "[GameLoop] upgrade ACEPTADO para id=" << cmd.client_id
-              //<< " upgrade=" << (int)ur.getUpgrade() << "\n";
-                    up = ur.getUpgrade();
-                    success = true;
-                }
-                auto base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<SendUpgrade>(up, success));
-                registry->sendTo(cmd.client_id, base);
-                break;
-            }
-            case (Opcode::INIT_PLAYER): {
-                bool ok = playerManager.initPlayer(cmd);
-                if (ok) {
-                    totalCars = static_cast<uint8_t>(playerCars.size());
-                }
-                break;
-            }
-            default: {
-                continue;
-            }
-        }
-
     }
 }
 

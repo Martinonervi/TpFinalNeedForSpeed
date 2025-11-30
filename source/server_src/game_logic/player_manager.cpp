@@ -1,6 +1,8 @@
 #include "player_manager.h"
 #include "../../common_src/cli_msg/cli_cheat_request.h"
 #include "../../common_src/srv_msg/srv_car_select.h"
+#include "../../common_src/srv_msg/srv_send_upgrade.h"
+#include "../../common_src/cli_msg/cli_request_upgrade.h"
 
 
 PlayerManager::PlayerManager(WorldManager& world,
@@ -8,10 +10,11 @@ PlayerManager::PlayerManager(WorldManager& world,
                              std::unordered_map<ID, Car>& playerCars,
                              const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
                              const std::unordered_map<ID,Checkpoint>& checkpoints,
+                             const std::vector<UpgradeDef>& upgrades,
                              const Config& config):
     world(world), registry(registry),
     playerCars(playerCars), spawnPoints(spawnPoints),
-    raceStarted(raceStarted), checkpoints(checkpoints), config(config)
+    raceStarted(raceStarted), checkpoints(checkpoints), upgrades(upgrades), config(config)
 {}
 
 bool PlayerManager::initPlayer(Cmd& cmd) {
@@ -97,15 +100,6 @@ void PlayerManager::notifyClientExistingCars(ID newClientId) {
     }
 }
 
-void PlayerManager::handleMovement(Cmd& cmd, float dt) {
-    auto it = playerCars.find(cmd.client_id);
-    if (it == playerCars.end()) return;
-    if (it->second.isCarDestroy()) return;
-
-    const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
-    it->second.applyControlsToBody(mv, dt);
-}
-
 void PlayerManager::notifyOthersAboutNewCar(ID newClientId,
                                             CarType carType,
                                             const SpawnPointConfig& spawn) {
@@ -122,6 +116,45 @@ void PlayerManager::notifyOthersAboutNewCar(ID newClientId,
         );
         registry.sendTo(otherId, msg);
     }
+}
+
+void PlayerManager::handleMovement(Cmd& cmd, float dt) {
+    auto it = playerCars.find(cmd.client_id);
+    if (it == playerCars.end()) return;
+    if (it->second.isCarDestroy()) return;
+
+    const auto& mv = dynamic_cast<const MoveMsg&>(*cmd.msg);
+    it->second.applyControlsToBody(mv, dt);
+}
+
+void PlayerManager::handleRequestUpgrade(Cmd& cmd) {
+    auto it = playerCars.find(cmd.client_id);
+    if (it == playerCars.end()) return;
+
+    Car& car = it->second;
+    bool success;
+    Upgrade up;
+
+    auto& ur = dynamic_cast<RequestUpgrade&>(*cmd.msg);
+    const UpgradeDef& def = findUpgradeDef(ur.getUpgrade());
+    if (car.hasMaxUpgrade() || !car.applyUpgrade(def)) {
+        up      = NONE;
+        success = false;
+    } else {
+        up      = ur.getUpgrade();
+        success = true;
+    }
+
+    auto base = std::static_pointer_cast<SrvMsg>(
+            std::make_shared<SendUpgrade>(up, success));
+    registry.sendTo(cmd.client_id, base);
+}
+
+const UpgradeDef& PlayerManager::findUpgradeDef(Upgrade type) const {
+    for (const auto& u : upgrades) {
+        if (u.type == type) return u;
+    }
+    throw std::runtime_error("UpgradeType desconocido");
 }
 
 void PlayerManager::cheatHandler(Cmd& cmd) {

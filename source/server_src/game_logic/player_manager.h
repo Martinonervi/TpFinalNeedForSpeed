@@ -29,13 +29,16 @@ public:
                   ClientsRegistry& registry,
                   std::unordered_map<ID, Car>& playerCars,
                   const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
-                  const std::unordered_map<ID,Checkpoint>& checkpoints, const Config& config);
+                  const std::unordered_map<ID,Checkpoint>& checkpoints,
+                  const std::vector<UpgradeDef>& upgrades, const Config& config);
 
     // Devuelve true si se pudo crear el jugador (si había spawn)
     bool initPlayer(Cmd& cmd);
 
     // Aplica comandos de movimiento
     void handleMovement(Cmd& cmd, float dt);
+
+    void handleRequestUpgrade(Cmd& cmd);
 
     void cheatHandler(Cmd& cmd);
 
@@ -61,6 +64,8 @@ private:
     std::unordered_set<ID> usedSpawnIds;       // spawnId ocupados
     std::unordered_map<ID, ID> carToSpawnId;   // carId -> spawnId
 
+    const std::vector<UpgradeDef>& upgrades;
+
     const Config& config;
 
     // herlpers initPlayer
@@ -68,6 +73,8 @@ private:
     void createCarForClient(ID clientId, const InitPlayer& ip, const SpawnPointConfig& spawn);
     void notifyClientExistingCars(ID newClientId);
     void notifyOthersAboutNewCar(ID newClientId, CarType carType, const SpawnPointConfig& spawn);
+
+    const UpgradeDef& findUpgradeDef(Upgrade type) const;
 };
 
 

@@ -18,6 +18,7 @@
 #include <chrono>
 #include "player_manager.h"
 #include "config/config_parser.h"
+#include "lobby_controller.h"
 
 class GameLoop: public Thread {
 
@@ -41,8 +42,6 @@ private:
     void runSingleRace();
     void setupRoute();
     void resetRaceState();
-    void processLobbyCmds();
-    void waitingForPlayers();
 
     // race loop
     void checkPlayersStatus();
@@ -74,6 +73,7 @@ private:
     std::vector<RecommendedPoint> recommendedPath;
 
     PlayerManager playerManager;
+    LobbyController lobbyController;
 
     // race flags
     float raceTimeSeconds = 0.0f;
