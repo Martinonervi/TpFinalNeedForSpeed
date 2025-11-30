@@ -131,6 +131,8 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
                 cars[ch.getPlayerId()]->setMaxHealth(ch.getTotalHealth());
                 cars[ch.getPlayerId()]->setHealth(ch.getCarHealth());
 
+                std::cout << "Max health: " << ch.getTotalHealth() << std::endl;
+                std::cout << "Health: " << ch.getCarHealth() << std::endl;
                 if (ch.getPlayerId()==myCarId) {
                     if (ch.getCarHealth() == 0) {
                         audio.stopSound("explosion");
