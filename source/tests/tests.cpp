@@ -192,13 +192,14 @@ TEST(Protocol_ServerToClient, Collision_roundtrip) {
     ClientProtocol cli(*pp.a);
     ServerProtocol srv(*pp.b);
 
-    SrvCarHitMsg in(7, 85.5f);
+    SrvCarHitMsg in(7, 85.5f, 14.f);
     ASSERT_GT(srv.sendCollisionEvent(in), 0);
 
     (void)cli.readActionByte();
     const SrvCarHitMsg out = cli.recvCollisionEvent();
     EXPECT_EQ(out.getPlayerId(), 7);
     EXPECT_NEAR(out.getCarHealth(), 85.5f, 0.01f);
+    EXPECT_NEAR(out.getTotalHealth(), 14.f, 0.01f);
 }
 
 TEST(Protocol_ServerToClient, CheckpointHit_roundtrip) {
@@ -233,7 +234,7 @@ TEST(Protocol_ServerToClient, CurrentInfo_roundtrip) {
     ClientProtocol cli(*pp.a);
     ServerProtocol srv(*pp.b);
 
-    SrvCurrentInfo in(5,1.5f,2.5f,0.75f,10.0f,12.34f,2,45.6f,3);
+    SrvCurrentInfo in(5,1.5f,2.5f,0.75f,10.0f,12.34f,2,45.6f,3, 4);
     ASSERT_GT(srv.sendCurrentInfo(in), 0);
 
     (void)cli.readActionByte();
@@ -247,6 +248,7 @@ TEST(Protocol_ServerToClient, CurrentInfo_roundtrip) {
     EXPECT_EQ(out.getRaceNumber(), 2);
     EXPECT_NEAR(out.getSpeed(), 45.6f, 0.01f);
     EXPECT_EQ(out.getTotalRaces(), 3);
+    EXPECT_EQ(out.getTotalCheckpoints(), 4);
 }
 
 TEST(Protocol_ServerToClient, PlayerStats_roundtrip) {
