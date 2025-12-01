@@ -62,6 +62,7 @@ private:
     std::unique_ptr<PlayerStats> playerStats = nullptr;
     UpgradeScreen ups;
     int raceTime = DEFAULT;
+    int countdown = NOT_ACCESSIBLE;
     uint8_t totalRaces = DEFAULT;
     uint8_t raceNumber = DEFAULT;
     Button startBtn;

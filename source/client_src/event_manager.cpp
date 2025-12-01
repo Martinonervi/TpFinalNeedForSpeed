@@ -19,7 +19,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unique_ptr<PlayerStats>& playerStats,
                                 std::vector<RecommendedPoint>& pathArray,
                                 std::vector<UpgradeDef>& upgradesArray,
-                                bool& srvDisconnect, StartScreen& startScreen)
+                                bool& srvDisconnect, StartScreen& startScreen, int& countdown)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
         totalCheckpoints(totalCheckpoints),
@@ -43,7 +43,8 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         pathArray(pathArray),
         upgradesArray(upgradesArray),
         srvDisconnect(srvDisconnect),
-        startScreen(startScreen)
+        startScreen(startScreen),
+        countdown(countdown)
 {}
 
 void EventManager::handleEvents(AudioManager& audio) const {
@@ -58,7 +59,7 @@ void EventManager::handleEvents(AudioManager& audio) const {
             if (itMove != keyToMove.end()) {
                 auto msg = std::make_shared<MoveMsg>(itMove->second);
                 senderQueue.push(msg);
-            } else if (itCheat != keyToCheat.end()) {
+            } else if (itCheat != keyToCheat.end() && !showScreen && countdown == NOT_ACCESSIBLE) {
                 auto msg = std::make_shared<CheatRequest>(itCheat->second);
                 senderQueue.push(msg);
             } else if (event.key.keysym.sym == SDLK_UP) {
@@ -102,7 +103,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case INIT_PLAYER: {
             const auto sp = dynamic_cast<const SendPlayer&>(*msg);
             myCarId = sp.getPlayerId();
-            std::cout << "Bienvenido Player:" << myCarId << std::endl;
             cars[myCarId] = std::make_unique<Car>(renderer, tm, sp.getX(),
                                                   sp.getY(), sp.getCarType(), sp.getAngleRad());
 
@@ -112,7 +112,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             const auto snc = dynamic_cast<const NewPlayer&>(*msg);
             auto it = cars.find(snc.getPlayerId());
             if (it == cars.end()) {
-                std::cout << "Se Unio Player:" << snc.getPlayerId() << std::endl;
                 cars[snc.getPlayerId()] = std::make_unique<Car>(renderer, tm, snc.getX(),
                                                                 snc.getY(), snc.getCarType(), snc.getAngleRad());
             }
@@ -121,6 +120,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case Movement: {
             const auto ps = dynamic_cast<const PlayerState&>(*msg);
+            countdown = NOT_ACCESSIBLE;
 
             if (cars.count(ps.getPlayerId())) {
                 cars[ps.getPlayerId()]->update(
@@ -140,7 +140,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
 
                 if (cars[ch.getPlayerId()]->getInCamera()) {
                     if (ch.getCarHealth() == 0) {
-                        std::cout << "ACA SE ESCUCHO" << std::endl;
                         audio.stopSound("explosion");
                         audio.playSound("explosion");
                     } else if (healthDiff > 1 || maxHealthDiff > 0 && ch.getPlayerId() == myCarId) {
@@ -165,11 +164,8 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
             if ( check_hit.getCheckpointId() == totalCheckpoints ) {
                 cars[check_hit.getPlayerId()]->setState(DESTROYED);
-                std::cout << "Checkpoint" << std::endl;
             }
 
-            std::cout<<"Next check: " << nextCheckpoint << "My id: " << myCarId << std::endl;
-            std::cout<<"Check Id: " << check_hit.getCheckpointId() << "Car id: " << check_hit.getPlayerId() << std::endl;
             if ( myCarId == check_hit.getPlayerId() ) {
                 audio.stopSound("checkpoint");
                 audio.playSound("checkpoint");
@@ -191,7 +187,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
                     current.getCheckX()*PIXELS_PER_METER, current.getCheckY()*PIXELS_PER_METER);
             }
             nextCheckpoint = current.getNextCheckpointId();
-            std::cout <<current.getNextCheckpointId() << std::endl;
             if (myCarId != -1) {
                 auto itCar = cars.find(myCarId);
                 if (itCar != cars.end() && itCar->second) {
@@ -241,12 +236,13 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             break;
         }
         case SRV_DISCONNECTION: {
-            std::cout << "Server Disconnection" << std::endl;
             srvDisconnect = true;
             running = false;
             break;
         }
         case STARTING_GAME: {
+            std::cout << "STARTING_GAME" << std::endl;
+            std::cout << countdown << std::endl;
             showScreen = false;
             startScreen.changeIsStart();
             ups.clearButtons();
@@ -254,8 +250,14 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case TIME: {
             const auto timeLeft = dynamic_cast<const TimeLeft&>(*msg);
-            if (!startScreen.isStart()) showScreen = timeLeft.getTimeLeft() > 0;
-            startScreen.setTimeLeft(timeLeft.getTimeLeft());
+            if (!startScreen.isStart()) showScreen = timeLeft.getTimeLeft() > 0 && timeLeft.getUpgradesEnabled();
+            if (timeLeft.getUpgradesEnabled()) {
+                startScreen.setTimeLeft(timeLeft.getTimeLeft());
+            } else {
+                audio.playSound("countdown");
+                countdown = static_cast<int>(timeLeft.getTimeLeft()) + 1;
+
+            }
             break;
         }
         default:
