@@ -85,7 +85,7 @@ float Hud::drawNeedle(const float x, const float y, const SDL2pp::Rect dstRectDi
     renderer.DrawLine(static_cast<int>(x), static_cast<int>(y),
                       static_cast<int>(endX), static_cast<int>(endY));
 
-    renderer.SetDrawColor(BLACK);
+    renderer.SetDrawColor(BLACK.r, BLACK.g, BLACK.b, BLACK.a);
     constexpr int radius = 4;
     for (int w = 0; w < radius * 2; w++) {
         for (int h = 0; h < radius * 2; h++) {

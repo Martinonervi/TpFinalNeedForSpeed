@@ -7,7 +7,7 @@
 
 class Button {
 public:
-    Button(SDL2pp::Rect rect, const std::string& text, SDL2pp::Color color, SDL2pp::Color hoverColor);
+    Button(SDL2pp::Rect rect, const std::string& text, SDL_Color color, SDL_Color hoverColor);
     void handleHover(int mouseX, int mouseY);
     SDL2pp::Rect getRect() const;
     bool getHover() const;
