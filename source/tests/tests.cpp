@@ -228,14 +228,13 @@ TEST(Protocol_ServerToClient, ClientDisconnect_roundtrip) {
     const ClientDisconnect out = cli.recvClientDisconnect();
     EXPECT_EQ(out.getPlayerId(), 99);
 }
-/*
 
 TEST(Protocol_ServerToClient, CurrentInfo_roundtrip) {
     auto pp = make_tcp_pair();
     ClientProtocol cli(*pp.a);
     ServerProtocol srv(*pp.b);
 
-    SrvCurrentInfo in(5,1.5f,2.5f,0.75f,10.0f,12.34f,2,45.6f,3, 4);
+    SrvCurrentInfo in(5,1.5f,2.5f,0.75f,10.0f,12.34f,2,45.6f,3, 4, 6);
     ASSERT_GT(srv.sendCurrentInfo(in), 0);
 
     (void)cli.readActionByte();
@@ -250,8 +249,9 @@ TEST(Protocol_ServerToClient, CurrentInfo_roundtrip) {
     EXPECT_NEAR(out.getSpeed(), 45.6f, 0.01f);
     EXPECT_EQ(out.getTotalRaces(), 3);
     EXPECT_EQ(out.getTotalCheckpoints(), 4);
+    EXPECT_EQ(out.getRanking(), 6);
 }
-*/
+
 TEST(Protocol_ServerToClient, PlayerStats_roundtrip) {
     auto pp = make_tcp_pair();
     ClientProtocol cli(*pp.a);
@@ -265,20 +265,21 @@ TEST(Protocol_ServerToClient, PlayerStats_roundtrip) {
     EXPECT_EQ(out.getRacePosition(), 1);
     EXPECT_NEAR(out.getTimeSecToComplete(), 98.76f, 0.01f);
 }
-/*
+
 TEST(Protocol_ServerToClient, TimeLeft_roundtrip) {
     auto pp = make_tcp_pair();
     ClientProtocol cli(*pp.a);
     ServerProtocol srv(*pp.b);
 
-    TimeLeft in(7);
+    TimeLeft in(7, false);
     ASSERT_GT(srv.sendTimeLeft(in), 0);
 
     (void)cli.readActionByte();
     const TimeLeft out = cli.recvTimeLeft();
     EXPECT_EQ(out.getTimeLeft(), 7);
+    EXPECT_EQ(out.getUpgradesEnabled(), false);
 }
-*/
+
 TEST(Protocol_ServerToClient, Upgrade_roundtrip) {
     auto pp = make_tcp_pair();
     ClientProtocol cli(*pp.a);
@@ -347,4 +348,21 @@ TEST(Protocol_ServerToClient, CarConfirmation_roundtrip) {
     (void)cli.readActionByte();
     const CarSelect out = cli.recvCarConfirmation();
     EXPECT_TRUE(out.isSelected());
+}
+TEST(Protocol_ServerToClient, SendNPC_roundtrip) {
+    auto pp = make_tcp_pair();
+    ClientProtocol cli(*pp.a);
+    ServerProtocol srv(*pp.b);
+
+    SrvNpcSpawn sp(5, static_cast<CarType>(1), 12.34f, -56.78f, 1.57f);
+    ASSERT_GT(srv.sendNpcSpawn(sp), 0);
+
+    ASSERT_EQ(cli.readActionByte(), Opcode::NPC_SPAWN);
+    const SrvNpcSpawn out = cli.recvNpcSpawn();
+
+    EXPECT_EQ(out.getId(), 5);
+    EXPECT_EQ(out.getCarType(), static_cast<CarType>(1));
+    EXPECT_NEAR(out.getX(), 12.34f, 0.01f);
+    EXPECT_NEAR(out.getY(), -56.78f, 0.01f);
+    EXPECT_NEAR(out.getAngleRad(), 1.57f, 0.01f);
 }
