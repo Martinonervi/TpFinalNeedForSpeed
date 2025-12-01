@@ -47,19 +47,19 @@
 
 // Colors:
 
-inline SDL2pp::Color BTN_GREEN = {0, 208, 22, 255};
+inline SDL_Color BTN_GREEN = {0, 208, 22, 255};
 
-inline SDL2pp::Color BTN_GREEN_HOVER = {0, 255, 51, 255};
+inline SDL_Color BTN_GREEN_HOVER = {0, 255, 51, 255};
 
-inline SDL2pp::Color BLACK = {0, 0, 0, 255};
+inline SDL_Color BLACK = {0, 0, 0, 255};
 
-inline SDL2pp::Color RED = {255, 0, 0, 255};
+inline SDL_Color RED = {255, 0, 0, 255};
 
-inline SDL2pp::Color WHITE = {255, 255, 255, 255};
+inline SDL_Color WHITE = {255, 255, 255, 255};
 
-inline SDL2pp::Color YELLOW = {255, 255, 0, 255};
+inline SDL_Color YELLOW = {255, 255, 0, 255};
 
-inline SDL2pp::Color RED_HEALTH_FILL = {255, 0, 77, 125};
+inline SDL_Color RED_HEALTH_FILL = {255, 0, 77, 125};
 
 
 
