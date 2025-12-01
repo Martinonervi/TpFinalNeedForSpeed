@@ -26,7 +26,7 @@ void Hint::draw(const Camera& camera) const {
     int w = tex.GetWidth() / 2;
     int h = tex.GetHeight() / 2;
 
-    SDL_Rect dstRect = {
+    SDL2pp::Rect dstRect = {
         static_cast<int>(drawX - w / 2),
         static_cast<int>(drawY - h / 2),
         w,
@@ -37,7 +37,7 @@ void Hint::draw(const Camera& camera) const {
 
     renderer.Copy(
         tex,
-        SDL_Rect{0, 0, tex.GetWidth(), tex.GetHeight()},
+        SDL2pp::Rect{0, 0, tex.GetWidth(), tex.GetHeight()},
         dstRect,
         angleDeg,
         center

@@ -71,7 +71,7 @@ void SdlDrawer::loadFont() {
 
 void SdlDrawer::drawButton(const Button& button) const {
 
-    const SDL2pp::Color color = button.getColor();
+    const SDL_Color color = button.getColor();
 
     renderer.SetDrawColor(color.r, color.g, color.b, color.a);
     renderer.FillRect(button.getRect());

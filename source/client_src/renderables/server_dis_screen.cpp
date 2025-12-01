@@ -21,7 +21,7 @@ void ServerDisScreen::draw() {
     renderer.SetDrawColor(BLACK.r, BLACK.g, BLACK.b, 180);
     renderer.FillRect(rect);
 
-    renderer.SetDrawColor(WHITE);
+    renderer.SetDrawColor(WHITE.r, WHITE.g, WHITE.b, WHITE.a);
     renderer.DrawRect(rect);
 
     drawer.drawText(

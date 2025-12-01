@@ -81,7 +81,7 @@ float Hud::drawNeedle(const float x, const float y, const SDL2pp::Rect dstRectDi
     const float endX = x + needleLength * cos(rad);
     const float endY = y + needleLength * sin(rad);
 
-    renderer.SetDrawColor(RED);
+    renderer.SetDrawColor(RED.r, RED.g, RED.b, RED.a);
     renderer.DrawLine(static_cast<int>(x), static_cast<int>(y),
                       static_cast<int>(endX), static_cast<int>(endY));
 
@@ -143,7 +143,7 @@ void Hud::drawHealthFill(SDL2pp::Renderer& renderer, const float healthPerc, SDL
     };
 
     renderer.SetDrawBlendMode(SDL_BLENDMODE_BLEND);
-    renderer.SetDrawColor(RED_HEALTH_FILL);
+    renderer.SetDrawColor(RED_HEALTH_FILL.r, RED_HEALTH_FILL.g, RED_HEALTH_FILL.b, RED_HEALTH_FILL.a);
     renderer.FillRect(dst);
 }
 
