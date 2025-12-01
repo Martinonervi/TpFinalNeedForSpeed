@@ -390,8 +390,9 @@ int ServerProtocol::sendTimeLeft(TimeLeft& msg) {
     try {
         Op type = Opcode::TIME;
         uint8_t time = msg.getTimeLeft();
+        bool up = msg.getUpgradesEnabled();
 
-        std::vector<char> buf(sizeof(Op) + sizeof(uint8_t));
+        std::vector<char> buf(sizeof(Op) + sizeof(uint8_t) + sizeof(bool));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
@@ -399,6 +400,9 @@ int ServerProtocol::sendTimeLeft(TimeLeft& msg) {
 
         memcpy(buf.data() + offset, &time, sizeof(uint8_t));
         offset += sizeof(uint8_t);
+
+        memcpy(buf.data() + offset, &up, sizeof(bool));
+        offset += sizeof(bool);
 
         int n = peer.sendall(buf.data(), offset);
         return n;

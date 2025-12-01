@@ -36,8 +36,9 @@ public:
 
 private:
     std::list<Cmd> emptyQueue();
+    void runPreRaceCountdown(const std::function<bool()>& shouldKeepRunning);
     void processLobbyCmds();
-    void broadcastTimeLeft(float remaining_sec);
+    void broadcastTimeLeft(float remaining_sec, bool upgradesEnabled);
     void broadcastRecommendedPath(const std::vector<RecommendedPoint>& recommendedPath);
     void broadcastUpgradeLogic();
 

@@ -60,8 +60,10 @@ void ConfigParser::loadLobby(const YAML::Node& root, Config& cfg) {
         int maxPlayersInt = lobby["max_players"].as<int>();
         cfg.lobby.maxPlayers = static_cast<std::uint8_t>(maxPlayersInt);
     }
-    if (lobby["between_races_sec"])
-        cfg.lobby.betweenRacesSec = lobby["between_races_sec"].as<double>();
+    if (lobby["upgrades_phase_sec"])
+        cfg.lobby.upgradesPhaseSec = lobby["upgrades_phase_sec"].as<double>();
+    if (lobby["pre_race_countdown_sec"])
+        cfg.lobby.preRaceCountdownSec = lobby["pre_race_countdown_sec"].as<float>();
     if (lobby["max_race_time_sec"])
         cfg.lobby.maxRaceTimeSec  = lobby["max_race_time_sec"].as<float>();
 }

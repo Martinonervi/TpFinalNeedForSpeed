@@ -15,7 +15,8 @@ struct LoopsConfig {
 
 struct LobbyConfig {
     uint8_t   maxPlayers;
-    double betweenRacesSec;
+    double upgradesPhaseSec;
+    float preRaceCountdownSec;
     float maxRaceTimeSec;
 };
 

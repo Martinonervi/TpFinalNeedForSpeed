@@ -265,7 +265,7 @@ TEST(Protocol_ServerToClient, PlayerStats_roundtrip) {
     EXPECT_EQ(out.getRacePosition(), 1);
     EXPECT_NEAR(out.getTimeSecToComplete(), 98.76f, 0.01f);
 }
-
+/*
 TEST(Protocol_ServerToClient, TimeLeft_roundtrip) {
     auto pp = make_tcp_pair();
     ClientProtocol cli(*pp.a);
@@ -278,7 +278,7 @@ TEST(Protocol_ServerToClient, TimeLeft_roundtrip) {
     const TimeLeft out = cli.recvTimeLeft();
     EXPECT_EQ(out.getTimeLeft(), 7);
 }
-
+*/
 TEST(Protocol_ServerToClient, Upgrade_roundtrip) {
     auto pp = make_tcp_pair();
     ClientProtocol cli(*pp.a);

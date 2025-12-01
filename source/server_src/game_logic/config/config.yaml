@@ -4,7 +4,8 @@ loops:
 
 lobby:
   max_players: 8 #enunciado: 8
-  between_races_sec: 5.0 #enunciado: 10seg
+  upgrades_phase_sec: 5.0 #enunciado: 10seg
+  pre_race_countdown_sec: 3.0
   max_race_time_sec: 600.0 #enunciado: 10mins
 
 physics:

@@ -8,11 +8,17 @@
 
 class TimeLeft: public SrvMsg {
 public:
-    TimeLeft(uint8_t timeLeft):timeLeft(timeLeft){};
+    TimeLeft(uint8_t timeLeft, bool upgradesEnabled):
+    timeLeft(timeLeft),
+    upgradesEnabled(upgradesEnabled) {};
+
     Op type() const override { return Opcode::TIME; }
+
     uint8_t getTimeLeft() const { return timeLeft; }
+    bool    getUpgradesEnabled() const { return upgradesEnabled; }
 
 private:
     uint8_t timeLeft;
+    bool    upgradesEnabled;
 };
 #endif //SRV_TIME_LEFT_H

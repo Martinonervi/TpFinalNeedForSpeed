@@ -35,7 +35,7 @@ void LobbyController::runLobbyLoop(
     raceStarted    = false;
 
     auto start    = Clock::now();
-    auto deadline = start + std::chrono::duration<double>(config.lobby.betweenRacesSec);
+    auto deadline = start + std::chrono::duration<double>(config.lobby.upgradesPhaseSec);
 
     while (shouldKeepRunning()) {
         processLobbyCmds();   // START_GAME, INIT_PLAYER, UPGRADE_REQUEST
@@ -49,15 +49,37 @@ void LobbyController::runLobbyLoop(
                               ).count();
         if (remaining_sec < 0.f) remaining_sec = 0.f;
 
-        broadcastTimeLeft(remaining_sec);
+        broadcastTimeLeft(remaining_sec, true);
         broadcastRecommendedPath(recommendedPath);
         broadcastUpgradeLogic();
 
         loop.sleep_until_next_frame();
     }
-
+    runPreRaceCountdown(shouldKeepRunning);
     raceStarted = true;
 }
+
+void LobbyController::runPreRaceCountdown(const std::function<bool()>& shouldKeepRunning) {
+    ConstantRateLoop loop(config.loops.lobbyHz);
+
+    auto cdStart    = Clock::now();
+    auto cdDeadline = cdStart +
+        std::chrono::duration<double>(config.lobby.preRaceCountdownSec);
+
+    while (shouldKeepRunning()) {
+        auto now = Clock::now();
+        float remaining_sec =
+            std::chrono::duration_cast<std::chrono::duration<float>>(
+                cdDeadline - now
+            ).count();
+
+        if (remaining_sec < 0.f) remaining_sec = 0.f;
+        broadcastTimeLeft(remaining_sec, false);
+        if (remaining_sec <= 0.f) break;
+        loop.sleep_until_next_frame();
+    }
+}
+
 
 std::list<Cmd> LobbyController::emptyQueue() {
     std::list<Cmd> cmd_list;
@@ -105,11 +127,11 @@ void LobbyController::processLobbyCmds() {
     }
 }
 
-void LobbyController::broadcastTimeLeft(float remaining_sec) {
+void LobbyController::broadcastTimeLeft(float remaining_sec, bool upgradesEnabled) {
     uint8_t timeToSend = static_cast<uint8_t>(std::floor(remaining_sec));
 
     auto msg = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<TimeLeft>(timeToSend));
+            std::make_shared<TimeLeft>(timeToSend, upgradesEnabled));
     registry.broadcast(msg);
 }
 

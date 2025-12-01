@@ -442,16 +442,18 @@ PlayerStats ClientProtocol::recvStats() {
 
 TimeLeft ClientProtocol::recvTimeLeft() {
     uint8_t time;
+    bool up;
     int n = 0;
     try {
         n += peer.recvall(&time, sizeof(uint8_t));
+        n += peer.recvall(&up, sizeof(bool));
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
     }
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
-    return TimeLeft(time);
+    return TimeLeft(time, up);
 }
 
 void ClientProtocol::sendRequestUpgrade(RequestUpgrade& up) {
