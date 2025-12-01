@@ -27,7 +27,7 @@ private:
     std::unordered_map<std::string, Mix_Music*> music;
     std::unordered_map<std::string, int> channels;
 
-    int masterVolume = MIX_MAX_VOLUME;
+    int masterVolume = MIX_MAX_VOLUME/2;
 
     bool init();
     void initSfx();

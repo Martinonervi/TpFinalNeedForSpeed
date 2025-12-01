@@ -238,7 +238,7 @@ void Hud::drawCountdown(const int countdown, const int width, const int height) 
 
 
 void Hud::drawRanking(const uint8_t ranking) const {
-    const std::string txt = HASHTAG + std::to_string(ranking) + RANKING_TXT;
+    const std::string txt = HASHTAG + std::to_string(ranking);
 
-    drawer.drawText(txt, 20, 15, YELLOW, 0.8f, 0.8f);
+    drawer.drawText(txt, 20, 15, YELLOW, 2.f, 2.f);
 }
