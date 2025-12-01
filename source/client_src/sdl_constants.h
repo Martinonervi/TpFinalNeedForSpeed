@@ -36,7 +36,6 @@
 
 #define BTN_TEXT "Start Game"
 #define BACK_SLASH "/"
-#define HASHTAG "#"
 #define RACE_TXT "Race "
 #define CHECK_TXT "Checkpoint "
 #define NO_TEXT ""
@@ -44,7 +43,7 @@
 #define TIME_PENALTY "Time penalty: + %.2f"
 #define NEXT_ROUTE_TXT "Next Race Route"
 #define UP_SHOP_TXT "Upgrade Shop"
-#define RANKING_TXT "(without penalties)"
+#define RANKING_TXT "Position "
 
 // Colors:
 
