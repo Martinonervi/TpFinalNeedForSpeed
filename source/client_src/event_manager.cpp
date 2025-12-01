@@ -2,6 +2,7 @@
 
 #include "../common_src/cli_msg/cli_start_game.h"
 #include "../common_src/srv_msg/srv_starting_game.h"
+#include "../common_src/srv_msg/srv_time_left.h"
 
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 uint8_t& totalCheckpoints, ID& checkpointNumber,
@@ -12,13 +13,13 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 TextureManager& textureManager,
                                 std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints,
                                 Hint& hint, UpgradeScreen& ups, Button& startBtn,
-                                bool& showStart,
+                                bool& showScreen,
                                 bool& running, bool& quit,
                                 int& raceTime, uint8_t& totalRaces, uint8_t& raceNumber,
                                 std::unique_ptr<PlayerStats>& playerStats,
                                 std::vector<RecommendedPoint>& pathArray,
                                 std::vector<UpgradeDef>& upgradesArray,
-                                bool& srvDisconnect)
+                                bool& srvDisconnect, StartScreen& startScreen)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
         totalCheckpoints(totalCheckpoints),
@@ -32,7 +33,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         hint(hint),
         ups(ups),
         startBtn(startBtn),
-        showStart(showStart),
+        showScreen(showScreen),
         running(running),
         quit(quit),
         playerStats(playerStats),
@@ -41,7 +42,8 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         raceNumber(raceNumber),
         pathArray(pathArray),
         upgradesArray(upgradesArray),
-        srvDisconnect(srvDisconnect)
+        srvDisconnect(srvDisconnect),
+        startScreen(startScreen)
 {}
 
 void EventManager::handleEvents(AudioManager& audio) const {
@@ -62,26 +64,27 @@ void EventManager::handleEvents(AudioManager& audio) const {
             }
         }
 
+
         if (event.type == SDL_MOUSEMOTION) {
-            if (showStart) {
+            if (showScreen) {
                 ups.handleMouseMotion(event.motion.x, event.motion.y);
-                startBtn.handleHover(event.motion.x, event.motion.y);
+                if (startScreen.isStart())
+                    startBtn.handleHover(event.motion.x, event.motion.y);
             }
         }
 
         if (event.type == SDL_MOUSEBUTTONDOWN) {
-            if (showStart) {
+            if (showScreen) {
                 auto [bought, upType] = ups.handleMouseClick();
                 if (bought) {
                     RequestUpgrade reqUp(upType);
                     senderQueue.push(std::make_shared<RequestUpgrade>(reqUp));
                 }
 
-                if (startBtn.getHover()) {
+                if (startBtn.getHover() && startScreen.isStart()) {
                     StartGame strGame;
                     senderQueue.push(std::make_shared<StartGame>(strGame));
-                    showStart = false;
-                    audio.playMusic("game_music", -1);
+                    showScreen = false;
                 }
             }
         }
@@ -233,7 +236,16 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             break;
         }
         case STARTING_GAME: {
-            showStart = false;
+            showScreen = false;
+            startScreen.changeIsStart();
+            ups.clearButtons();
+            break;
+        }
+        case TIME: {
+            const auto timeLeft = dynamic_cast<const TimeLeft&>(*msg);
+            if (!startScreen.isStart()) showScreen = timeLeft.getTimeLeft() > 0;
+            startScreen.setTimeLeft(timeLeft.getTimeLeft());
+            break;
         }
         default:
             break;

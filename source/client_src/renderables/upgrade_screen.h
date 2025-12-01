@@ -12,7 +12,9 @@ struct UpgradeButton {
     Upgrade type;
     float penalty;
     SDL2pp::Rect iconRect;
+    bool bought = false;
 };
+
 
 class UpgradeScreen {
 public:
@@ -25,6 +27,7 @@ public:
 
     void createButtons(const std::vector<UpgradeDef>& upgradesArray);
     void changeState(Upgrade upgrade);
+    void clearButtons();
 
 
 private:

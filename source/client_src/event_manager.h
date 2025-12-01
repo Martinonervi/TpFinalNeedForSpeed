@@ -25,6 +25,7 @@
 #include "renderables/car.h"
 #include "renderables/checkpoint.h"
 #include "renderables/hint.h"
+#include "renderables/start_screen.h"
 #include "renderables/upgrade_screen.h"
 
 #include "audio_manager.h"
@@ -35,11 +36,11 @@ public:
                  std::unordered_map<ID, std::unique_ptr<Car>>& cars, SDL2pp::Renderer& renderer,
                  Queue<CliMsgPtr>& senderQueue, SdlDrawer& drawer, TextureManager& textureManager,
                  std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints, Hint& hint,
-                 UpgradeScreen& ups, Button& startBtn, bool& showStart,
+                 UpgradeScreen& ups, Button& startBtn, bool& showScreen,
                  bool& running, bool& quit, int& raceTime, uint8_t& totalRaces,
                  uint8_t& raceNumber, std::unique_ptr<PlayerStats>& playerStats,
                  std::vector<RecommendedPoint>& pathArray,
-                 std::vector<UpgradeDef>& upgradesArray, bool& srvDisconnect);
+                 std::vector<UpgradeDef>& upgradesArray, bool& srvDisconnect, StartScreen& startScreen);
 
     void handleEvents(AudioManager& audio) const;
     void handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio);
@@ -58,7 +59,7 @@ private:
     Hint& hint;
     UpgradeScreen& ups;
     Button& startBtn;
-    bool& showStart;
+    bool& showScreen;
     bool& running;
     bool& quit;
     std::unique_ptr<PlayerStats>& playerStats;
@@ -69,6 +70,7 @@ private:
     std::vector<RecommendedPoint>& pathArray;
     std::vector<UpgradeDef>& upgradesArray;
     bool& srvDisconnect;
+    StartScreen& startScreen;
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
             {SDLK_w, MoveMsg(1, 0, 0, 0)},  {SDLK_s, MoveMsg(2, 0, 0, 0)},
