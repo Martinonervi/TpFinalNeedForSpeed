@@ -615,3 +615,30 @@ int ClientProtocol::sendCheat(const CheatRequest& up) {
         throw("Error sending");
     }
 }
+
+
+SrvNpcSpawn ClientProtocol::recvNpcSpawn() {
+    try {
+        ID id_BE;
+        CarType carType;
+        uint32_t x_BE;
+        uint32_t y_BE;
+        uint32_t angle_BE;
+
+        peer.recvall(&id_BE,    sizeof(id_BE));
+        peer.recvall(&carType,  sizeof(carType));
+        peer.recvall(&x_BE,     sizeof(x_BE));
+        peer.recvall(&y_BE,     sizeof(y_BE));
+        peer.recvall(&angle_BE, sizeof(angle_BE));
+
+        ID id        = ntohs(id_BE);
+        float x      = decodeFloatBE(x_BE);
+        float y      = decodeFloatBE(y_BE);
+        float angle  = decodeFloatBE(angle_BE);
+
+        return SrvNpcSpawn(id, carType, x, y, angle);
+    } catch (const std::exception& e) {
+        std::cerr << "recvNpcSpawn error: " << e.what() << "\n";
+        throw RETURN_FAILURE;
+    }
+}

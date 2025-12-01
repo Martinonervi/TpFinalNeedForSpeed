@@ -25,6 +25,7 @@
 #include "server_types.h"
 #include "../common_src/srv_msg/srv_starting_game.h"
 #include "../common_src/srv_msg/srv_race_finished.h"
+#include "../common_src/srv_msg/srv_npc_spawn.h"
 
 
 class ServerProtocol {
@@ -52,6 +53,7 @@ public:
     int sendCarConfirmation(CarSelect& car_select);
     int sendSartingGame(StartingGame& sg);
     int sendRaceFinished(RaceFinished& rf);
+    int sendNpcSpawn(const SrvNpcSpawn& msg);
 
     /* ---------- Deserialización de datos ---------- */
 

@@ -11,6 +11,7 @@
 #include "../common_src/srv_msg/srv_recommended_path.h"
 #include "../common_src/srv_msg/srv_starting_game.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/srv_msg/srv_npc_spawn.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -139,6 +140,14 @@ void ClientReceiver::run(){
                         std::make_shared<RaceFinished>());
                 receiverQueue.push(base);
                 std::cout << "[client Receiver] RACE_FINISHED\n";
+                break;
+            }
+            case Opcode::NPC_SPAWN: {
+                SrvNpcSpawn msg = protocol.recvNpcSpawn();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<SrvNpcSpawn>(std::move(msg)));
+                receiverQueue.push(base);
+                std::cout << "[client Receiver] NPC RECIBIDO\n";
                 break;
             }
 

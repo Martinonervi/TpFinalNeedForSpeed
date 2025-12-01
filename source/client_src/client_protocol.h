@@ -23,6 +23,7 @@
 #include "../common_src/srv_msg/srv_time_left.h"
 #include "../common_src/srv_msg/srv_upgrade_logic.h"
 #include "../common_src/cli_msg/cli_cheat_request.h"
+#include "../common_src/srv_msg/srv_npc_spawn.h"
 
 #include "client_types.h"
 
@@ -72,6 +73,7 @@ public:
     TimeLeft recvTimeLeft();
     SendUpgrade recvUpgrade();
     CarSelect recvCarConfirmation();
+    SrvNpcSpawn recvNpcSpawn();
 
 private:
     Socket& peer;

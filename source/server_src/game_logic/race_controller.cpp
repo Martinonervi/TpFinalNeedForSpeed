@@ -12,6 +12,7 @@
 #include "../../common_src/srv_msg/srv_race_finished.h"
 #include <algorithm>
 #include <vector>
+#include "../../common_src/srv_msg/srv_npc_spawn.h"
 
 using Clock = std::chrono::steady_clock;
 
@@ -51,7 +52,9 @@ void RaceController::runRace(uint8_t raceIndex, uint8_t totalRaces,
                              const std::function<bool()>& shouldKeepRunning) {
     raceTimeSeconds = 0.f;
     raceEnded       = false;
+    //broadcastNpcSpawn();
     auto raceStartTime = Clock::now();
+
     try {
         ConstantRateLoop loop(config.loops.raceHz);
 
@@ -67,6 +70,7 @@ void RaceController::runRace(uint8_t raceIndex, uint8_t totalRaces,
             if (raceEnded) break;
 
             playerManager.broadcastSnapshots(); //posicion de los autos
+            //broadcastNpcSnapshots();
             sendCurrentInfo(raceIndex, totalRaces); //info que fran tiene que dibujar
             loop.sleep_until_next_frame();
         }
@@ -116,20 +120,34 @@ std::list<Cmd> RaceController::emptyQueue() {
     return cmd_list;
 }
 
-void RaceController::broadcastNpcCars() {
+void RaceController::broadcastNpcSpawn() {
     for (auto& [id, npc] : npcCars) {
         auto pos = npc.getPosition();
+        float angle = npc.getAngleRad();
+
         auto msg = std::static_pointer_cast<SrvMsg>(
-            std::make_shared<NewPlayer>(
+            std::make_shared<SrvNpcSpawn>(
                 id,
                 npc.getCarType(),
-                pos.x, pos.y,
-                npc.getAngleRad()
+                pos.x,
+                pos.y,
+                angle
             )
         );
         registry.broadcast(msg);
     }
 }
+
+
+void RaceController::broadcastNpcSnapshots() {
+    for (auto& [id, car] : npcCars) {
+        PlayerState ps = car.snapshotState();
+        auto base = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<PlayerState>(std::move(ps)));
+        registry.broadcast(base);
+    }
+}
+
 
 void RaceController::checkPlayersStatus() {
     std::vector<ID> ids;

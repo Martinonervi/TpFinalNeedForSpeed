@@ -609,3 +609,36 @@ CheatRequest ServerProtocol::recvCheat() {
 
     return CheatRequest(cheat);
 }
+
+int ServerProtocol::sendNpcSpawn(const SrvNpcSpawn& msg) {
+    try {
+        Op type = msg.type();
+        ID id = htons(msg.getId());
+        CarType carType = msg.getCarType();
+
+        uint32_t x_BE      = encodeFloatBE(msg.getX());
+        uint32_t y_BE      = encodeFloatBE(msg.getY());
+        uint32_t angle_BE  = encodeFloatBE(msg.getAngleRad());
+
+        std::vector<char> buf;
+        buf.reserve(sizeof(Op) + sizeof(ID) + sizeof(CarType) + 3*sizeof(uint32_t));
+
+        auto append = [&buf](const void* p, std::size_t n) {
+            const std::size_t old = buf.size();
+            buf.resize(old + n);
+            std::memcpy(buf.data() + old, p, n);
+        };
+
+        append(&type, sizeof(type));
+        append(&id, sizeof(id));
+        append(&carType, sizeof(carType));
+        append(&x_BE, sizeof(x_BE));
+        append(&y_BE, sizeof(y_BE));
+        append(&angle_BE, sizeof(angle_BE));
+
+        return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw std::runtime_error("Error sending NPC spawn");
+    }
+}

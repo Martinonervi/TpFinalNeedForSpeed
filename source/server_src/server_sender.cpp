@@ -111,6 +111,10 @@ void Sender::run() {
                     n = protocol.sendRaceFinished(dynamic_cast<RaceFinished&>(*msg));
                     break;
                 }
+                case Opcode::NPC_SPAWN: {
+                    n = protocol.sendNpcSpawn(dynamic_cast<SrvNpcSpawn&>(*msg));
+                    break;
+                }
                 default: {
                     std::cout << "[Server Sender] cmd desconocido: " << msg->type() << "\n";
                     n = 0; //quiero salir

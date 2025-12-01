@@ -30,6 +30,7 @@ enum Opcode : Op {
     REQUEST_CHEAT = 0x21,
     STARTING_GAME = 0x22,
     RACE_FINISHED = 0x23,
+    NPC_SPAWN = 0x24,
 };
 
 enum err_code : Op {

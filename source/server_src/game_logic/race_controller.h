@@ -53,7 +53,8 @@ public:
 private:
     // helpers del loop de carrera
     std::list<Cmd> emptyQueue();
-    void broadcastNpcCars();
+    void broadcastNpcSnapshots();
+    void broadcastNpcSpawn();
     void checkPlayersStatus();
     void processCmds();
     void processWorldEvents();
