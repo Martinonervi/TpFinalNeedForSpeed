@@ -31,6 +31,7 @@ public:
     std::vector<Upgrade> getUpgrades();
     float getHealth() const;
     float getMaxHealth() const;
+    void clearUpgrades();
 
 private:
     float health = 100.0f;

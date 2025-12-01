@@ -25,20 +25,22 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
             },
             BTN_TEXT, BTN_GREEN, BTN_GREEN_HOVER ),
         disScreen(window.GetWidth(), window.GetHeight(), renderer, drawer),
+        startScreen(renderer, drawer, tm, MAP_LIBERTY, pathArray, ups, startBtn),
         eventManager(myCarId, nextCheckpoint, totalCheckpoints, checkpointNumber,
             cars, renderer, senderQueue, drawer, tm, checkpoints, hint,
-            ups, startBtn, showStart, running, quit, raceTime, totalRaces,
-            raceNumber, playerStats, pathArray, upgradesArray, srvDisconnect)
+            ups, startBtn, showScreen, running, quit, raceTime, totalRaces,
+            raceNumber, playerStats, pathArray, upgradesArray, srvDisconnect, startScreen)
 {}
 
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
     const Hud hud(renderer, drawer, tm, MAP_LIBERTY, pathArray);
     Map map(renderer, tm, MAP_LIBERTY);
-    StartScreen startScreen(renderer, drawer, tm, MAP_LIBERTY, pathArray, ups, startBtn);
+
+    bool lastShowScreen = false;
 
     try {
         ConstantRateLoop loop(FPS);
-
+        audio.playMusic("game_music", LOOP);
         while (running) {
             SrvMsgPtr srvMsg;
             while (receiverQueue.try_pop(srvMsg)) {
@@ -52,7 +54,11 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
             renderer.SetDrawColor(BLACK);
             renderer.Clear();
 
-            if (showStart) {
+            if (showScreen) {
+                audio.stopSound("engine");
+                if (!lastShowScreen) {
+                    cars[myCarId]->clearUpgrades();
+                }
                 startScreen.draw(window.GetWidth(), window.GetHeight());
             } else {
                 map.draw(camera);
@@ -80,6 +86,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                     totalCheckpoints, checkpointNumber);
 
             }
+            lastShowScreen = showScreen;
 
             renderer.Present();
             loop.sleep_until_next_frame();
