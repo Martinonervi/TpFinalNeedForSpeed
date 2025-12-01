@@ -25,7 +25,8 @@ public:
                        uint8_t& totalCars,
                        bool& raceEnded,
                        std::vector<ID>& raceRanking,
-                       std::vector<RaceResult>& lastRaceResults, Config& config);
+                       std::vector<RaceResult>& lastRaceResults,
+                       const CollisionsConfig& collisionsConfig);
 
     // checkpoints
     void CarHitCheckpointHandler(WorldEvent ev);
@@ -37,6 +38,7 @@ public:
     // fin carrera / auto destruido
     void CarFinishRace(Car& car);
     void setKillCar(Car& car);
+    void freezeAndDisableCarBody(Car& car);
 
 private:
     void onPlayerFinishedRace(ID playerId, float timeSec);
@@ -58,7 +60,7 @@ private:
     std::vector<ID>& raceRanking;
     std::vector<RaceResult>& lastRaceResults;
 
-    Config& config;
+    const CollisionsConfig& collisionsConfig;
 };
 
 

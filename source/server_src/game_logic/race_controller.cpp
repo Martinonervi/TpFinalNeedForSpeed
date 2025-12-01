@@ -45,56 +45,54 @@ RaceController::RaceController(std::shared_ptr<gameLoopQueue> queue,
     , npcCars(npcCars)
 {}
 
-void RaceController::runRace(uint8_t raceIndex,
-                             uint8_t totalRaces,
+void RaceController::runRace(uint8_t raceIndex, uint8_t totalRaces,
                              const std::function<bool()>& shouldKeepRunning) {
     raceTimeSeconds = 0.f;
     raceEnded       = false;
-
     auto raceStartTime = Clock::now();
     try {
         ConstantRateLoop loop(config.loops.raceHz);
 
         while (shouldKeepRunning()) {
-            checkPlayersStatus();
-            processCmds();
-
-            worldManager.step(config.physics.timeStep,
-                              config.physics.subStepCount);
-
-            processWorldEvents();
+            checkPlayersStatus(); //desconecta los que se fueron (no estan en el registry)
+            processCmds(); // MOVEMENT CHEATS INIT_PLAYER(devuelve false en este loop)
+            worldManager.step(config.physics.timeStep, config.physics.subStepCount);
+            processWorldEvents(); // colisiones checkpoints
 
             if (!raceEnded) {
-                auto now = Clock::now();
-                std::chrono::duration<float> elapsed = now - raceStartTime;
-                raceTimeSeconds = elapsed.count();
-
-                if (raceTimeSeconds >= config.lobby.maxRaceTimeSec) {
-                    raceEnded = true;
-                }
-                if (totalCars <= 0) {
-                    raceEnded = true;
-                }
+                updateRaceClockAndCheckEnd(raceStartTime);
             }
-
             if (raceEnded) break;
 
-            playerManager.broadcastSnapshots();
-            sendCurrentInfo(raceIndex, totalRaces);
-
+            playerManager.broadcastSnapshots(); //posicion de los autos
+            sendCurrentInfo(raceIndex, totalRaces); //info que fran tiene que dibujar
             loop.sleep_until_next_frame();
         }
     } catch (const std::exception& e) {
         std::cerr << "[RaceController] fatal: " << e.what() << "\n";
-    } catch (...) {
-        std::cerr << "[RaceController] fatal: unknown\n";
     }
 
-    if (shouldKeepRunning){
-        finalizeDNFs();
-        sendRaceFinish();
+    if (shouldKeepRunning()){
+        finalizeDNFs(); //le pone tiempo final a los destruidos
+        bool isLastRace = (raceIndex + 1 == totalRaces);
+        if (!isLastRace) {
+            sendRaceFinish(); //msj para q cliente ponga logica de compras
+        }
     }
+}
 
+
+void RaceController::updateRaceClockAndCheckEnd(const Clock::time_point& raceStartTime) {
+    auto now = Clock::now();
+    std::chrono::duration<float> elapsed = now - raceStartTime;
+    raceTimeSeconds = elapsed.count();
+
+    if (raceTimeSeconds >= config.lobby.maxRaceTimeSec) {
+        raceEnded = true;
+    }
+    if (totalCars <= 0) {
+        raceEnded = true;
+    }
 }
 
 void RaceController::sendRaceFinish() {
@@ -311,6 +309,36 @@ void RaceController::forcePlayerLose(ID id) {
     // al final de la carrera, finalizeDNFs() lo va a marcar como DNF.
 }
 
+
+void RaceController::forcePlayerWin(ID id) {
+    auto itCar = playerCars.find(id);
+    if (itCar == playerCars.end()) return;
+
+    Car& car = itCar->second;
+    if (car.isFinished()) return;
+
+    ID finishId = 0;
+    for (const auto& [cpId, cp] : checkpoints) {
+        if (cp.getKind() == CheckpointKind::Finish && cpId > finishId) {
+            finishId = cpId;
+        }
+    }
+    Checkpoint& cp = checkpoints.at(finishId);
+
+    car.setCheckpoint(finishId - 1); //para q el handler lo valide
+    car.setPosition(cp.getX(), cp.getY());
+
+    // fabrico el evento
+    WorldEvent ev{};
+    ev.type         = WorldEventType::CarHitCheckpoint;
+    ev.carId        = id;
+    ev.checkpointId = finishId;
+
+    eventHandlers.CarHitCheckpointHandler(ev);
+}
+
+
+/*
 void RaceController::forcePlayerWin(ID id) {
     auto itCar = playerCars.find(id);
     if (itCar == playerCars.end()) return;
@@ -321,13 +349,13 @@ void RaceController::forcePlayerWin(ID id) {
     car.setCheckpoint(checkpoints.size());
     eventHandlers.CarFinishRace(car);
 }
-
+*/
 void RaceController::finalizeDNFs() {
     for (auto& [id, car] : playerCars) {
         if (!car.isFinished()) {
             lastRaceResults.push_back(RaceResult{
                 id,
-                raceTimeSeconds,
+                raceTimeSeconds + car.getPenalty(),
                 0,
                 false
             });

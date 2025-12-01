@@ -117,9 +117,8 @@ void Car::applyLateralFriction(float dt) {
 
 void Car::applyDamage(const float damage) {
     float newDamage = damage;
-    if (raceState.shield != 1) {
-        newDamage = newDamage * raceState.shield;
-    }
+    newDamage = newDamage * raceState.shield;
+
     this->raceState.health -= newDamage;
     if (this->raceState.health <= 0) kill();
 }
@@ -215,7 +214,7 @@ void Car::setPosition(float x, float y) {
 
 void Car::kill() {
     this->raceState.health = 0.f;
-    b2Body_Disable(body);
+    //b2Body_Disable(body);
 }
 
 void Car::resetRaceState(float baseHealth) {

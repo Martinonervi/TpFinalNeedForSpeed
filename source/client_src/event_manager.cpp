@@ -165,8 +165,12 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
             if ( check_hit.getCheckpointId() == totalCheckpoints ) {
                 cars[check_hit.getPlayerId()]->setState(DESTROYED);
+                std::cout << "Checkpoint" << std::endl;
             }
-            if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
+
+            std::cout<<"Next check: " << nextCheckpoint << "My id: " << myCarId << std::endl;
+            std::cout<<"Check Id: " << check_hit.getCheckpointId() << "Car id: " << check_hit.getPlayerId() << std::endl;
+            if ( myCarId == check_hit.getPlayerId() ) {
                 audio.stopSound("checkpoint");
                 audio.playSound("checkpoint");
                 checkpoints[nextCheckpoint]->setInactive();
@@ -187,6 +191,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
                     current.getCheckX()*PIXELS_PER_METER, current.getCheckY()*PIXELS_PER_METER);
             }
             nextCheckpoint = current.getNextCheckpointId();
+            std::cout <<current.getNextCheckpointId() << std::endl;
             if (myCarId != -1) {
                 auto itCar = cars.find(myCarId);
                 if (itCar != cars.end() && itCar->second) {

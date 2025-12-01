@@ -6,6 +6,7 @@
     <mapping directory="$PROJECT_DIR$/source/cmake-build-debug/_deps/libsdl2pp-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/source/cmake-build-debug/_deps/yaml-cpp-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/source/cmake-build/_deps/box2d-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/source/cmake-build/_deps/googletest-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/source/cmake-build/_deps/libsdl2pp-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/source/cmake-build/_deps/yaml-cpp-src" vcs="Git" />
   </component>

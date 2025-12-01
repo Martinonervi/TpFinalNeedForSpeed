@@ -148,12 +148,8 @@ void ClientWindow::drawCars(const ID id, const std::unique_ptr<Car>& car) {
             break;
         }
         case DESTROYED: {
-            nextCheckpoint = NOT_ACCESSIBLE;
-            /*
-            cars.erase(id);
-            if (id == myCarId) {
-                myCarId = NOT_ACCESSIBLE;
-            } */
+            if (myCarId == id) nextCheckpoint = NOT_ACCESSIBLE;
+
             break;
         }
         case EXPLODING: {
