@@ -3,10 +3,12 @@
 #include "../common_src/cli_msg/cli_start_game.h"
 #include "../common_src/srv_msg/srv_starting_game.h"
 #include "../common_src/srv_msg/srv_time_left.h"
+#include "../common_src/srv_msg/srv_npc_spawn.h"
 
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 uint8_t& totalCheckpoints, ID& checkpointNumber,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
+                                std::unordered_map<ID, std::unique_ptr<Car>>& npcs,
                                 SDL2pp::Renderer& renderer,
                                 Queue<CliMsgPtr>& senderQueue,
                                 SdlDrawer& drawer,
@@ -25,6 +27,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         totalCheckpoints(totalCheckpoints),
         checkpointNumber(checkpointNumber),
         cars(cars),
+        npcs(npcs),
         checkpoints(checkpoints),
         renderer(renderer),
         senderQueue(senderQueue),
@@ -124,6 +127,11 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
 
             if (cars.count(ps.getPlayerId())) {
                 cars[ps.getPlayerId()]->update(
+                    ps.getX()*PIXELS_PER_METER,
+                    ps.getY()*PIXELS_PER_METER,
+                    ps.getAngleRad());
+            } else if (npcs.count(ps.getPlayerId())) {
+                npcs[ps.getPlayerId()]->update(
                     ps.getX()*PIXELS_PER_METER,
                     ps.getY()*PIXELS_PER_METER,
                     ps.getAngleRad());
@@ -256,8 +264,21 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             } else {
                 audio.playSound("countdown");
                 countdown = static_cast<int>(timeLeft.getTimeLeft()) + 1;
-
             }
+            break;
+        }
+        case NPC_SPAWN: {
+            const auto npcSpawn = dynamic_cast<const SrvNpcSpawn&>(*msg);
+            auto it = npcs.find(npcSpawn.getId());
+            if (it == npcs.end()) {
+                npcs[npcSpawn.getId()] = std::make_unique<Car>(renderer, tm, npcSpawn.getX(),
+                                                                npcSpawn.getY(), npcSpawn.getCarType(),
+                                                                npcSpawn.getAngleRad());
+            }
+            std::cout << npcSpawn.getId() << std::endl;
+            std::cout << npcSpawn.getX() << std::endl;
+            std::cout << npcSpawn.getY() << std::endl;
+
             break;
         }
         default:

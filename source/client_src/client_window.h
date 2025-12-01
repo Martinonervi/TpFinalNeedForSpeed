@@ -52,6 +52,7 @@ private:
     TextureManager tm;
     Queue<SrvMsgPtr>& receiverQueue;
     std::unordered_map<ID, std::unique_ptr<Car>> cars;
+    std::unordered_map<ID, std::unique_ptr<Car>> npcs;
     std::unordered_map<ID, std::unique_ptr<Checkpoint>> checkpoints;
     Camera camera;
     ID myCarId;

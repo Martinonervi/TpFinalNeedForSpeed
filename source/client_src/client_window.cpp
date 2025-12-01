@@ -27,7 +27,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         disScreen(window.GetWidth(), window.GetHeight(), renderer, drawer),
         startScreen(renderer, drawer, tm, MAP_LIBERTY, pathArray, ups, startBtn),
         eventManager(myCarId, nextCheckpoint, totalCheckpoints, checkpointNumber,
-            cars, renderer, senderQueue, drawer, tm, checkpoints, hint,
+            cars, npcs, renderer, senderQueue, drawer, tm, checkpoints, hint,
             ups, startBtn, showScreen, running, quit, raceTime, totalRaces,
             raceNumber, playerStats, pathArray, upgradesArray, srvDisconnect,
             startScreen, countdown)
@@ -80,6 +80,11 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                 for (auto& [id, car]: cars) {
                     if (!car) continue;
                     drawCars(id, car);
+                }
+
+                for (auto& [_, npc]: npcs) {
+                    if (!npc) continue;
+                    npc->draw(camera);
                 }
                 map.drawOver(camera);
 

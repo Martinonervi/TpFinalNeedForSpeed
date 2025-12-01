@@ -33,7 +33,8 @@
 class EventManager {
 public:
     EventManager(ID& myCarId, ID& nextCheckpoint, uint8_t& totalCheckpoints, ID& checkpointNumber,
-                 std::unordered_map<ID, std::unique_ptr<Car>>& cars, SDL2pp::Renderer& renderer,
+                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
+                 std::unordered_map<ID, std::unique_ptr<Car>>& npcs, SDL2pp::Renderer& renderer,
                  Queue<CliMsgPtr>& senderQueue, SdlDrawer& drawer, TextureManager& textureManager,
                  std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints, Hint& hint,
                  UpgradeScreen& ups, Button& startBtn, bool& showScreen,
@@ -52,6 +53,7 @@ private:
     uint8_t& totalCheckpoints;
     ID& checkpointNumber;
     std::unordered_map<ID, std::unique_ptr<Car>>& cars;
+    std::unordered_map<ID, std::unique_ptr<Car>>& npcs;
     std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints;
     SDL2pp::Renderer& renderer;
     Queue<CliMsgPtr>& senderQueue;
