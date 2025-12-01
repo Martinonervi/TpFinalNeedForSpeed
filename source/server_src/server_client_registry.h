@@ -13,7 +13,7 @@ class ClientsRegistry {
 
 public:
 
-    ClientsRegistry() = default;
+    ClientsRegistry(const uint8_t& max_players);
     ClientsRegistry(const ClientsRegistry&) = delete;
     ClientsRegistry& operator=(const ClientsRegistry&) = delete;
 
@@ -36,4 +36,5 @@ public:
 private:
     mutable std::mutex mx;
     std::map<ID, SendQPtr> clients;  // client_id → sendQueue del cliente (consumida por el sender)
+    const uint8_t max_players;
 };

@@ -28,7 +28,8 @@
 class GameLoop : public Thread {
 public:
     GameLoop(std::shared_ptr<gameLoopQueue> queue,
-             std::shared_ptr<ClientsRegistry> registry);
+             std::shared_ptr<ClientsRegistry> registry,
+             const Config& config);
 
     ~GameLoop() override;
 
@@ -55,7 +56,7 @@ private:
 
     void createNpcCars();
 
-    Config  config;
+    const Config& config;
     uint8_t maxPlayers;
 
 

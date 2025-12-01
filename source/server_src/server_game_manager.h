@@ -23,7 +23,7 @@
 class GameManager {
 public:
 
-    GameManager() = default;
+    GameManager();
     GameManager(const GameManager&) = delete;
     GameManager& operator=(const GameManager&) = delete;
 
@@ -41,6 +41,7 @@ private:
     mutable std::mutex mx;
     ID last_id{0};
     std::unordered_map<ID, GameContext> games;  // server → gamecontext (gameloopqueue y registry)
+    const Config config;
 };
 
 
