@@ -107,7 +107,7 @@ void AudioManager::lowerVolume() {
 
 void AudioManager::raiseVolume() {
     masterVolume += VOLUME_AMOUNT;
-    if (masterVolume > MIX_MAX_VOLUME) masterVolume = MIX_MAX_VOLUME;
+    if (masterVolume > SDL_MIX_MAXVOLUME) masterVolume = SDL_MIX_MAXVOLUME;
 
     Mix_Volume(-1, masterVolume);
     Mix_VolumeMusic(masterVolume);

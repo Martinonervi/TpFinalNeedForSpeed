@@ -11,7 +11,7 @@ public:
     void handleHover(int mouseX, int mouseY);
     SDL2pp::Rect getRect() const;
     bool getHover() const;
-    SDL2pp::Color getColor() const;
+    SDL_Color getColor() const;
     std::string getText() const;
 
 private:

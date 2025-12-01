@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include "sdl_constants.h"
+#include <SDL2/SDL_mixer.h>
 
 class AudioManager {
 public:
@@ -27,7 +28,7 @@ private:
     std::unordered_map<std::string, Mix_Music*> music;
     std::unordered_map<std::string, int> channels;
 
-    int masterVolume = MIX_MAX_VOLUME/2;
+    int masterVolume = SDL_MIX_MAXVOLUME/2;
 
     bool init();
     void initSfx();
