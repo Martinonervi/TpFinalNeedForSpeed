@@ -32,6 +32,7 @@ public:
     float getHealth() const;
     float getMaxHealth() const;
     void clearUpgrades();
+    bool getInCamera() const;
 
 private:
     float health = 100.0f;
@@ -44,8 +45,9 @@ private:
     int frameTicks = 0;
     static constexpr int TICKS_PER_FRAME = 4;
     std::vector<Upgrade> upgrades;
+    bool inCamera = true;
 
-
+    void setInCamera(bool newInCamer);
 };
 
 #endif //CAR_H
