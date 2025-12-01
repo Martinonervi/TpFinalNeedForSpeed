@@ -17,8 +17,8 @@ public:
 private:
     SDL2pp::Rect rect;
     std::string text;
-    SDL2pp::Color color;
-    SDL2pp::Color hoverColor;
+    SDL_Color color;
+    SDL_Color hoverColor;
     bool hover = false;
 
 };

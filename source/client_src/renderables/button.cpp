@@ -1,6 +1,6 @@
 #include "button.h"
 
-Button::Button(SDL2pp::Rect rect, const std::string& text, SDL2pp::Color color, SDL2pp::Color hoverColor):
+Button::Button(SDL2pp::Rect rect, const std::string& text, SDL_Color color, SDL_Color hoverColor):
         rect(rect), text(text), color(color), hoverColor(hoverColor) {}
 
 void Button::handleHover(int mouseX, int mouseY) {
@@ -16,7 +16,7 @@ bool Button::getHover() const {
     return hover;
 }
 
-SDL2pp::Color Button::getColor() const {
+SDL_Color Button::getColor() const {
     return hover ? hoverColor : color;
 }
 
