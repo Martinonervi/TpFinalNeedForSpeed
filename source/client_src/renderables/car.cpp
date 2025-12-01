@@ -106,3 +106,11 @@ bool Car::getInCamera() const { return inCamera; }
 void Car::setInCamera(const bool newInCamera) {
     inCamera = newInCamera;
 }
+
+void Car::setState(CarState state) { carState = state; }
+
+void Car::resetStats() {
+    health = maxHealth;
+    speed = 0;
+    inCamera = true;
+}

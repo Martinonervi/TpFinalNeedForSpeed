@@ -33,6 +33,8 @@ public:
     float getMaxHealth() const;
     void clearUpgrades();
     bool getInCamera() const;
+    void setState(CarState state);
+    void resetStats();
 
 private:
     float health = 100.0f;

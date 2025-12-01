@@ -159,6 +159,9 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case CHECKPOINT_HIT: {
             const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
+            if ( check_hit.getCheckpointId() == totalCheckpoints ) {
+                cars[check_hit.getPlayerId()]->setState(DESTROYED);
+            }
             if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
                 audio.stopSound("checkpoint");
                 audio.playSound("checkpoint");
