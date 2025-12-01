@@ -54,7 +54,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
 
             eventManager.handleEvents(audio);
 
-            renderer.SetDrawColor(BLACK);
+            renderer.SetDrawColor(BLACK.r, BLACK.g, BLACK.b, BLACK.a);
             renderer.Clear();
 
             if (showScreen) {
@@ -115,7 +115,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                 }
             }
 
-            renderer.SetDrawColor(BLACK);
+            renderer.SetDrawColor(BLACK.r, BLACK.g, BLACK.b, BLACK.a);
             renderer.Clear();
 
             map.draw(camera);
