@@ -45,7 +45,7 @@ void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
     }
     auto msg = std::static_pointer_cast<SrvMsg>(
             std::make_shared<SrvCheckpointHitMsg>(ev.carId, ev.checkpointId));
-    registry.sendTo(ev.carId, msg);
+    registry.broadcast(msg);
 }
 
 
