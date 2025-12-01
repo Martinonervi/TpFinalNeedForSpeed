@@ -40,7 +40,11 @@ void UpgradeScreen::renderPopUp() const {
             dstX, dstY,
             upBtn.iconRect.w*4, upBtn.iconRect.h*4)
         ;
-        renderer.Copy(upgradesSheet, upBtn.iconRect, dstIcon);
+        auto iconRect = upBtn.iconRect;
+        if (upBtn.bought) {
+            iconRect = {iconRect.x + iconRect.w, iconRect.y, iconRect.w, iconRect.h};
+        }
+        renderer.Copy(upgradesSheet, iconRect, dstIcon);
 
         drawer.drawButton(upBtn.button);    // Capaz le pueda meter draw?
 
@@ -112,9 +116,11 @@ void UpgradeScreen::writeDescription(const float penalty, const std::string& des
 void UpgradeScreen::changeState(const Upgrade upgrade) {
     for (auto& upBtn : buttons) {
         if (upBtn.type == upgrade) {
-            auto rect = upBtn.iconRect;
-            upBtn.iconRect = {rect.x + rect.w, rect.y, rect.w, rect.h};
+            upBtn.bought = !upBtn.bought;
         }
     }
 }
 
+void UpgradeScreen::clearButtons() {
+    buttons.clear();
+}

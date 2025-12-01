@@ -90,6 +90,10 @@ std::vector<Upgrade> Car::getUpgrades() {
     return upgrades;
 }
 
+void Car::clearUpgrades() {
+    upgrades.clear();
+}
+
 float Car::getHealth() const { return health; }
 
 float Car::getMaxHealth() const { return maxHealth; }

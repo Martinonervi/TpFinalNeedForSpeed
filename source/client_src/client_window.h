@@ -66,10 +66,11 @@ private:
     uint8_t raceNumber = DEFAULT;
     Button startBtn;
     ServerDisScreen disScreen;
+    StartScreen startScreen;
     EventManager eventManager;
     bool running;
     bool quit = false;
-    bool showStart = true;
+    bool showScreen = true;
     bool srvDisconnect = false;
     std::vector<RecommendedPoint> pathArray;
     std::vector<UpgradeDef> upgradesArray;

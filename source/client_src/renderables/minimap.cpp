@@ -31,10 +31,10 @@ void Minimap::draw(const int windowWidth, const int windowHeight,
     float scaleX = static_cast<float>(miniWidth) / texture.GetWidth();
     float scaleY = static_cast<float>(miniHeight) / texture.GetHeight();
 
+    drawRecommendedPath(x, y, scaleX, scaleY);
+
     if (cars.empty())
         return;
-
-    drawRecommendedPath(x, y, scaleX, scaleY);
 
     for (const auto& [id, carPtr]: cars) {
         const auto& car = *carPtr;

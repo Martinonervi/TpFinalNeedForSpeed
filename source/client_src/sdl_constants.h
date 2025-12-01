@@ -36,8 +36,8 @@
 #define NO_TEXT ""
 #define SRV_DISC_TXT "Server disconnection"
 #define TIME_PENALTY "Time penalty: + %.2f"
-
-
+#define NEXT_ROUTE_TXT "Next Race Route"
+#define UP_SHOP_TXT "Upgrade Shop"
 
 // Colors:
 
