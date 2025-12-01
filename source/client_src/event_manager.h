@@ -83,7 +83,6 @@ private:
         {SDLK_u, CheatRequest(FREE_SPEED_CHEAT)}, {SDLK_c, CheatRequest(LOST_RACE_CHEAT)},
         {SDLK_o, CheatRequest(NEXT_CHECKPOINT_CHEAT)},
     };
-
 };
 
 

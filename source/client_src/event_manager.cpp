@@ -61,6 +61,10 @@ void EventManager::handleEvents(AudioManager& audio) const {
             } else if (itCheat != keyToCheat.end()) {
                 auto msg = std::make_shared<CheatRequest>(itCheat->second);
                 senderQueue.push(msg);
+            } else if (event.key.keysym.sym == SDLK_UP) {
+                audio.raiseVolume();
+            } else if (event.key.keysym.sym == SDLK_DOWN) {
+                audio.lowerVolume();
             }
         }
 

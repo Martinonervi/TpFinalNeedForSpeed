@@ -96,3 +96,19 @@ void AudioManager::stopMusic() {
 AudioManager::~AudioManager() {
     close();
 }
+
+void AudioManager::lowerVolume() {
+    masterVolume -= VOLUME_AMOUNT;
+    if (masterVolume < 0) masterVolume = 0;
+
+    Mix_Volume(-1, masterVolume);
+    Mix_VolumeMusic(masterVolume);
+}
+
+void AudioManager::raiseVolume() {
+    masterVolume += VOLUME_AMOUNT;
+    if (masterVolume > MIX_MAX_VOLUME) masterVolume = MIX_MAX_VOLUME;
+
+    Mix_Volume(-1, masterVolume);
+    Mix_VolumeMusic(masterVolume);
+}

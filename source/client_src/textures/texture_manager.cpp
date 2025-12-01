@@ -21,9 +21,6 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer)
     carsTexture.emplace(loadWithColorKey(renderer, CARS_PATH, 163, 163, 13));
     carManager.emplace(*carsTexture, *speedometerTexture);
 
-    peopleTexture.emplace(loadWithColorKey(renderer, PEOPLE_PATH, 163, 163, 13));
-    peopleManager.emplace(*peopleTexture);
-
     cityLibertyTexture.emplace(renderer, SDL2pp::Surface(LIBERTY_CITY_PATH));
     cityLibertyOverTexture.emplace(renderer, SDL2pp::Surface(LIBERTY_OVER_PATH));
 
@@ -52,7 +49,6 @@ SDL2pp::Texture TextureManager::loadWithColorKey(SDL2pp::Renderer& renderer,
 }
 
 CarTexture& TextureManager::getCars() { return carManager.value(); }
-PeopleTexture& TextureManager::getPeople() { return peopleManager.value(); }
 CityTexture& TextureManager::getCities() { return cityManager.value(); }
 EffectsTexture& TextureManager::getEffects() { return effectsManager.value(); }
 HudTexture& TextureManager::getHud() { return hudManager.value(); }

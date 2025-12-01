@@ -25,6 +25,8 @@
 #define DIAL_MARGIN 40
 #define HUD_MARGIN 10
 
+#define VOLUME_AMOUNT 10
+
 // Time:
 
 #define HOURS_TO_SECS 3600
