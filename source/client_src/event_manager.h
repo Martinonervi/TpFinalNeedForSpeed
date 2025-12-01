@@ -42,7 +42,7 @@ public:
                  uint8_t& raceNumber, std::unique_ptr<PlayerStats>& playerStats,
                  std::vector<RecommendedPoint>& pathArray,
                  std::vector<UpgradeDef>& upgradesArray, bool& srvDisconnect, StartScreen& startScreen,
-                 int& countdown);
+                 int& countdown, uint8_t& ranking);
 
     void handleEvents(AudioManager& audio) const;
     void handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio);
@@ -51,6 +51,7 @@ private:
     ID& myCarId;
     ID& nextCheckpoint;
     uint8_t& totalCheckpoints;
+    uint8_t& ranking;
     ID& checkpointNumber;
     std::unordered_map<ID, std::unique_ptr<Car>>& cars;
     std::unordered_map<ID, std::unique_ptr<Car>>& npcs;

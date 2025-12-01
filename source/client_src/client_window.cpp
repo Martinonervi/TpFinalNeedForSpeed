@@ -30,7 +30,7 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
             cars, npcs, renderer, senderQueue, drawer, tm, checkpoints, hint,
             ups, startBtn, showScreen, running, quit, raceTime, totalRaces,
             raceNumber, playerStats, pathArray, upgradesArray, srvDisconnect,
-            startScreen, countdown)
+            startScreen, countdown, ranking)
 {}
 
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
@@ -97,7 +97,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
 
                 hud.drawOverlay(window.GetWidth(), window.GetHeight(),
                     cars, myCarId, raceTime, totalRaces, raceNumber,
-                    totalCheckpoints, checkpointNumber, countdown);
+                    totalCheckpoints, checkpointNumber, countdown, ranking);
             }
             lastShowScreen = showScreen;
 

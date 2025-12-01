@@ -69,6 +69,7 @@ private:
     Button startBtn;
     ServerDisScreen disScreen;
     StartScreen startScreen;
+    uint8_t ranking = 1;
     EventManager eventManager;
     bool running;
     bool quit = false;
@@ -77,6 +78,7 @@ private:
     std::vector<RecommendedPoint> pathArray;
     std::vector<UpgradeDef> upgradesArray;
     AudioManager audio;
+
 
 
     void drawCars(ID id, const std::unique_ptr<Car>& car);

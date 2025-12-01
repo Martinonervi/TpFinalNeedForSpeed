@@ -17,7 +17,7 @@ public:
         std::vector<RecommendedPoint>& pathArray);
     void drawOverlay(int x, int y, std::unordered_map<ID, std::unique_ptr<Car>>& cars, ID playerId,
     int raceTime, uint8_t totalRaces, uint8_t raceNumber,
-    uint8_t totalCheckpoints, ID checkpointNumber, int countdown) const;
+    uint8_t totalCheckpoints, ID checkpointNumber, int countdown, uint8_t ranking ) const;
 
 private:
     Minimap map;
@@ -38,6 +38,7 @@ private:
     void activeUpgrades(int windowWidth, const std::vector<Upgrade>& upgrades) const;
     void drawUpgrade(int windowWidth, Upgrade upgrade, int i) const;
     void drawCountdown(int countdown, int width, int height) const;
+    void drawRanking(uint8_t ranking) const;
 };
 
 

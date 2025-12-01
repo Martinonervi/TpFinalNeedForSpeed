@@ -21,7 +21,7 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unique_ptr<PlayerStats>& playerStats,
                                 std::vector<RecommendedPoint>& pathArray,
                                 std::vector<UpgradeDef>& upgradesArray,
-                                bool& srvDisconnect, StartScreen& startScreen, int& countdown)
+                                bool& srvDisconnect, StartScreen& startScreen, int& countdown, uint8_t& ranking)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
         totalCheckpoints(totalCheckpoints),
@@ -47,7 +47,8 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         upgradesArray(upgradesArray),
         srvDisconnect(srvDisconnect),
         startScreen(startScreen),
-        countdown(countdown)
+        countdown(countdown),
+        ranking(ranking)
 {}
 
 void EventManager::handleEvents(AudioManager& audio) const {
@@ -211,6 +212,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             raceNumber = current.getRaceNumber();
             totalRaces = current.getTotalRaces();
             totalCheckpoints = current.getTotalCheckpoints();
+            ranking = current.getRanking();
 
             break;
         }
