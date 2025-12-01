@@ -24,14 +24,14 @@ car_handling:
 collisions:
   building:
     min_impact_speed: 1.5
-    base_damage_factor: 0.8
+    base_damage_factor: 0.6
     min_frontal_alignment: 0.7
     frontal_multiplier: 3.5
     velocity_damp_factor: 0.5
 
   car:
     min_impact_speed: 1.5
-    base_damage_factor: 0.7
+    base_damage_factor: 0.6
     min_frontal_alignment: 0.7
     frontal_multiplier: 3.5
     velocity_damp_factor: 0.4

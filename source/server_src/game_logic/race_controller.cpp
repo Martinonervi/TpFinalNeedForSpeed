@@ -295,8 +295,8 @@ void RaceController::sendCurrentInfo(uint8_t raceIndex,
             livePos = itPos->second;
         }
 
-        std::cout << "[RaceController] Id: " << car.getClientId()
-        << " con ranking: " << static_cast<int>(livePos) << "\n";
+        //std::cout << "[RaceController] Id: " << car.getClientId()
+        //<< " con ranking: " << static_cast<int>(livePos) << "\n";
 
         SrvCurrentInfo ci(
             cp.getId(),
@@ -404,16 +404,12 @@ std::vector<LiveRankEntry> RaceController::buildLiveRanking() {
         e.actualCheckpoint = car.getActualCheckpoint();
 
         if (e.finished) {
-            // Tiempo oficial que querés usar para ranking final
-            // (ya incluye penalidad si Car::getFinishTime la suma)
             e.finishTime = car.getFinishTimeNoPenalty();
             e.distToNext = 0.f;
         } else {
-            // Sigue corriendo: medimos qué tan lejos está del próximo CP
             ID next = e.actualCheckpoint + 1;
             auto itCp = checkpoints.find(next);
             if (itCp == checkpoints.end()) {
-                // No hay siguiente CP. Lo podés tratar como "muy adelantado" o 0.
                 e.distToNext = 0.f;
             } else {
                 const Checkpoint& cp = itCp->second;
@@ -424,7 +420,7 @@ std::vector<LiveRankEntry> RaceController::buildLiveRanking() {
                 e.distToNext = std::sqrt(dx * dx + dy * dy);
             }
             // Para los que no terminaron, el finishTime no importa,
-            // pero ponemos algo grande por las dudas.
+            // dejo algo grande por las dudas.
             e.finishTime = 1e9f;
         }
 
@@ -441,9 +437,9 @@ std::vector<LiveRankEntry> RaceController::buildLiveRanking() {
 
 
 bool RaceController::liveRankLess(const LiveRankEntry& a, const LiveRankEntry& b) {
-    // 1) Terminados primero
+    // terminados primero
     if (a.finished != b.finished)
-        return a.finished > b.finished;  // true > false
+        return a.finished > b.finished;
 
     // ambos terminaron, veo quien llego antes
     if (a.finished && b.finished)
