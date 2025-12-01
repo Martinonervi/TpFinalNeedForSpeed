@@ -58,6 +58,12 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                 audio.stopSound("engine");
                 if (!lastShowScreen) {
                     cars[myCarId]->clearUpgrades();
+                    for (auto& [id, car]: cars) {
+                        car->setState(ALIVE);
+                        if (id == myCarId) {
+                            car->resetStats();
+                        }
+                    }
                 }
                 startScreen.draw(window.GetWidth(), window.GetHeight());
             } else {

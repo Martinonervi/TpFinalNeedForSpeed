@@ -134,13 +134,12 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
                 cars[ch.getPlayerId()]->setMaxHealth(ch.getTotalHealth());
                 cars[ch.getPlayerId()]->setHealth(ch.getCarHealth());
 
-                std::cout << "Max health: " << ch.getTotalHealth() << std::endl;
-                std::cout << "Health: " << ch.getCarHealth() << std::endl;
-                if (ch.getPlayerId()==myCarId) {
+                if (cars[ch.getPlayerId()]->getInCamera()) {
                     if (ch.getCarHealth() == 0) {
+                        std::cout << "ACA SE ESCUCHO" << std::endl;
                         audio.stopSound("explosion");
                         audio.playSound("explosion");
-                    } else if (healthDiff > 1 || maxHealthDiff > 0) {
+                    } else if (healthDiff > 1 || maxHealthDiff > 0 && ch.getPlayerId() == myCarId) {
                         audio.stopSound("crash");
                         audio.playSound("crash");
                     }
@@ -160,6 +159,9 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case CHECKPOINT_HIT: {
             const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
+            if ( check_hit.getCheckpointId() == totalCheckpoints ) {
+                cars[check_hit.getPlayerId()]->setState(DESTROYED);
+            }
             if ( nextCheckpoint == check_hit.getCheckpointId() && myCarId == check_hit.getPlayerId()) {
                 audio.stopSound("checkpoint");
                 audio.playSound("checkpoint");
