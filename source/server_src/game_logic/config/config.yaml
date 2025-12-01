@@ -4,7 +4,7 @@ loops:
 
 lobby:
   max_players: 8 #enunciado: 8
-  between_races_sec: 25.0
+  between_races_sec: 5.0 #enunciado: 10seg
   max_race_time_sec: 600.0 #enunciado: 10mins
 
 physics:
@@ -23,16 +23,16 @@ car_handling:
 collisions:
   building:
     min_impact_speed: 1.5
-    base_damage_factor: 0.5
+    base_damage_factor: 0.8
     min_frontal_alignment: 0.7
-    frontal_multiplier: 4.0
+    frontal_multiplier: 3.5
     velocity_damp_factor: 0.5
 
   car:
-    min_impact_speed: 1.0
-    base_damage_factor: 0.4
+    min_impact_speed: 1.5
+    base_damage_factor: 0.7
     min_frontal_alignment: 0.7
-    frontal_multiplier: 4.0
+    frontal_multiplier: 3.5
     velocity_damp_factor: 0.4
 
 upgrades:
@@ -41,15 +41,15 @@ upgrades:
     penalty: 8.0
 
   - type: HEALTH
-    factor: 1.5 #multi vida
+    factor: 2.0 #multi vida
     penalty: 5.0
 
   - type: SHIELD
     factor: 0.5 #mas chico, mas reduce daño
-    penalty: 2.0
+    penalty: 4.0
 
   - type: DAMAGE
-    factor: 2.0 #multi dañ0
+    factor: 2.0 #multi daño
     penalty: 3.0
 
 cheats:

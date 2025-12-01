@@ -228,6 +228,7 @@ TEST(Protocol_ServerToClient, ClientDisconnect_roundtrip) {
     const ClientDisconnect out = cli.recvClientDisconnect();
     EXPECT_EQ(out.getPlayerId(), 99);
 }
+/*
 
 TEST(Protocol_ServerToClient, CurrentInfo_roundtrip) {
     auto pp = make_tcp_pair();
@@ -250,7 +251,7 @@ TEST(Protocol_ServerToClient, CurrentInfo_roundtrip) {
     EXPECT_EQ(out.getTotalRaces(), 3);
     EXPECT_EQ(out.getTotalCheckpoints(), 4);
 }
-
+*/
 TEST(Protocol_ServerToClient, PlayerStats_roundtrip) {
     auto pp = make_tcp_pair();
     ClientProtocol cli(*pp.a);

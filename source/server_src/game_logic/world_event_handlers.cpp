@@ -125,10 +125,10 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
 
 
 
-void WorldEventHandlers::onPlayerFinishedRace(ID playerId, float timeSec) {
+void WorldEventHandlers::onPlayerFinishedRace(ID playerId, float timeSec, Car& car) {
     lastRaceResults.push_back(RaceResult{
             playerId,
-            timeSec,
+            timeSec + car.getPenalty(),
             finishedCarsCount,
             true
     });
@@ -137,7 +137,7 @@ void WorldEventHandlers::onPlayerFinishedRace(ID playerId, float timeSec) {
 void WorldEventHandlers::CarFinishRace(Car& car) {
     finishedCarsCount++;
     car.markFinished(raceTimeSeconds, finishedCarsCount);
-    onPlayerFinishedRace(car.getClientId(), raceTimeSeconds);
+    onPlayerFinishedRace(car.getClientId(), raceTimeSeconds, car);
     raceRanking.push_back(car.getClientId());
     freezeAndDisableCarBody(car);
     if (finishedCarsCount == totalCars) {
@@ -147,8 +147,18 @@ void WorldEventHandlers::CarFinishRace(Car& car) {
 
 void WorldEventHandlers::setKillCar(Car& car) {
     freezeAndDisableCarBody(car);
+    if (!car.isFinished()) { //no deberia pasar creo
+        if (totalCars > 0) {
+            totalCars -= 1;
+        }
+
+        // chequear si no era el ultimo
+        if (totalCars == 0 || finishedCarsCount >= totalCars) {
+            raceEnded = true;
+        }
+    }
     car.kill();
-    totalCars -= 1;
+
 }
 
 void WorldEventHandlers::freezeAndDisableCarBody(Car& car) {

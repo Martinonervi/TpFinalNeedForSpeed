@@ -41,7 +41,7 @@ public:
     void freezeAndDisableCarBody(Car& car);
 
 private:
-    void onPlayerFinishedRace(ID playerId, float timeSec);
+    void onPlayerFinishedRace(ID playerId, float timeSec, Car& car);
     void broadcastCarHealth(const Car& car);
     float velocityAlongNormal(const Car& car,float nx, float ny) const;//proyección sobre la normal
     float frontalAlignment(const Car& car, float nx, float ny) const;

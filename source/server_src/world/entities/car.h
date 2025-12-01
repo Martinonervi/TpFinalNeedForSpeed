@@ -68,6 +68,7 @@ public:
     float getHealth() const {return this->raceState.health; }
     ID getActualCheckpoint() const {return this->raceState.actualCheckpoint; };
     float getFinishTime() const { return raceState.finishTime + raceState.upgradePenalty; }
+    float getFinishTimeNoPenalty() const { return raceState.finishTime; }
     uint8_t getRanking() const { return raceState.ranking; }
     ID getSpawnId() const { return raceState.spawnId; }
     b2Vec2 getPosition() const {

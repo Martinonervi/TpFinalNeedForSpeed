@@ -19,6 +19,15 @@
 #include "../../common_src/constant_rate_loop.h"
 using Clock = std::chrono::steady_clock;
 
+struct LiveRankEntry {
+    ID    id;
+    bool  finished;
+    ID    actualCheckpoint;
+    float distToNext;   // distancia al próximo checkpoint
+    float finishTime;   // tiempo de carrera (si ya termino)
+};
+
+
 class RaceController {
 public:
     RaceController(std::shared_ptr<gameLoopQueue> queue,
@@ -56,6 +65,8 @@ private:
     void disconnectHandler(ID id);
     void forcePlayerWin(ID id);
     void forcePlayerLose(ID id);
+    std::vector<LiveRankEntry> buildLiveRanking();
+    bool liveRankLess(const LiveRankEntry& a, const LiveRankEntry& b);
 
     // referencias a cosas del servidor
     std::shared_ptr<gameLoopQueue> queue;

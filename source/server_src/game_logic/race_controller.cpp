@@ -10,6 +10,8 @@
 #include "../../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../../common_src/srv_msg/srv_current_info.h"
 #include "../../common_src/srv_msg/srv_race_finished.h"
+#include <algorithm>
+#include <vector>
 
 using Clock = std::chrono::steady_clock;
 
@@ -234,6 +236,18 @@ void RaceController::processWorldEvents() {
 
 void RaceController::sendCurrentInfo(uint8_t raceIndex,
                                      uint8_t totalRaces) {
+    // 1) Construyo el ranking online completo
+    auto ranking = buildLiveRanking();
+
+    // 2) Mapeo carId -> posición en el ranking (1,2,3,...)
+    std::unordered_map<ID, uint8_t> livePosById;
+    livePosById.reserve(ranking.size());
+
+    uint8_t pos = 1;
+    for (const auto& e : ranking) {
+        livePosById[e.id] = pos++;
+    }
+
     for (auto& [id, car] : playerCars) {
         ID actual = car.getActualCheckpoint();
         ID next   = actual + 1;
@@ -256,6 +270,16 @@ void RaceController::sendCurrentInfo(uint8_t raceIndex,
 
         uint8_t totalCheckpoints = static_cast<uint8_t>(checkpoints.size());
 
+        // Puesto online de este jugador
+        uint8_t livePos = 0;
+        auto itPos = livePosById.find(id);
+        if (itPos != livePosById.end()) {
+            livePos = itPos->second;
+        }
+
+        std::cout << "[RaceController] Id: " << car.getClientId()
+        << " con ranking: " << static_cast<int>(livePos) << "\n";
+
         SrvCurrentInfo ci(
             cp.getId(),
             cp.getX(), cp.getY(),
@@ -265,7 +289,8 @@ void RaceController::sendCurrentInfo(uint8_t raceIndex,
             raceIndex + 1,
             speed,
             totalRaces,
-            totalCheckpoints
+            totalCheckpoints,
+            livePos
         );
 
         auto base = std::static_pointer_cast<SrvMsg>(
@@ -337,19 +362,6 @@ void RaceController::forcePlayerWin(ID id) {
     eventHandlers.CarHitCheckpointHandler(ev);
 }
 
-
-/*
-void RaceController::forcePlayerWin(ID id) {
-    auto itCar = playerCars.find(id);
-    if (itCar == playerCars.end()) return;
-
-    Car& car = itCar->second;
-    if (car.isFinished()) return;
-
-    car.setCheckpoint(checkpoints.size());
-    eventHandlers.CarFinishRace(car);
-}
-*/
 void RaceController::finalizeDNFs() {
     for (auto& [id, car] : playerCars) {
         if (!car.isFinished()) {
@@ -362,3 +374,68 @@ void RaceController::finalizeDNFs() {
         }
     }
 }
+
+std::vector<LiveRankEntry> RaceController::buildLiveRanking() {
+    std::vector<LiveRankEntry> v;
+    v.reserve(playerCars.size());
+
+    for (auto& [id, car] : playerCars) {
+        LiveRankEntry e{};
+        e.id               = id;
+        e.finished         = car.isFinished();
+        e.actualCheckpoint = car.getActualCheckpoint();
+
+        if (e.finished) {
+            // Tiempo oficial que querés usar para ranking final
+            // (ya incluye penalidad si Car::getFinishTime la suma)
+            e.finishTime = car.getFinishTimeNoPenalty();
+            e.distToNext = 0.f;
+        } else {
+            // Sigue corriendo: medimos qué tan lejos está del próximo CP
+            ID next = e.actualCheckpoint + 1;
+            auto itCp = checkpoints.find(next);
+            if (itCp == checkpoints.end()) {
+                // No hay siguiente CP. Lo podés tratar como "muy adelantado" o 0.
+                e.distToNext = 0.f;
+            } else {
+                const Checkpoint& cp = itCp->second;
+                b2BodyId body = car.getBody();
+                b2Vec2   pos  = b2Body_GetPosition(body);
+                float dx = cp.getX() - pos.x;
+                float dy = cp.getY() - pos.y;
+                e.distToNext = std::sqrt(dx * dx + dy * dy);
+            }
+            // Para los que no terminaron, el finishTime no importa,
+            // pero ponemos algo grande por las dudas.
+            e.finishTime = 1e9f;
+        }
+
+        v.push_back(e);
+    }
+    std::sort(v.begin(), v.end(),
+          [this](const LiveRankEntry& a, const LiveRankEntry& b) {
+              return liveRankLess(a, b);
+          });
+
+
+    return v;
+}
+
+
+bool RaceController::liveRankLess(const LiveRankEntry& a, const LiveRankEntry& b) {
+    // 1) Terminados primero
+    if (a.finished != b.finished)
+        return a.finished > b.finished;  // true > false
+
+    // ambos terminaron, veo quien llego antes
+    if (a.finished && b.finished)
+        return a.finishTime < b.finishTime;
+
+    // ninguno termino, veo cehckpoint
+    if (a.actualCheckpoint != b.actualCheckpoint)
+        return a.actualCheckpoint > b.actualCheckpoint;
+
+    // mismo checkpoint, veo la dist al proximo
+    return a.distToNext < b.distToNext;
+}
+

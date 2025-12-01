@@ -355,9 +355,10 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         const uint32_t distanceToChekpoint = encodeFloatBE(msg.getDistanceToCheckpoint());
         const uint8_t totalRaces = msg.getTotalRaces();
         const uint8_t totalCheckpoints = msg.getTotalCheckpoints();
+        const uint8_t ranking = msg.getRanking();
 
         std::vector<char> buf;
-        buf.reserve(sizeof(Op) + 3*sizeof(uint8_t) + 7 * sizeof(uint32_t));
+        buf.reserve(sizeof(Op) + 4*sizeof(uint8_t) + 7 * sizeof(uint32_t));
 
         auto append = [&buf](const void* p, std::size_t n) {
             const std::size_t old = buf.size();
@@ -376,6 +377,7 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         append(&distanceToChekpoint, sizeof(distanceToChekpoint));
         append(&totalRaces, sizeof(totalRaces));
         append(&totalCheckpoints, sizeof(totalCheckpoints));
+        append(&ranking, sizeof(ranking));
 
         return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {

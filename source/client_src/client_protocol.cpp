@@ -371,6 +371,7 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
         uint32_t distanceToChekpoint_BE;
         uint8_t totalRaces;
         uint8_t totalCheckpoints;
+        uint8_t ranking;
 
         peer.recvall(&speed_BE, sizeof(speed_BE));
         peer.recvall(&raceTimeSeconds_BE, sizeof(raceTimeSeconds_BE));
@@ -382,6 +383,7 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
         peer.recvall(&distanceToChekpoint_BE, sizeof(distanceToChekpoint_BE));
         peer.recvall(&totalRaces, sizeof(totalRaces));
         peer.recvall(&totalCheckpoints, sizeof(totalCheckpoints));
+        peer.recvall(&ranking, sizeof(ranking));
 
         float speed = decodeFloatBE(speed_BE);
         float raceTimeSecond = decodeFloatBE(raceTimeSeconds_BE);
@@ -393,7 +395,8 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
 
 
         return SrvCurrentInfo(nextCheckpointID, checkX, checkY, angleHint,
-                          distanceToheckpoint, raceTimeSecond, raceNumber, speed, totalRaces, totalCheckpoints);
+                          distanceToheckpoint, raceTimeSecond, raceNumber, speed,
+                          totalRaces, totalCheckpoints, ranking);
 
     } catch (const std::exception& e) {
         std::cerr << "client_main error: " << e.what() << "\n";
