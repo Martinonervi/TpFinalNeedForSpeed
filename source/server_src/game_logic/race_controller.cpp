@@ -309,6 +309,36 @@ void RaceController::forcePlayerLose(ID id) {
     // al final de la carrera, finalizeDNFs() lo va a marcar como DNF.
 }
 
+
+void RaceController::forcePlayerWin(ID id) {
+    auto itCar = playerCars.find(id);
+    if (itCar == playerCars.end()) return;
+
+    Car& car = itCar->second;
+    if (car.isFinished()) return;
+
+    ID finishId = 0;
+    for (const auto& [cpId, cp] : checkpoints) {
+        if (cp.getKind() == CheckpointKind::Finish && cpId > finishId) {
+            finishId = cpId;
+        }
+    }
+    Checkpoint& cp = checkpoints.at(finishId);
+
+    car.setCheckpoint(finishId - 1); //para q el handler lo valide
+    car.setPosition(cp.getX(), cp.getY());
+
+    // fabrico el evento
+    WorldEvent ev{};
+    ev.type         = WorldEventType::CarHitCheckpoint;
+    ev.carId        = id;
+    ev.checkpointId = finishId;
+
+    eventHandlers.CarHitCheckpointHandler(ev);
+}
+
+
+/*
 void RaceController::forcePlayerWin(ID id) {
     auto itCar = playerCars.find(id);
     if (itCar == playerCars.end()) return;
@@ -319,7 +349,7 @@ void RaceController::forcePlayerWin(ID id) {
     car.setCheckpoint(checkpoints.size());
     eventHandlers.CarFinishRace(car);
 }
-
+*/
 void RaceController::finalizeDNFs() {
     for (auto& [id, car] : playerCars) {
         if (!car.isFinished()) {

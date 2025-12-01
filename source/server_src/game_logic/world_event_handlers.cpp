@@ -139,18 +139,24 @@ void WorldEventHandlers::CarFinishRace(Car& car) {
     car.markFinished(raceTimeSeconds, finishedCarsCount);
     onPlayerFinishedRace(car.getClientId(), raceTimeSeconds);
     raceRanking.push_back(car.getClientId());
+    freezeAndDisableCarBody(car);
     if (finishedCarsCount == totalCars) {
         raceEnded = true;
     }
 }
 
 void WorldEventHandlers::setKillCar(Car& car) {
-    b2BodyId body = car.getBody();
-    b2Vec2 zero = {0.f, 0.f};
-    b2Body_SetLinearVelocity(body, zero);
-    b2Body_SetAngularVelocity(body, 0.f);
+    freezeAndDisableCarBody(car);
     car.kill();
     totalCars -= 1;
+}
+
+void WorldEventHandlers::freezeAndDisableCarBody(Car& car) {
+    b2BodyId body = car.getBody();
+    b2Vec2 zero{0.f, 0.f};
+    b2Body_SetLinearVelocity(body, zero);
+    b2Body_SetAngularVelocity(body, 0.f);
+    b2Body_Disable(body);
 }
 
 void WorldEventHandlers::broadcastCarHealth(const Car& car) {

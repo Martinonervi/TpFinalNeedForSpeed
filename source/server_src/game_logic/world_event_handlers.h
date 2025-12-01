@@ -38,6 +38,7 @@ public:
     // fin carrera / auto destruido
     void CarFinishRace(Car& car);
     void setKillCar(Car& car);
+    void freezeAndDisableCarBody(Car& car);
 
 private:
     void onPlayerFinishedRace(ID playerId, float timeSec);

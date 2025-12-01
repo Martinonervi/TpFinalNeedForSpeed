@@ -214,7 +214,7 @@ void Car::setPosition(float x, float y) {
 
 void Car::kill() {
     this->raceState.health = 0.f;
-    b2Body_Disable(body);
+    //b2Body_Disable(body);
 }
 
 void Car::resetRaceState(float baseHealth) {
