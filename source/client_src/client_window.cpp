@@ -27,12 +27,15 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         disScreen(window.GetWidth(), window.GetHeight(), renderer, drawer),
         startScreen(renderer, drawer, tm, MAP_LIBERTY, pathArray, ups, startBtn),
         eventManager(myCarId, nextCheckpoint, totalCheckpoints, checkpointNumber,
-            cars, renderer, senderQueue, drawer, tm, checkpoints, hint,
+            cars, npcs, renderer, senderQueue, drawer, tm, checkpoints, hint,
             ups, startBtn, showScreen, running, quit, raceTime, totalRaces,
-            raceNumber, playerStats, pathArray, upgradesArray, srvDisconnect, startScreen)
+            raceNumber, playerStats, pathArray, upgradesArray, srvDisconnect,
+            startScreen, countdown, ranking)
 {}
 
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
+    // Todos los parametros que hay en el eventManager se pueden arreglar pasandole solo Hud y
+    // creando setters (no me da el tiempo).
     const Hud hud(renderer, drawer, tm, MAP_LIBERTY, pathArray);
     Map map(renderer, tm, MAP_LIBERTY);
 
@@ -78,6 +81,11 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
                     if (!car) continue;
                     drawCars(id, car);
                 }
+
+                for (auto& [_, npc]: npcs) {
+                    if (!npc) continue;
+                    npc->draw(camera);
+                }
                 map.drawOver(camera);
 
                 if (nextCheckpoint != NOT_ACCESSIBLE) {
@@ -89,8 +97,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
 
                 hud.drawOverlay(window.GetWidth(), window.GetHeight(),
                     cars, myCarId, raceTime, totalRaces, raceNumber,
-                    totalCheckpoints, checkpointNumber);
-
+                    totalCheckpoints, checkpointNumber, countdown, ranking);
             }
             lastShowScreen = showScreen;
 

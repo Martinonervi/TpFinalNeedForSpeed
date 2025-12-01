@@ -92,3 +92,9 @@ void SdlDrawer::drawButton(const Button& button) const {
         drawText(button.getText(), textX, textY, {255, 255, 255, 255}, 1.0f, 1.0f);
     }
 }
+
+SDL2pp::Point SdlDrawer::getTextSize(const std::string& text) const {
+    int w, h;
+    TTF_SizeText(font, text.c_str(), &w, &h);
+    return {w, h};
+}

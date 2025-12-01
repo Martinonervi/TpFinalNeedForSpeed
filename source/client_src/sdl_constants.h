@@ -43,6 +43,7 @@
 #define TIME_PENALTY "Time penalty: + %.2f"
 #define NEXT_ROUTE_TXT "Next Race Route"
 #define UP_SHOP_TXT "Upgrade Shop"
+#define RANKING_TXT "Position "
 
 // Colors:
 

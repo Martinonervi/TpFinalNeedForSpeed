@@ -3,10 +3,12 @@
 #include "../common_src/cli_msg/cli_start_game.h"
 #include "../common_src/srv_msg/srv_starting_game.h"
 #include "../common_src/srv_msg/srv_time_left.h"
+#include "../common_src/srv_msg/srv_npc_spawn.h"
 
 EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 uint8_t& totalCheckpoints, ID& checkpointNumber,
                                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
+                                std::unordered_map<ID, std::unique_ptr<Car>>& npcs,
                                 SDL2pp::Renderer& renderer,
                                 Queue<CliMsgPtr>& senderQueue,
                                 SdlDrawer& drawer,
@@ -19,12 +21,13 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
                                 std::unique_ptr<PlayerStats>& playerStats,
                                 std::vector<RecommendedPoint>& pathArray,
                                 std::vector<UpgradeDef>& upgradesArray,
-                                bool& srvDisconnect, StartScreen& startScreen)
+                                bool& srvDisconnect, StartScreen& startScreen, int& countdown, uint8_t& ranking)
 :       myCarId(myCarId),
         nextCheckpoint(nextCheckpoint),
         totalCheckpoints(totalCheckpoints),
         checkpointNumber(checkpointNumber),
         cars(cars),
+        npcs(npcs),
         checkpoints(checkpoints),
         renderer(renderer),
         senderQueue(senderQueue),
@@ -43,7 +46,9 @@ EventManager::EventManager( ID& myCarId, ID& nextCheckpoint,
         pathArray(pathArray),
         upgradesArray(upgradesArray),
         srvDisconnect(srvDisconnect),
-        startScreen(startScreen)
+        startScreen(startScreen),
+        countdown(countdown),
+        ranking(ranking)
 {}
 
 void EventManager::handleEvents(AudioManager& audio) const {
@@ -58,7 +63,7 @@ void EventManager::handleEvents(AudioManager& audio) const {
             if (itMove != keyToMove.end()) {
                 auto msg = std::make_shared<MoveMsg>(itMove->second);
                 senderQueue.push(msg);
-            } else if (itCheat != keyToCheat.end()) {
+            } else if (itCheat != keyToCheat.end() && !showScreen && countdown == NOT_ACCESSIBLE) {
                 auto msg = std::make_shared<CheatRequest>(itCheat->second);
                 senderQueue.push(msg);
             } else if (event.key.keysym.sym == SDLK_UP) {
@@ -102,7 +107,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         case INIT_PLAYER: {
             const auto sp = dynamic_cast<const SendPlayer&>(*msg);
             myCarId = sp.getPlayerId();
-            std::cout << "Bienvenido Player:" << myCarId << std::endl;
             cars[myCarId] = std::make_unique<Car>(renderer, tm, sp.getX(),
                                                   sp.getY(), sp.getCarType(), sp.getAngleRad());
 
@@ -112,7 +116,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             const auto snc = dynamic_cast<const NewPlayer&>(*msg);
             auto it = cars.find(snc.getPlayerId());
             if (it == cars.end()) {
-                std::cout << "Se Unio Player:" << snc.getPlayerId() << std::endl;
                 cars[snc.getPlayerId()] = std::make_unique<Car>(renderer, tm, snc.getX(),
                                                                 snc.getY(), snc.getCarType(), snc.getAngleRad());
             }
@@ -121,9 +124,15 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case Movement: {
             const auto ps = dynamic_cast<const PlayerState&>(*msg);
+            countdown = NOT_ACCESSIBLE;
 
             if (cars.count(ps.getPlayerId())) {
                 cars[ps.getPlayerId()]->update(
+                    ps.getX()*PIXELS_PER_METER,
+                    ps.getY()*PIXELS_PER_METER,
+                    ps.getAngleRad());
+            } else if (npcs.count(ps.getPlayerId())) {
+                npcs[ps.getPlayerId()]->update(
                     ps.getX()*PIXELS_PER_METER,
                     ps.getY()*PIXELS_PER_METER,
                     ps.getAngleRad());
@@ -140,7 +149,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
 
                 if (cars[ch.getPlayerId()]->getInCamera()) {
                     if (ch.getCarHealth() == 0) {
-                        std::cout << "ACA SE ESCUCHO" << std::endl;
                         audio.stopSound("explosion");
                         audio.playSound("explosion");
                     } else if (healthDiff > 1 || maxHealthDiff > 0 && ch.getPlayerId() == myCarId) {
@@ -165,11 +173,8 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             const auto check_hit = dynamic_cast<const SrvCheckpointHitMsg&>(*msg);
             if ( check_hit.getCheckpointId() == totalCheckpoints ) {
                 cars[check_hit.getPlayerId()]->setState(DESTROYED);
-                std::cout << "Checkpoint" << std::endl;
             }
 
-            std::cout<<"Next check: " << nextCheckpoint << "My id: " << myCarId << std::endl;
-            std::cout<<"Check Id: " << check_hit.getCheckpointId() << "Car id: " << check_hit.getPlayerId() << std::endl;
             if ( myCarId == check_hit.getPlayerId() ) {
                 audio.stopSound("checkpoint");
                 audio.playSound("checkpoint");
@@ -191,7 +196,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
                     current.getCheckX()*PIXELS_PER_METER, current.getCheckY()*PIXELS_PER_METER);
             }
             nextCheckpoint = current.getNextCheckpointId();
-            std::cout <<current.getNextCheckpointId() << std::endl;
             if (myCarId != -1) {
                 auto itCar = cars.find(myCarId);
                 if (itCar != cars.end() && itCar->second) {
@@ -208,6 +212,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             raceNumber = current.getRaceNumber();
             totalRaces = current.getTotalRaces();
             totalCheckpoints = current.getTotalCheckpoints();
+            ranking = current.getRanking();
 
             break;
         }
@@ -241,12 +246,13 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             break;
         }
         case SRV_DISCONNECTION: {
-            std::cout << "Server Disconnection" << std::endl;
             srvDisconnect = true;
             running = false;
             break;
         }
         case STARTING_GAME: {
+            std::cout << "STARTING_GAME" << std::endl;
+            std::cout << countdown << std::endl;
             showScreen = false;
             startScreen.changeIsStart();
             ups.clearButtons();
@@ -254,8 +260,27 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
         }
         case TIME: {
             const auto timeLeft = dynamic_cast<const TimeLeft&>(*msg);
-            if (!startScreen.isStart()) showScreen = timeLeft.getTimeLeft() > 0;
-            startScreen.setTimeLeft(timeLeft.getTimeLeft());
+            if (!startScreen.isStart()) showScreen = timeLeft.getTimeLeft() > 0 && timeLeft.getUpgradesEnabled();
+            if (timeLeft.getUpgradesEnabled()) {
+                startScreen.setTimeLeft(timeLeft.getTimeLeft());
+            } else {
+                audio.playSound("countdown");
+                countdown = static_cast<int>(timeLeft.getTimeLeft()) + 1;
+            }
+            break;
+        }
+        case NPC_SPAWN: {
+            const auto npcSpawn = dynamic_cast<const SrvNpcSpawn&>(*msg);
+            auto it = npcs.find(npcSpawn.getId());
+            if (it == npcs.end()) {
+                npcs[npcSpawn.getId()] = std::make_unique<Car>(renderer, tm, npcSpawn.getX(),
+                                                                npcSpawn.getY(), npcSpawn.getCarType(),
+                                                                npcSpawn.getAngleRad());
+            }
+            std::cout << npcSpawn.getId() << std::endl;
+            std::cout << npcSpawn.getX() << std::endl;
+            std::cout << npcSpawn.getY() << std::endl;
+
             break;
         }
         default:

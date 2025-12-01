@@ -52,6 +52,7 @@ private:
     TextureManager tm;
     Queue<SrvMsgPtr>& receiverQueue;
     std::unordered_map<ID, std::unique_ptr<Car>> cars;
+    std::unordered_map<ID, std::unique_ptr<Car>> npcs;
     std::unordered_map<ID, std::unique_ptr<Checkpoint>> checkpoints;
     Camera camera;
     ID myCarId;
@@ -62,11 +63,13 @@ private:
     std::unique_ptr<PlayerStats> playerStats = nullptr;
     UpgradeScreen ups;
     int raceTime = DEFAULT;
+    int countdown = NOT_ACCESSIBLE;
     uint8_t totalRaces = DEFAULT;
     uint8_t raceNumber = DEFAULT;
     Button startBtn;
     ServerDisScreen disScreen;
     StartScreen startScreen;
+    uint8_t ranking = 1;
     EventManager eventManager;
     bool running;
     bool quit = false;
@@ -75,6 +78,7 @@ private:
     std::vector<RecommendedPoint> pathArray;
     std::vector<UpgradeDef> upgradesArray;
     AudioManager audio;
+
 
 
     void drawCars(ID id, const std::unique_ptr<Car>& car);

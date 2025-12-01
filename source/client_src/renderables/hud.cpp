@@ -16,8 +16,10 @@ void Hud::drawOverlay(const int x, const int y,
                       std::unordered_map<ID, std::unique_ptr<Car>>& cars,
                       const ID playerId, const int raceTime,
                       const uint8_t totalRaces, const uint8_t raceNumber,
-                      const uint8_t totalCheckpoints, const ID checkpointNumber) const {
+                      const uint8_t totalCheckpoints, const ID checkpointNumber, const int countdown,
+                      const uint8_t ranking ) const {
 
+    if (countdown != NOT_ACCESSIBLE) drawCountdown(countdown, x, y);
     const auto it = cars.find(playerId);
     if (it == cars.end() || !it->second) return;
 
@@ -44,6 +46,7 @@ void Hud::drawOverlay(const int x, const int y,
     drawDial(renderer, speed, x, y);
 
     drawRaceNumber(raceNumber, totalRaces);
+    drawRanking(ranking);
     drawCheckpointNumber(checkpointNumber, totalCheckpoints);
     drawGameTime(raceTime);
     activeUpgrades(x, upgrades);
@@ -152,24 +155,21 @@ void Hud::drawGameTime(const int totalSeconds) const {
     char buffer[20];
     snprintf(buffer, sizeof(buffer), "%02d:%02d:%02d", hours, minutes, seconds);
 
-    drawer.drawText(buffer, 20, 75, YELLOW, 0.7f, 0.75f);
+    drawer.drawText(buffer, 20, 105, YELLOW, 0.7f, 0.75f);
 }
 
-// MODULARIZAR
 
 void Hud::drawRaceNumber(const int current, const int total) const {
     const std::string txt = RACE_TXT + std::to_string(current) + BACK_SLASH + std::to_string(total);
 
-    drawer.drawText(txt, 20, 15, WHITE, 0.8f, 0.8f);
+    drawer.drawText(txt, 20, 45, WHITE, 0.8f, 0.8f);
 }
 
 void Hud::drawCheckpointNumber(const int current, const int total) const {
     const std::string txt = CHECK_TXT + std::to_string(current) + BACK_SLASH + std::to_string(total);
 
-    drawer.drawText(txt, 20, 45, WHITE, 0.8f, 0.8f);
+    drawer.drawText(txt, 20, 75, WHITE, 0.8f, 0.8f);
 }
-
-// -- - - -- - - -
 
 void Hud::activeUpgrades(const int windowWidth, const std::vector<Upgrade>& upgrades) const {
     for (int i = 0; i < MAX_UPGRADE_FRAMES; i++) {
@@ -219,5 +219,26 @@ void Hud::drawUpgrade(const int windowWidth, const Upgrade upgrade, const int i)
     renderer.Copy(upgradesSheet, srcIcon, dstIcon);
 }
 
+void Hud::drawCountdown(const int countdown, const int width, const int height) const {
+    const std::string txt = std::to_string(countdown);
+
+    float scaleX = 2.f;
+    float scaleY = 2.f;
+
+    auto [textW, textH] = drawer.getTextSize(txt);
+
+    int drawW = textW * scaleX;
+    int drawH = textH * scaleY;
+
+    int x = (width - drawW) / 2;
+    int y = (height - drawH) / 2;
+
+    drawer.drawText(txt, x, y, WHITE, 2.f, 2.f);
+}
 
 
+void Hud::drawRanking(const uint8_t ranking) const {
+    const std::string txt = RANKING_TXT + std::to_string(ranking);
+
+    drawer.drawText(txt, 20, 15, YELLOW, 0.8f, 0.8f);
+}

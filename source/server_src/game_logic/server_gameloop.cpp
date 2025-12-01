@@ -71,7 +71,7 @@ void GameLoop::loadMapFromYaml(const std::string& path) {
         buildings.push_back(std::move(building));
     }
     this->mapData = data;
-    //createNpcCars();
+    createNpcCars();
 }
 
 // loop principal de distinas carreras

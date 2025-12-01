@@ -49,7 +49,7 @@ void RaceController::runRace(uint8_t raceIndex, uint8_t totalRaces,
                              const std::function<bool()>& shouldKeepRunning) {
     raceTimeSeconds = 0.f;
     raceEnded       = false;
-    //broadcastNpcSpawn();
+    broadcastNpcSpawn();
     auto raceStartTime = Clock::now();
 
     try {
@@ -67,7 +67,7 @@ void RaceController::runRace(uint8_t raceIndex, uint8_t totalRaces,
             if (raceEnded) break;
 
             playerManager.broadcastSnapshots(); //posicion de los autos
-            //broadcastNpcSnapshots();
+            broadcastNpcSnapshots();
             sendCurrentInfo(raceIndex, totalRaces); //info que fran tiene que dibujar
             loop.sleep_until_next_frame();
         }

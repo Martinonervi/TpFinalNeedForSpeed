@@ -33,14 +33,16 @@
 class EventManager {
 public:
     EventManager(ID& myCarId, ID& nextCheckpoint, uint8_t& totalCheckpoints, ID& checkpointNumber,
-                 std::unordered_map<ID, std::unique_ptr<Car>>& cars, SDL2pp::Renderer& renderer,
+                 std::unordered_map<ID, std::unique_ptr<Car>>& cars,
+                 std::unordered_map<ID, std::unique_ptr<Car>>& npcs, SDL2pp::Renderer& renderer,
                  Queue<CliMsgPtr>& senderQueue, SdlDrawer& drawer, TextureManager& textureManager,
                  std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints, Hint& hint,
                  UpgradeScreen& ups, Button& startBtn, bool& showScreen,
                  bool& running, bool& quit, int& raceTime, uint8_t& totalRaces,
                  uint8_t& raceNumber, std::unique_ptr<PlayerStats>& playerStats,
                  std::vector<RecommendedPoint>& pathArray,
-                 std::vector<UpgradeDef>& upgradesArray, bool& srvDisconnect, StartScreen& startScreen);
+                 std::vector<UpgradeDef>& upgradesArray, bool& srvDisconnect, StartScreen& startScreen,
+                 int& countdown, uint8_t& ranking);
 
     void handleEvents(AudioManager& audio) const;
     void handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio);
@@ -49,8 +51,10 @@ private:
     ID& myCarId;
     ID& nextCheckpoint;
     uint8_t& totalCheckpoints;
+    uint8_t& ranking;
     ID& checkpointNumber;
     std::unordered_map<ID, std::unique_ptr<Car>>& cars;
+    std::unordered_map<ID, std::unique_ptr<Car>>& npcs;
     std::unordered_map<ID, std::unique_ptr<Checkpoint>>& checkpoints;
     SDL2pp::Renderer& renderer;
     Queue<CliMsgPtr>& senderQueue;
@@ -71,6 +75,7 @@ private:
     std::vector<UpgradeDef>& upgradesArray;
     bool& srvDisconnect;
     StartScreen& startScreen;
+    int& countdown;
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
             {SDLK_w, MoveMsg(1, 0, 0, 0)},  {SDLK_s, MoveMsg(2, 0, 0, 0)},

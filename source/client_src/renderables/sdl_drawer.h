@@ -12,6 +12,7 @@ public:
                   float scaleY) const;
     void drawCircle(int cx, int cy, int radius) const;
     void drawButton(const Button& button) const;
+    SDL2pp::Point getTextSize(const std::string& text) const;
 
 private:
     TTF_Font* font;

@@ -48,7 +48,7 @@ void LobbyController::runLobbyLoop(
                                   deadline - now
                               ).count();
         if (remaining_sec < 0.f) remaining_sec = 0.f;
-
+        playerManager.broadcastSnapshots();
         broadcastTimeLeft(remaining_sec, true);
         broadcastRecommendedPath(recommendedPath);
         broadcastUpgradeLogic();
