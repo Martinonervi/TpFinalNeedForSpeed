@@ -80,20 +80,6 @@ void LobbyController::runPreRaceCountdown(const std::function<bool()>& shouldKee
     }
 }
 
-
-std::list<Cmd> LobbyController::emptyQueue() {
-    std::list<Cmd> cmd_list;
-    Cmd cmd_aux;
-    try {
-        while (queue->try_pop(cmd_aux)) {
-            cmd_list.push_back(std::move(cmd_aux));
-        }
-    } catch (const ClosedQueue&) {
-        // queue cerrada: no hay más comandos
-    }
-    return cmd_list;
-}
-
 void LobbyController::processLobbyCmds() {
     std::list<Cmd> to_process = emptyQueue();
 
@@ -149,3 +135,15 @@ void LobbyController::broadcastRecommendedPath(
     registry.broadcast(rp);
 }
 
+std::list<Cmd> LobbyController::emptyQueue() {
+    std::list<Cmd> cmd_list;
+    Cmd cmd_aux;
+    try {
+        while (queue->try_pop(cmd_aux)) {
+            cmd_list.push_back(std::move(cmd_aux));
+        }
+    } catch (const ClosedQueue&) {
+        // queue cerrada: no hay más comandos
+    }
+    return cmd_list;
+}

@@ -149,7 +149,6 @@ void GameLoop::setupRoute() {
     }
 
     const RouteConfig& routeCfg = mapData.routes[routeIndex];
-
     checkpoints.clear();
     spawnPoints.clear();
     recommendedPath.clear();
@@ -167,17 +166,8 @@ void GameLoop::setupRoute() {
                         )
         );
     }
-
     spawnPoints = routeCfg.spawnPoints;
     recommendedPath = routeCfg.recommendedPath;
-
-    /*std::cout << "[GameLoop] setupRoute: usando ruta '"
-              << routeCfg.nameRoute
-              << "' (index=" << routeIndex
-              << "), checkpoints=" << checkpoints.size()
-              << ", spawns=" << spawnPoints.size()
-              << "\n";
-              */
 }
 
 void GameLoop::resetRaceState() {

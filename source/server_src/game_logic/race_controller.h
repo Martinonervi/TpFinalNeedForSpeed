@@ -53,16 +53,16 @@ public:
 private:
     // helpers del loop de carrera
     std::list<Cmd> emptyQueue();
-    void broadcastNpcSnapshots();
-    void broadcastNpcSpawn();
     void checkPlayersStatus();
     void processCmds();
     void processWorldEvents();
     void updateRaceClockAndCheckEnd(const Clock::time_point& raceStartTime);
+    void broadcastNpcSnapshots();
     void sendCurrentInfo(uint8_t raceIndex, uint8_t totalRaces);
     void finalizeDNFs();
     void sendRaceFinish();
 
+    void broadcastNpcSpawn();
     void disconnectHandler(ID id);
     void forcePlayerWin(ID id);
     void forcePlayerLose(ID id);

@@ -217,7 +217,7 @@ void PlayerManager::disconnectPlayer(ID id) {
 }
 
 void PlayerManager::sendPlayerStats(const std::unordered_map<ID, PlayerGlobalStats>& globalStats) {
-    std::cout << "[DBG] globalStats size = " << globalStats.size() << "\n";
+    std::cout << "[PlayerManager] globalStats size = " << globalStats.size() << "\n";
     for (auto& [id, stats] : globalStats) {
         std::cout << "  playerId=" << id
                   << " totalTime=" << stats.totalTime

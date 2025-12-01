@@ -151,7 +151,6 @@ void WorldEventHandlers::setKillCar(Car& car) {
         if (totalCars > 0) {
             totalCars -= 1;
         }
-
         // chequear si no era el ultimo
         if (totalCars == 0 || finishedCarsCount >= totalCars) {
             raceEnded = true;

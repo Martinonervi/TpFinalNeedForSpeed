@@ -1,17 +1,14 @@
 #include "race_controller.h"
-
 #include <chrono>
 #include <cmath>
-
+#include <algorithm>
+#include <vector>
 #include <box2d/box2d.h>
-
 #include "../../common_src/cli_msg/cli_cheat_request.h"
 #include "../../common_src/srv_msg/client_disconnect.h"
 #include "../../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../../common_src/srv_msg/srv_current_info.h"
 #include "../../common_src/srv_msg/srv_race_finished.h"
-#include <algorithm>
-#include <vector>
 #include "../../common_src/srv_msg/srv_npc_spawn.h"
 
 using Clock = std::chrono::steady_clock;
@@ -430,11 +427,8 @@ std::vector<LiveRankEntry> RaceController::buildLiveRanking() {
           [this](const LiveRankEntry& a, const LiveRankEntry& b) {
               return liveRankLess(a, b);
           });
-
-
     return v;
 }
-
 
 bool RaceController::liveRankLess(const LiveRankEntry& a, const LiveRankEntry& b) {
     // terminados primero
