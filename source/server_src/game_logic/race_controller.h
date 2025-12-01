@@ -17,6 +17,7 @@
 #include "player_manager.h"
 #include "world_event_handlers.h"
 #include "../../common_src/constant_rate_loop.h"
+using Clock = std::chrono::steady_clock;
 
 class RaceController {
 public:
@@ -47,6 +48,7 @@ private:
     void checkPlayersStatus();
     void processCmds();
     void processWorldEvents();
+    void updateRaceClockAndCheckEnd(const Clock::time_point& raceStartTime);
     void sendCurrentInfo(uint8_t raceIndex, uint8_t totalRaces);
     void finalizeDNFs();
     void sendRaceFinish();

@@ -12,7 +12,8 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& playerCars,
                                        uint8_t& finishedCarsCount,
                                        uint8_t& totalCars,
                                        bool& raceEnded,  std::vector<ID>& raceRanking,
-                                       std::vector<RaceResult>& lastRaceResults, Config& config)
+                                       std::vector<RaceResult>& lastRaceResults,
+                                       const CollisionsConfig& collisionsConfig)
         : playerCars(playerCars)
         , checkpoints(checkpoints)
         , registry(registry)
@@ -22,7 +23,7 @@ WorldEventHandlers::WorldEventHandlers(std::unordered_map<ID, Car>& playerCars,
         , raceEnded(raceEnded)
         ,raceRanking(raceRanking)
         ,lastRaceResults(lastRaceResults)
-        ,config(config) {}
+        ,collisionsConfig(collisionsConfig) {}
 
 
 void WorldEventHandlers::CarHitCheckpointHandler(WorldEvent ev){
@@ -57,7 +58,8 @@ void WorldEventHandlers::CarHitBuildingHandler(WorldEvent ev,
     if (it == playerCars.end()) return;
     Car& car = it->second;
     b2BodyId body = car.getBody();
-    const auto& cfg = config.collisions.building;
+
+    const auto& cfg = collisionsConfig.building;
 
     float impactSpeed = std::fabs(velocityAlongNormal(car, ev.nx, ev.ny));
     if (impactSpeed < cfg.minImpactSpeed) return; //ignoramos golpe suave
@@ -94,7 +96,7 @@ void WorldEventHandlers::CarHitCarHandler(WorldEvent ev,
     Car& carB = itB->second;
     b2BodyId bodyA = carA.getBody();
     b2BodyId bodyB = carB.getBody();
-    const auto& cfg = config.collisions.car;
+    const auto& cfg = collisionsConfig.car;
 
     float aAlongN = velocityAlongNormal(carA, ev.nx, ev.ny);
     float bAlongN = velocityAlongNormal(carB, ev.nx, ev.ny);

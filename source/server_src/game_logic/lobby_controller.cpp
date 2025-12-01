@@ -40,7 +40,7 @@ void LobbyController::runLobbyLoop(
     while (shouldKeepRunning()) {
         processLobbyCmds();   // START_GAME, INIT_PLAYER, UPGRADE_REQUEST
 
-        if (startRequested) break;
+        if (startRequested) break; //la primera vez START_GAME lo pone en true, desp es por tiempo
         if (raceIndex != 0 && Clock::now() >= deadline) break;
 
         auto now = Clock::now();

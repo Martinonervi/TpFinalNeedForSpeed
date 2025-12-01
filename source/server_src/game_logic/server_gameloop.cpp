@@ -34,7 +34,7 @@ GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue,
     , registry(std::move(registry))
     , eventHandlers(playerCars, checkpoints, *this->registry,
                     raceTimeSeconds, finishedCarsCount, totalCars,
-                    raceEnded, raceRanking, lastRaceResults, config)
+                    raceEnded, raceRanking, lastRaceResults, config.collisions)
     , upgrades(config.upgrades)
     , playerManager(worldManager, *this->registry,playerCars,
                     spawnPoints,raceStarted, checkpoints, upgrades, config)
@@ -181,9 +181,12 @@ void GameLoop::setupRoute() {
 }
 
 void GameLoop::resetRaceState() {
+    // saca checkpoints viejos
     worldManager.resetCheckpoints(checkpoints);
-    setupRoute();
+    // carga nueva ruta
+    setupRoute(); // checkpoints, spawnPoints, recommendedPath
 
+    // reseteo posicion y estado de los autos
     uint8_t i = 0;
     for (auto& [id, car] : playerCars) {
         const auto& sp = spawnPoints[i % spawnPoints.size()];
@@ -191,26 +194,30 @@ void GameLoop::resetRaceState() {
         i++;
     }
 
-    // reseteo variables
+    // reseteo variables de estado de la carrera
     raceTimeSeconds    = 0.f;
     finishedCarsCount  = 0;
-    totalCars          = static_cast<int>(playerCars.size());
+    totalCars          = static_cast<uint8_t>(playerCars.size());
     raceEnded          = false;
+    raceStarted        = false;
+    startRequested     = false;
+
     raceRanking.clear();
     lastRaceResults.clear();
 
-    // vaciar queues
+    // vacio queue de eventos del mundo
     while (!worldEvents.empty()) {
         worldEvents.pop();
     }
-    if (raceIndex > 0) {
-        Cmd cmd_aux;
-        try {
-            while (queue->try_pop(cmd_aux)) { }
-        } catch (const ClosedQueue&) {
-            // la queue ya fue cerrada por stop
-        }
+
+    // vacio los comandos de la carrera anterior
+    Cmd cmd_aux;
+    try {
+        while (queue->try_pop(cmd_aux)) { }
+    } catch (const ClosedQueue&) {
+        // la queue ya fue cerrada por stop
     }
+
 }
 
 bool GameLoop::isRaceStarted() const {
@@ -229,12 +236,6 @@ void GameLoop::computeGlobalRanking() {
     ranking.reserve(globalStats.size());
 
     for (auto& [id, stats] : globalStats) {
-        // le sumo la penalidad TOTAL que acumuló el auto en toda la partida
-        auto it = playerCars.find(id);
-        if (it != playerCars.end()) {
-            stats.totalTime += it->second.getPenalty();
-        }
-
         ranking.push_back({id, &stats});
     }
 

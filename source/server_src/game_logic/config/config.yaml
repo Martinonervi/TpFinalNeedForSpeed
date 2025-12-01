@@ -37,19 +37,19 @@ collisions:
 
 upgrades:
   - type: ENGINE_FORCE
-    factor: 2.5
+    factor: 2.5 #multi aceleracion
     penalty: 8.0
 
   - type: HEALTH
-    factor: 1.5
+    factor: 1.5 #multi vida
     penalty: 5.0
 
   - type: SHIELD
-    factor: 0.7
+    factor: 0.5 #mas chico, mas reduce daño
     penalty: 2.0
 
   - type: DAMAGE
-    factor: 2.0
+    factor: 2.0 #multi dañ0
     penalty: 3.0
 
 cheats:

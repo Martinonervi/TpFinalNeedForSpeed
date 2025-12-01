@@ -1,8 +1,8 @@
 import json
 import yaml
 
-INPUT = "spawn2.tmj"       # tu archivo .tmj
-OUTPUT = "spawn2.yaml"          # salida YAML
+INPUT = "spawn2.tmj"
+OUTPUT = "spawn2.yaml"
 
 
 RECT_LAYER = "spawn2" 
@@ -22,11 +22,9 @@ def get_layer(name):
 rect_layer = get_layer(RECT_LAYER)
 rects = []
 
-# si querés, podés ordenarlos por y como antes:
 objetos = sorted(rect_layer["objects"], key=lambda o: o["y"])
 
 for obj in objetos:
-    # sólo consideramos rectángulos
     if obj.get("shape", "rectangle") != "rectangle":
         continue
 
@@ -38,7 +36,6 @@ for obj in objetos:
     w = obj["width"]
     h = obj["height"]
 
-    # rotación (si la usás)
     angle_deg = obj.get("rotation", 0.0)
 
     rects.append({
@@ -46,11 +43,11 @@ for obj in objetos:
         "y": float(cy),
         "w": float(w),
         "h": float(h),
-        "angle": float(angle_deg),   # sacalo si no te importa el ángulo
+        "angle": float(angle_deg),
     })
 
 data = {
-    "rectangles": rects,    # o "buildings" si eso matchea tu parser
+    "rectangles": rects,
 }
 
 with open(OUTPUT, "w", encoding="utf-8") as f:

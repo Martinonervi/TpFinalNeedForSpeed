@@ -35,7 +35,7 @@ for idx, obj in enumerate(objetos, start=1):   # id = 1,2,3,...
     angle_deg = obj.get("rotation", 0.0)
 
     props_raw = {p["name"]: p["value"] for p in obj.get("properties", [])}
-    kind = props_raw.get("kind", "Normal")   # default Normal
+    kind = props_raw.get("kind", "Normal")
 
     cp_id = len(checkpoints) + 1
 
