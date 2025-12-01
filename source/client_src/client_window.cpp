@@ -29,10 +29,13 @@ ClientWindow::ClientWindow(const int width, const int height, const std::string&
         eventManager(myCarId, nextCheckpoint, totalCheckpoints, checkpointNumber,
             cars, renderer, senderQueue, drawer, tm, checkpoints, hint,
             ups, startBtn, showScreen, running, quit, raceTime, totalRaces,
-            raceNumber, playerStats, pathArray, upgradesArray, srvDisconnect, startScreen)
+            raceNumber, playerStats, pathArray, upgradesArray, srvDisconnect,
+            startScreen, countdown)
 {}
 
 std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
+    // Todos los parametros que hay en el eventManager se pueden arreglar pasandole solo Hud y
+    // creando setters (no me da el tiempo).
     const Hud hud(renderer, drawer, tm, MAP_LIBERTY, pathArray);
     Map map(renderer, tm, MAP_LIBERTY);
 
@@ -89,8 +92,7 @@ std::pair<bool, std::unique_ptr<PlayerStats>> ClientWindow::run() {
 
                 hud.drawOverlay(window.GetWidth(), window.GetHeight(),
                     cars, myCarId, raceTime, totalRaces, raceNumber,
-                    totalCheckpoints, checkpointNumber);
-
+                    totalCheckpoints, checkpointNumber, countdown);
             }
             lastShowScreen = showScreen;
 

@@ -40,7 +40,8 @@ public:
                  bool& running, bool& quit, int& raceTime, uint8_t& totalRaces,
                  uint8_t& raceNumber, std::unique_ptr<PlayerStats>& playerStats,
                  std::vector<RecommendedPoint>& pathArray,
-                 std::vector<UpgradeDef>& upgradesArray, bool& srvDisconnect, StartScreen& startScreen);
+                 std::vector<UpgradeDef>& upgradesArray, bool& srvDisconnect, StartScreen& startScreen,
+                 int& countdown);
 
     void handleEvents(AudioManager& audio) const;
     void handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio);
@@ -71,6 +72,7 @@ private:
     std::vector<UpgradeDef>& upgradesArray;
     bool& srvDisconnect;
     StartScreen& startScreen;
+    int& countdown;
 
     const std::unordered_map<SDL_Keycode, MoveMsg> keyToMove = {
             {SDLK_w, MoveMsg(1, 0, 0, 0)},  {SDLK_s, MoveMsg(2, 0, 0, 0)},
