@@ -129,6 +129,7 @@ bool Car::applyUpgrade(const UpgradeDef& up) {
         case Upgrade::ENGINE_FORCE: {
             if (raceState.engineFactor != 1.0f) break;
             raceState.engineFactor   = up.value;
+            raceState.maxSpeedFactor = 1.2f;
             raceState.upgradePenalty += up.penaltySec;
             raceState.totalUpgrades  += 1;
             apply = true;

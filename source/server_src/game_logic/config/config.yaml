@@ -4,7 +4,7 @@ loops:
 
 lobby:
   max_players: 8 #enunciado: 8
-  upgrades_phase_sec: 5.0 #enunciado: 10seg
+  upgrades_phase_sec: 10.0 #enunciado: 10seg
   pre_race_countdown_sec: 3.0
   max_race_time_sec: 600.0 #enunciado: 10mins
 
@@ -16,7 +16,7 @@ car_handling:
   base_health: 100.0
   max_fwd_speed: 50.0
   max_bck_speed: -10.0
-  engine_impulse: 800.0
+  engine_impulse: 600.0
   brake_accel: 100.0
   max_angular_vel: 2.5
   lateral_damp: 9.0
