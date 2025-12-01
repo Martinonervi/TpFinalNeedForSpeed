@@ -7,6 +7,7 @@
 #include "../../common_src/constants.h"
 #include "../client_camera.h"
 #include "../textures/texture_manager.h"
+#include "../sdl_constants.h"
 
 class Entity {
 public:

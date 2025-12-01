@@ -13,6 +13,9 @@
 
 // Sizes:
 
+#define SCREEN_WIDTH 1200
+#define SCREEN_HEIGHT 800
+
 #define UPS_WIDTH 480
 #define UPS_HEIGHT 480
 #define MINIMAP_SIZE 250

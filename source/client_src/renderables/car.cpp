@@ -21,6 +21,10 @@ void Car::draw(const Camera& camera) {
     SDL2pp::Rect srcRect(tm.getCars().getFrame(carType, angle));
     const int drawX = static_cast<int>(x - camera.getX() - srcRect.w / 2);
     const int drawY = static_cast<int>(y - camera.getY() - srcRect.h / 2);
+
+    bool val = drawX > 0 && drawY > 0 && drawX < SCREEN_WIDTH && drawY < SCREEN_HEIGHT;
+
+    setInCamera(val);
     SDL2pp::Rect dstRect(drawX, drawY, srcRect.w/1.25, srcRect.h/1.25);
 
     renderer.Copy(texture, srcRect,dstRect);
@@ -97,3 +101,16 @@ void Car::clearUpgrades() {
 float Car::getHealth() const { return health; }
 
 float Car::getMaxHealth() const { return maxHealth; }
+
+bool Car::getInCamera() const { return inCamera; }
+void Car::setInCamera(const bool newInCamera) {
+    inCamera = newInCamera;
+}
+
+void Car::setState(CarState state) { carState = state; }
+
+void Car::resetStats() {
+    health = maxHealth;
+    speed = 0;
+    inCamera = true;
+}
