@@ -63,4 +63,5 @@ private:
     ID joined_id{0};
     bool& was_closed;
     bool silentClose{false};
+    bool disconnected{false};
 };

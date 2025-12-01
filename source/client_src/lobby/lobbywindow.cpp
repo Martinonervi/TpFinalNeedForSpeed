@@ -130,6 +130,7 @@ void LobbyWindow::on_playButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
+        disconnected = true;
         close();
         return;
     }
@@ -157,6 +158,7 @@ void LobbyWindow::on_refreshButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
+        disconnected = true;
         close();
         return;
     }
@@ -196,6 +198,7 @@ void LobbyWindow::on_joinButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
+        disconnected = true;
         close();
         return;
     }
@@ -243,6 +246,7 @@ void LobbyWindow::on_createButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
+        disconnected = true;
         close();
         return;
     }
@@ -578,6 +582,7 @@ void LobbyWindow::on_selectCarButton_clicked() {
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Seleccionar auto",
              "Se perdió la conexión con el servidor");
+        disconnected = true;
         close();
         return;
     }
@@ -602,16 +607,19 @@ void LobbyWindow::closeEvent(QCloseEvent* event) {
         event->accept();
         return;
     }
-    const auto ret = QMessageBox::question(
-        this,
-        tr("Salir"),
-        tr("¿Seguro que querés cerrar?"),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No
-    );
-    if (ret != QMessageBox::Yes) {
-        event->ignore();
-        return;
+
+    if (!disconnected) {
+        const auto ret = QMessageBox::question(
+            this,
+            tr("Salir"),
+            tr("¿Seguro que querés cerrar?"),
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No
+        );
+        if (ret != QMessageBox::Yes) {
+            event->ignore();
+            return;
+        }
     }
 
     if (joined_id != 0) {
