@@ -3,23 +3,53 @@
 
 #include <SDL2pp/SDL2pp.hh>
 #include "../textures/texture_manager.h"
+#include <unordered_map>
+#include "sdl_drawer.h"
+#include "button.h"
+
+struct UpgradeButton {
+    Button button;
+    Upgrade type;
+    float penalty;
+    SDL2pp::Rect iconRect;
+    bool bought = false;
+};
 
 
 class UpgradeScreen {
 public:
-    UpgradeScreen(TextureManager& tm, SDL2pp::Renderer& renderer, int width, int height);
-    void renderPopUp(int windowWidth, int windowHeight);
+    UpgradeScreen(SDL2pp::Renderer& renderer, SdlDrawer& drawer, TextureManager& tm, int width,
+                  int height, int windowWidth, int windowHeight);
+    void renderPopUp() const;
 
-    // Tipo de dato retornar eleccion
+    void handleMouseMotion(int mouseX, int mouseY);
+    std::pair<bool, Upgrade> handleMouseClick();
+
+    void createButtons(const std::vector<UpgradeDef>& upgradesArray);
+    void changeState(Upgrade upgrade);
+    void clearButtons();
+
 
 private:
-    TextureManager& tm;
     SDL2pp::Renderer& renderer;
+    SdlDrawer& drawer;
+    TextureManager& tm;
+    int windowWidth;
+    int windowHeight;
+
+    std::vector<UpgradeButton> buttons;
 
     int width;
     int height;
 
-    // Upgrades
+    void writeDescription(float penalty, const std::string& name, int x, int y) const;
+
+    const std::unordered_map<Upgrade, std::string> upgradeDescriptions = {
+        { HEALTH, "Increases the car's health" },
+        { ENGINE_FORCE, "Boosts acceleration" },
+        { SHIELD, "Adds collision resistance" },
+        { DAMAGE, "Increases damage on impact" },
+    };
 
 };
 

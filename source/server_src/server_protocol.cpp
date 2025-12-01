@@ -6,6 +6,7 @@
 
 #include <arpa/inet.h>
 
+#include "../common_src/cli_msg/cli_cheat_request.h"
 #include "../common_src/cli_msg/requestgame.h"
 #include "../common_src/srv_msg/srv_time_left.h"
 
@@ -17,9 +18,9 @@ int ServerProtocol::sendPlayerInit(Player& sp) const {
         const Op type = sp.type();
         const uint16_t pid = htons(sp.getPlayerId());
         const CarType car = sp.getCarType();
-        const uint32_t x_cast = encodeFloat100BE(sp.getX());
-        const uint32_t y_cast = encodeFloat100BE(sp.getY());
-        const uint32_t angle  = encodeFloat100BE(sp.getAngleRad());
+        const uint32_t x_cast = encodeFloatBE(sp.getX());
+        const uint32_t y_cast = encodeFloatBE(sp.getY());
+        const uint32_t angle  = encodeFloatBE(sp.getAngleRad());
 
         std::vector<char> buf;
         buf.reserve(sizeof(Op) + sizeof(uint16_t) + sizeof(CarType) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t));
@@ -48,9 +49,9 @@ int ServerProtocol::sendPlayerState(const PlayerState& ps) const {
     try {
         const Op type = Movement;
         const uint16_t pid = htons(ps.getPlayerId());
-        const uint32_t x = encodeFloat100BE(ps.getX());
-        const uint32_t y = encodeFloat100BE(ps.getY());
-        const uint32_t angle  = encodeFloat100BE(ps.getAngleRad());
+        const uint32_t x = encodeFloatBE(ps.getX());
+        const uint32_t y = encodeFloatBE(ps.getY());
+        const uint32_t angle  = encodeFloatBE(ps.getAngleRad());
 
         std::vector<char> buf;
         buf.reserve(sizeof(type) + sizeof(pid) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t));
@@ -91,7 +92,6 @@ Opcode ServerProtocol::recvOpcode() {
 InitPlayer ServerProtocol::recvInitPlayer() {
     size_t n = 0;
 
-    //std::string name;
     CarType carType;
 
     try {
@@ -191,7 +191,6 @@ int ServerProtocol::sendGames(const MetadataGames& games) {
         }
 
         int n = peer.sendall(buf.data(), buf.size());
-        std::cout << "[Server Protocol] Games sent" << std::endl;
         return n;
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
@@ -220,10 +219,11 @@ int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
     try {
         Op type = COLLISION;
         ID player_id_BE = htonl(msg.getPlayerId());
-        uint32_t health_BE = encodeFloat100BE(msg.getCarHealth());
+        uint32_t health_BE = encodeFloatBE(msg.getCarHealth());
+        uint32_t total_health_BE = encodeFloatBE(msg.getTotalHealth());
 
 
-        std::vector<char> buf(sizeof(Op) + sizeof(ID) + sizeof(uint32_t));
+        std::vector<char> buf(sizeof(Op) + sizeof(ID) + 2*sizeof(uint32_t));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
@@ -233,7 +233,10 @@ int ServerProtocol::sendCollisionEvent(SrvCarHitMsg& msg){
         offset += sizeof(ID);
 
         memcpy(buf.data() + offset, &health_BE, sizeof(uint32_t));
-        offset += sizeof(uint32_t);
+        offset += sizeof(health_BE);
+
+        memcpy(buf.data() + offset, &total_health_BE, sizeof(uint32_t));
+        offset += sizeof(total_health_BE);
 
         int n = peer.sendall(buf.data(), offset);
         return n;
@@ -316,7 +319,7 @@ int ServerProtocol::sendPlayerStats(PlayerStats& msg) {
     try {
         Op type = Opcode::STATS;
         uint8_t racePosition = msg.getRacePosition();
-        const uint32_t timeSecToComplete_BE = encodeFloat100BE(msg.getTimeSecToComplete());
+        const uint32_t timeSecToComplete_BE = encodeFloatBE(msg.getTimeSecToComplete());
 
         std::vector<char> buf(sizeof(Op) + sizeof(racePosition) + sizeof(timeSecToComplete_BE));
         size_t offset = 0;
@@ -342,17 +345,20 @@ int ServerProtocol::sendPlayerStats(PlayerStats& msg) {
 int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
     try {
         const Op type = msg.type();
-        const uint32_t speed = encodeFloat100BE(msg.getSpeed());
-        const uint32_t raceTimeSeconds = encodeFloat100BE(msg.getRaceTimeSeconds());
-        const std::uint8_t raceNumber = msg.getRaceNumber();
+        const uint32_t speed = encodeFloatBE(msg.getSpeed());
+        const uint32_t raceTimeSeconds = encodeFloatBE(msg.getRaceTimeSeconds());
+        const uint8_t raceNumber = msg.getRaceNumber();
         const ID nextCheckpointId = htons(msg.getNextCheckpointId());
-        const uint32_t checkX = encodeFloat100BE(msg.getCheckX());
-        const uint32_t checkY = encodeFloat100BE(msg.getCheckY());
-        const uint32_t angleHint = encodeFloat100BE(msg.getAngleHint());
-        const uint32_t distanceToChekpoint = encodeFloat100BE(msg.getDistanceToCheckpoint());
+        const uint32_t checkX = encodeFloatBE(msg.getCheckX());
+        const uint32_t checkY = encodeFloatBE(msg.getCheckY());
+        const uint32_t angleHint = encodeFloatBE(msg.getAngleHint());
+        const uint32_t distanceToChekpoint = encodeFloatBE(msg.getDistanceToCheckpoint());
+        const uint8_t totalRaces = msg.getTotalRaces();
+        const uint8_t totalCheckpoints = msg.getTotalCheckpoints();
+        const uint8_t ranking = msg.getRanking();
 
         std::vector<char> buf;
-        buf.reserve(sizeof(Op) + sizeof(uint8_t) + 7 * sizeof(uint32_t));
+        buf.reserve(sizeof(Op) + 4*sizeof(uint8_t) + 7 * sizeof(uint32_t));
 
         auto append = [&buf](const void* p, std::size_t n) {
             const std::size_t old = buf.size();
@@ -369,6 +375,9 @@ int ServerProtocol::sendCurrentInfo(SrvCurrentInfo& msg){
         append(&checkY, sizeof(checkY));
         append(&angleHint, sizeof(angleHint));
         append(&distanceToChekpoint, sizeof(distanceToChekpoint));
+        append(&totalRaces, sizeof(totalRaces));
+        append(&totalCheckpoints, sizeof(totalCheckpoints));
+        append(&ranking, sizeof(ranking));
 
         return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
     } catch (const std::exception& e) {
@@ -381,8 +390,9 @@ int ServerProtocol::sendTimeLeft(TimeLeft& msg) {
     try {
         Op type = Opcode::TIME;
         uint8_t time = msg.getTimeLeft();
+        bool up = msg.getUpgradesEnabled();
 
-        std::vector<char> buf(sizeof(Op) + sizeof(uint8_t));
+        std::vector<char> buf(sizeof(Op) + sizeof(uint8_t) + sizeof(bool));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &type, sizeof(Op));
@@ -390,6 +400,9 @@ int ServerProtocol::sendTimeLeft(TimeLeft& msg) {
 
         memcpy(buf.data() + offset, &time, sizeof(uint8_t));
         offset += sizeof(uint8_t);
+
+        memcpy(buf.data() + offset, &up, sizeof(bool));
+        offset += sizeof(bool);
 
         int n = peer.sendall(buf.data(), offset);
         return n;
@@ -399,3 +412,233 @@ int ServerProtocol::sendTimeLeft(TimeLeft& msg) {
     }
 }
 
+RequestUpgrade ServerProtocol::recvUpgradeReq() {
+    Upgrade upgrade;
+    int n = 0;
+    try {
+        n += peer.recvall(&upgrade, sizeof(Op));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+
+    return RequestUpgrade(upgrade);
+}
+
+int ServerProtocol::sendUpgrade(SendUpgrade& up) {
+    try{
+        Op opcode = up.type();
+        Upgrade upgrade = up.getUpgrade();
+        bool success = up.couldBuy();
+
+        std::vector<char> buf(sizeof(Op) + sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &upgrade, sizeof(Upgrade));
+        offset += sizeof(Upgrade);
+
+        // martino: los bool se mandan bien asi nomas? asumo q se castea a uint*, igual sino
+        // nosotros podriamos usar directamente un uint8 como booleano
+        memcpy(buf.data() + offset, &success, sizeof(bool));
+        offset += sizeof(bool);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+
+int ServerProtocol::sendUpgradeLogic(UpgradeLogic& ul) {
+    try{
+        Op opcode = ul.type();
+        const std::vector<UpgradeDef>& ups = ul.getUpgrades();
+        uint8_t size = static_cast<uint8_t>(ups.size());
+
+        const size_t upgradeDefSize =
+                sizeof(uint8_t)   // type
+                + sizeof(uint32_t)  // value (float codificado)
+                + sizeof(uint32_t);  // penalty
+
+        std::vector<char> buf(sizeof(Op) + sizeof(size)
+                              + size * upgradeDefSize);
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &size, sizeof(size));
+        offset += sizeof(size);
+
+        for (const auto& upgradeDef : ups) {
+            // type -> uint8 (de tipo Op)
+            uint8_t t = static_cast<uint8_t>(upgradeDef.type);
+            memcpy(buf.data() + offset, &t, sizeof(t));
+            offset += sizeof(t);
+
+            const uint32_t value = encodeFloatBE(upgradeDef.value);
+            // value (float)
+            memcpy(buf.data() + offset, &value, sizeof(value));
+            offset += sizeof(value);
+
+            // penalty (float)
+            uint32_t penalty = encodeFloatBE(upgradeDef.penaltySec);
+            memcpy(buf.data() + offset, &penalty, sizeof(penalty));
+            offset += sizeof(penalty);
+        }
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+int ServerProtocol::sendRecommendedPath(RecommendedPath& rp) {
+    try{
+        Op opcode = rp.type();
+        const std::vector<RecommendedPoint>& ps = rp.getPath();
+        uint8_t size = static_cast<uint8_t>(ps.size());
+
+        const size_t recommendedPointSize =
+                sizeof(uint32_t)  // x (float)
+                + sizeof(uint32_t);  // y (float)
+
+        std::vector<char> buf(sizeof(Op) + sizeof(size)
+                              + size * recommendedPointSize);
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &size, sizeof(size));
+        offset += sizeof(size);
+
+        for (const auto& recommendedPoint : ps) {
+
+            // x (float)
+            const uint32_t x = encodeFloatBE(recommendedPoint.x);
+            memcpy(buf.data() + offset, &x, sizeof(x));
+            offset += sizeof(x);
+
+            // y (float)
+            uint32_t y = encodeFloatBE(recommendedPoint.y);
+            memcpy(buf.data() + offset, &y, sizeof(y));
+            offset += sizeof(y);
+        }
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+int ServerProtocol::sendCarConfirmation(CarSelect& car_select) {
+    try{
+        Op opcode = car_select.type();
+        bool success = car_select.isSelected();
+
+        std::vector<char> buf(sizeof(Op) + sizeof(bool));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &success, sizeof(bool));
+        offset += sizeof(bool);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+int ServerProtocol::sendSartingGame(StartingGame& sg) {
+    try{
+        Op opcode = sg.type();
+
+        std::vector<char> buf(sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+int ServerProtocol::sendRaceFinished(RaceFinished& rf) {
+    try{
+        Op opcode = rf.type();
+
+        std::vector<char> buf(sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+CheatRequest ServerProtocol::recvCheat() {
+    Cheat cheat;
+    int n = 0;
+    try {
+        n += peer.recvall(&cheat, sizeof(cheat));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+
+    return CheatRequest(cheat);
+}
+
+int ServerProtocol::sendNpcSpawn(const SrvNpcSpawn& msg) {
+    try {
+        Op type = msg.type();
+        ID id = htons(msg.getId());
+        CarType carType = msg.getCarType();
+
+        uint32_t x_BE      = encodeFloatBE(msg.getX());
+        uint32_t y_BE      = encodeFloatBE(msg.getY());
+        uint32_t angle_BE  = encodeFloatBE(msg.getAngleRad());
+
+        std::vector<char> buf;
+        buf.reserve(sizeof(Op) + sizeof(ID) + sizeof(CarType) + 3*sizeof(uint32_t));
+
+        auto append = [&buf](const void* p, std::size_t n) {
+            const std::size_t old = buf.size();
+            buf.resize(old + n);
+            std::memcpy(buf.data() + old, p, n);
+        };
+
+        append(&type, sizeof(type));
+        append(&id, sizeof(id));
+        append(&carType, sizeof(carType));
+        append(&x_BE, sizeof(x_BE));
+        append(&y_BE, sizeof(y_BE));
+        append(&angle_BE, sizeof(angle_BE));
+
+        return peer.sendall(buf.data(), static_cast<unsigned>(buf.size()));
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw std::runtime_error("Error sending NPC spawn");
+    }
+}

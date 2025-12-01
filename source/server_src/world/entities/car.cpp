@@ -9,13 +9,10 @@ Car::Car(WorldManager& world,
          ID clientId,
          b2Vec2 pos,
          float angleRad,
-         CarType carType)
+         CarType carType, const CarHandlingConfig& carCongif)
         : Entity(EntityType::Car, b2_nullBodyId, 0),
-          clientId(clientId),
-          carType(carType)
-
+          clientId(clientId), carType(carType), handling(carCongif)
 {
-
     ID physId = world.createCarBody(pos, angleRad);
     this->setPhysicsId(physId);
 
@@ -26,144 +23,215 @@ Car::Car(WorldManager& world,
             PhysicsType::Car,
             clientId
     };
-
     b2Body_SetUserData(this->body, ud);
+    resetRaceState(carCongif.baseHealth);
 }
 
-static inline float clampf(float x, float a, float b){ return std::max(a, std::min(b, x)); }
+void Car::applyControlsToBody(const MoveMsg& in, float dt) {
+    float t        = in.getAccelerate();
+    float throttle = (t == 2) ? -1.0f : t;
+    float steer    = in.getSteer();
+    float brake    = in.getBrake();
 
-static inline float lerp(float a, float b, float t) {
-    t = clampf(t, 0.f, 1.f);
-    return a + (b - a) * t;
-}
-
-namespace {
-constexpr float ENGINE_FWD  = 1500.f;
-constexpr float ENGINE_REV  = 1200.f;
-constexpr float BRAKE_FORCE = 3600.f;
-constexpr float DRAG_K      = 10.f;
-
-constexpr float VMAX_FWD    = 26.f;
-constexpr float VMAX_REV    = 9.f;
-
-constexpr float SPEED_REF   = 25.f;
-constexpr float MAX_TORQUE  = 140.f;
-}
-
-void Car::applyControlsToBody(const MoveMsg& in, float /*dt*/) {
-    const uint8_t acc = in.getAccelerate();
-    const float throttle = (acc == 1) ? 1.f : (acc == 2) ? -1.f : 0.f;
-    const float brake    = in.getBrake() ? 1.f : 0.f;
-    float steer          = in.getSteer();
-
-    applyLongitudinalForces(throttle, brake);
+    applyThrottle(throttle, dt);
+    applyBrake(brake, dt);
     applySteering(steer);
-    applyDrift();
+    applyLateralFriction(dt);
 }
 
+void Car::applyThrottle(float throttle, float dt) {
+    if (throttle == 0.0f) return;
 
-void Car::applyLongitudinalForces(float throttle, float brake) {
-    b2Rot  rot = b2Body_GetRotation(body);
-    b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
+    b2Rot rot = b2Body_GetRotation(body);
+    b2Vec2 fwd = b2RotateVector(rot, (b2Vec2){0.f, 1.f});
     b2Vec2 vel = b2Body_GetLinearVelocity(body);
 
-    float v_long = vel.x * fwd.x + vel.y * fwd.y;
+    float vLong = vel.x * fwd.x + vel.y * fwd.y;
 
-    float vmax = (v_long >= 0.f) ? VMAX_FWD : VMAX_REV;
+    // hacia adelante
+    if (throttle > 0.0f &&
+        vLong < (handling.maxFwdSpeed *
+                 raceState.maxSpeedFactor *
+                 raceState.maxSpeedCheat)) {
 
-    b2Vec2 F{0.f, 0.f};
+        float impulse = handling.engineImpulse * raceState.engineFactor * dt;
+        b2Vec2 j{ fwd.x * impulse, fwd.y * impulse };
+        b2Body_ApplyLinearImpulseToCenter(body, j, true);
+                 }
 
-    if (throttle != 0.f) {
-        float Eng = (throttle > 0.f) ? ENGINE_FWD : ENGINE_REV;
-        float engine_cap = 1.f - clampf(std::fabs(v_long) / vmax, 0.f, 1.f);
-        F += (Eng * throttle * engine_cap) * fwd;
+    // reversa
+    if (throttle < 0.0f && vLong > handling.maxBckSpeed) {
+        float impulse = handling.engineImpulse * dt;
+        b2Vec2 j{ -fwd.x * impulse, -fwd.y * impulse };
+        b2Body_ApplyLinearImpulseToCenter(body, j, true);
     }
-
-    if (brake > 0.f) {
-        float dir = (v_long >= 0.f) ? -1.f : 1.f;
-        F += dir * (BRAKE_FORCE * brake) * fwd;
-    }
-
-    F += (-DRAG_K * v_long) * fwd;
-
-    b2Body_ApplyForceToCenter(body, F, true);
 }
 
 
-namespace {
-constexpr float TURN_SPEED = 2.8f;   // rad/s, qué tan rápido gira a fondo
-constexpr float STEER_SMOOTH = 0.25f; // cuánto “suavizás” el cambio de omega (0–1)
+void Car::applyBrake(float brake, float dt) {
+    if (brake <= 0.0f) return;
+
+    b2Vec2 curVel = b2Body_GetLinearVelocity(body);
+
+    float speed = std::sqrt(curVel.x * curVel.x + curVel.y * curVel.y);
+    if (speed <= 0.0f) return;
+
+    float dv       = handling.brakeAccel * brake * dt;  // cuánto quiero bajar la speed este frame
+    float newSpeed = std::max(0.0f, speed - dv);
+    float factor   = newSpeed / speed;                  // entre 0 y 1
+
+    curVel.x *= factor;
+    curVel.y *= factor;
+    b2Body_SetLinearVelocity(body, curVel);
 }
+
 
 void Car::applySteering(float steer) {
-    // steer ∈ {-1, 0, 1} o [-1,1], da igual
-    if (steer == 0.f) {
-        // si querés que deje de girar cuando soltás
-        float currentOmega = b2Body_GetAngularVelocity(body);
-        float newOmega = lerp(currentOmega, 0.f, STEER_SMOOTH);
-        b2Body_SetAngularVelocity(body, newOmega);
-        return;
+    float targetAV = steer * handling.maxAngularVel;
+    b2Body_SetAngularVelocity(body, targetAV);
+}
+
+void Car::applyLateralFriction(float dt) {
+    b2Rot rot   = b2Body_GetRotation(body);
+    b2Vec2 fwd  = b2RotateVector(rot, (b2Vec2){0.f, 1.f});
+    b2Vec2 right= b2RotateVector(rot, (b2Vec2){1.f, 0.f});
+    b2Vec2 v    = b2Body_GetLinearVelocity(body);
+
+    float vLong = v.x * fwd.x   + v.y * fwd.y;
+    float vLat  = v.x * right.x + v.y * right.y;
+
+    float factor = std::max(0.0f, 1.0f - handling.lateralDamp * dt);
+    float vLatNew = vLat * factor;
+
+    if (std::fabs(vLatNew) < 0.1f) {
+        vLatNew = 0.0f;
     }
 
-    float steerNorm = clampf(steer, -1.f, 1.f);
-
-    float targetOmega = steerNorm * TURN_SPEED;
-    float currentOmega = b2Body_GetAngularVelocity(body);
-
-    // suavizo el cambio para que no sea brusco
-    float newOmega = lerp(currentOmega, targetOmega, STEER_SMOOTH);
-
-    b2Body_SetAngularVelocity(body, newOmega);
-}
-
-namespace {
-constexpr float DRIFT_SPEED_REF = 25.f; // a partir de acá decimos "va rápido"
-constexpr float LATERAL_K_SLOW  = 0.8f; // cuánto mato la vel. lateral cuando va lento
-constexpr float LATERAL_K_FAST  = 0.4f; // cuánto mato la vel. lateral cuando va rápido
-}
-
-void Car::applyDrift() {
-    b2Vec2 vel = b2Body_GetLinearVelocity(body);
-    float speed = std::sqrt(vel.x * vel.x + vel.y * vel.y);
-
-    if (speed < 0.1f) return;
-
-    b2Rot  rot = b2Body_GetRotation(body);
-    b2Vec2 fwd = b2RotateVector(rot, {0.f, 1.f});
-    b2Vec2 right{ fwd.y, -fwd.x }; // perpendicular
-
-
-    float v_fwd    = vel.x * fwd.x   + vel.y * fwd.y;
-    float v_lat    = vel.x * right.x + vel.y * right.y;
-
-    // cuánto quiero matar v_lat según la velocidad
-    float speedFactor = clampf(speed / DRIFT_SPEED_REF, 0.f, 1.f);
-    float k = lerp(LATERAL_K_SLOW, LATERAL_K_FAST, speedFactor);
-    // k ~ 0.8 en lento (mato casi todo), k ~ 0.4 en rápido (dejo más drift)
-
-    float v_lat_new = v_lat * (1.f - k); // reduzco la parte lateral
-
-    // reconstruyo la velocidad
-    b2Vec2 newVel =
-            v_fwd * fwd +
-            v_lat_new * right;
+    b2Vec2 newVel{
+        fwd.x * vLong + right.x * vLatNew,
+        fwd.y * vLong + right.y * vLatNew
+    };
 
     b2Body_SetLinearVelocity(body, newVel);
 }
 
-
-
 void Car::applyDamage(const float damage) {
-    this->health -= damage;
-    if (this->health < 0) this->health = 0;
+    float newDamage = damage;
+    newDamage = newDamage * raceState.shield;
+
+    this->raceState.health -= newDamage;
+    if (this->raceState.health <= 0) kill();
 }
 
-bool Car::isCarDestroy() {
-    return this->health == 0;
+bool Car::applyUpgrade(const UpgradeDef& up) {
+    bool apply = false;
+    switch (up.type) {
+        case Upgrade::ENGINE_FORCE: {
+            if (raceState.engineFactor != 1.0f) break;
+            raceState.engineFactor   = up.value;
+            raceState.maxSpeedFactor = 1.2f;
+            raceState.upgradePenalty += up.penaltySec;
+            raceState.totalUpgrades  += 1;
+            apply = true;
+            break;
+        }
+        case HEALTH: {
+            if (raceState.totalHealth != handling.baseHealth) break;
+            raceState.health = raceState.health * up.value;
+            raceState.totalHealth = raceState.health;
+            raceState.upgradePenalty += up.penaltySec;
+            raceState.totalUpgrades  += 1;
+            apply = true;
+            break;
+        }
+        case SHIELD: {
+            if (raceState.shield != 1.0f) break;
+            raceState.shield = up.value;
+            raceState.upgradePenalty += up.penaltySec;
+            raceState.totalUpgrades  += 1;
+            apply = true;
+            break;
+        }
+        case DAMAGE: {
+            if (raceState.damage != 1.0f) break;
+            raceState.damage = up.value;
+            raceState.upgradePenalty += up.penaltySec;
+            raceState.totalUpgrades  += 1;
+            apply = true;
+            break;
+        }
+        case Upgrade::NONE: {
+            break;
+        }
+    }
+    return apply;
 }
 
+
+void Car::applyCheat(const Cheat cheat) {
+    switch (cheat) {
+        case (Cheat::HEALTH_CHEAT): {
+            raceState.health = CHEAT_HEALTH;
+            raceState.totalHealth = CHEAT_HEALTH;
+            break;
+        }
+        case (Cheat::FREE_SPEED_CHEAT): {
+            raceState.maxSpeedCheat = 1000.f;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+}
 
 PlayerState Car::snapshotState(){
     b2Transform xf = b2Body_GetTransform(body);
     return PlayerState(clientId, xf.p.x, xf.p.y, b2Rot_GetAngle(xf.q));
+}
+
+
+void Car::resetForNewRace(float x, float y, float angleRad) {
+    b2BodyId body = this->body;
+
+    b2Vec2 pos{ x, y };
+    b2Rot rot = b2MakeRot(angleRad);
+
+    b2Body_Enable(body);
+
+    b2Body_SetTransform(body, pos, rot);
+    b2Body_SetLinearVelocity(body, {0.f, 0.f});
+    b2Body_SetAngularVelocity(body, 0.f);
+
+    resetRaceState(handling.baseHealth);
+}
+
+void Car::setPosition(float x, float y) {
+    b2BodyId body = this->body;
+    b2Vec2 pos{ x, y };
+    b2Rot rot = b2Body_GetRotation(body);
+    b2Body_SetTransform(body, pos, rot);
+}
+
+void Car::kill() {
+    this->raceState.health = 0.f;
+    //b2Body_Disable(body);
+}
+
+void Car::resetRaceState(float baseHealth) {
+    raceState.health          = baseHealth;
+    raceState.totalHealth     = baseHealth;
+    raceState.actualCheckpoint= 0;
+    raceState.finished        = false;
+    raceState.finishTime      = 0.0f;
+    raceState.ranking         = 0;
+    raceState.spawnId         = 0;
+
+    raceState.upgradePenalty  = 0.f;
+    raceState.engineFactor    = 1.0f;
+    raceState.maxSpeedFactor  = 1.0f;
+    raceState.shield          = 1.0f;
+    raceState.damage          = 1.0f;
+    raceState.maxSpeedCheat   = 1.0f;
+    raceState.totalUpgrades   = 0;
 }

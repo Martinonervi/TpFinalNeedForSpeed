@@ -7,15 +7,12 @@
 #include "city_texture.h"
 #include "effects_texture.h"
 #include "hud_texture.h"
-#include "people_texture.h"
-#include <optional>
 
 class TextureManager {
 public:
     explicit TextureManager(SDL2pp::Renderer& renderer);
 
     CarTexture& getCars();
-    PeopleTexture& getPeople();
     CityTexture& getCities();
     EffectsTexture& getEffects();
     HudTexture& getHud();
@@ -23,18 +20,20 @@ public:
 private:
     std::optional<SDL2pp::Texture> carsTexture;
     std::optional<SDL2pp::Texture> speedometerTexture;
-    std::optional<SDL2pp::Texture> peopleTexture;
     std::optional<SDL2pp::Texture> cityLibertyTexture;
+    std::optional<SDL2pp::Texture> cityLibertyOverTexture;
     std::optional<SDL2pp::Texture> citySanAndreasTexture;
     std::optional<SDL2pp::Texture> cityViceCityTexture;
     std::optional<SDL2pp::Texture> explosionTextures;
-    std::optional<SDL2pp::Texture> barsTexture;
+    std::optional<SDL2pp::Texture> healthNitroTexture;
+    std::optional<SDL2pp::Texture> swordShieldTexture;
     std::optional<SDL2pp::Texture> flagTexture;
     std::optional<SDL2pp::Texture> arrowTexture;
     std::optional<SDL2pp::Texture> upgradeFrameTexture;
+    std::optional<SDL2pp::Texture> upgradeTexture;
+    std::optional<SDL2pp::Texture> startBackTexture;
 
     std::optional<CarTexture> carManager;
-    std::optional<PeopleTexture> peopleManager;
     std::optional<CityTexture> cityManager;
     std::optional<EffectsTexture> effectsManager;
     std::optional<HudTexture> hudManager;

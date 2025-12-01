@@ -21,8 +21,6 @@ public:
     void close();     // Cierra el socket (centralizado)
     bool is_alive();  // Ambos hilos aún “listening”
 
-    ID getID();
-
     ClientHandler() = delete;
     ClientHandler(ClientHandler&&) = delete;
     ClientHandler& operator=(ClientHandler&&) = delete;

@@ -2,4 +2,7 @@
     <qresource prefix="/postgame">
         <file alias="lobby_bg.png">resources/lobby_bg.png</file>
     </qresource>
+    <qresource prefix="/fonts">
+        <file alias="pressstart2p.ttf">resources/fonts/pressstart2p.ttf</file>
+    </qresource>
 </RCC>

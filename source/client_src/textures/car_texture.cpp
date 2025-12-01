@@ -23,13 +23,14 @@ SDL2pp::Rect CarTexture::getFrame(const CarType type, const float angle) const {
         normalized += 2.0f * M_PI;
 
     const int frameIndex =
-        static_cast<int>(normalized / (2.0f * M_PI) * FRAMES_PER_CAR) % FRAMES_PER_CAR;
+        static_cast<int>(std::round(normalized / (2.0f * M_PI) * FRAMES_PER_CAR)) % FRAMES_PER_CAR;
+
 
     const int col = frameIndex % FRAMES_PER_DIRECTION;
     const int row = frameIndex >= FRAMES_PER_DIRECTION ? 1 : 0;
     const int x = col * width;
     const int y = yOffset + row * height;
-
+    
     return {x, y, width, height};
 }
 
@@ -42,9 +43,9 @@ SDL2pp::Texture& CarTexture::getSpeedometer() const {
 }
 
 SDL2pp::Rect CarTexture::getDialFrame() const {
-    const int WIDTH = 87;
-    const int HEIGHT = 87;
-    const int X = 10;
-    const int Y = 29;
-    return SDL2pp::Rect(X, Y, WIDTH, HEIGHT);
+    const int w = 87;
+    const int h = 87;
+    const int x = 10;
+    const int y = 29;
+    return SDL2pp::Rect(x, y, w, h);
 }

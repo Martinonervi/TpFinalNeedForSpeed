@@ -6,7 +6,6 @@ class ClientReceiver: public Thread{
 public:
     ClientReceiver(ClientProtocol& peer_socket, Queue<SrvMsgPtr>& receiverQueue);
     void run() override;
-    bool is_listening() const;
 
 private:
     ClientProtocol& protocol;

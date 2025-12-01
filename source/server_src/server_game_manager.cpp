@@ -40,6 +40,10 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
                 sender_queue->push(std::make_shared<JoinGame>(false, INEXISTENT_GAME, 0));
                 throw std::runtime_error("Partida inexistente");
             }
+            if (it->second.isStarted()) {
+                sender_queue->push(std::make_shared<JoinGame>(false, STARTED_GAME, 0));
+                throw std::runtime_error("Partida inexistente");
+            }
             reg = it->second.getRegistry();
             q   = it->second.getGameQueue();
         }
@@ -49,23 +53,12 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
             std::cout << "[Game Manager] Player joined:  " << client_id << ", game id: " << game_id<< std::endl;
         } catch (const std::exception&) {
             sender_queue->push(std::make_shared<JoinGame>(false, FULL_GAME, 0));
-            throw;
+            throw(std::runtime_error("Partida llena"));
         }
         return {q, game_id};
     }
 }
-/*
-void GameManager::reap_dead() {
-    for (auto it = games.begin(); it != games.end(); ) {
-        if (it->second.getRegistry()->size() == 0) {
-            it->second.gameThreadStop();
-            it = games.erase(it);
-        } else {
-            ++it; // solo avanza si no borro
-        }
-    }
-}
-*/
+
 void GameManager::LeaveGame(ID client_id, ID game_id) {
     std::unique_ptr<GameLoop> to_stop;
     {
@@ -96,7 +89,7 @@ MetadataGames GameManager::getGames() {
             ID gid = kv.first;
             GameContext& ctx = kv.second;
             int players = ctx.getRegistry() ? ctx.getRegistry()->size() : 0;
-            bool started = false; //por ahora hardcodeado pero desp tino decime de donde lo saco
+            bool started = ctx.isStarted(); //por ahora hardcodeado pero desp tino decime de donde lo saco
 
             out.push_back(GameMetadata{gid, players, started});
         }

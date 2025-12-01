@@ -4,78 +4,105 @@
 #include <list>
 #include <map>
 #include <unordered_set>
+#include <queue>
+#include <memory>
+#include <chrono>
 
 #include <box2d/box2d.h>
 
 #include "../server_client_registry.h"
 #include "../server_types.h"
+
+#include "../world/world_manager.h"
+#include "../world/map_parser.h"
 #include "../world/entities/building.h"
 #include "../world/entities/car.h"
 #include "../world/entities/checkpoint.h"
-#include "../world/map_parser.h"
-#include "../world/world_manager.h"
+
+#include "config/config_parser.h"
 #include "world_event_handlers.h"
-#include "chrono"
+#include "player_manager.h"
+#include "lobby_controller.h"
+#include "race_controller.h"
 
-class GameLoop: public Thread {
-
+class GameLoop : public Thread {
 public:
-    GameLoop(std::shared_ptr<gameLoopQueue> queue, std::shared_ptr<ClientsRegistry> registry);
-    void stop() override;
-    virtual ~GameLoop();
-    bool isRaceStarted() const;
+    GameLoop(std::shared_ptr<gameLoopQueue> queue,
+             std::shared_ptr<ClientsRegistry> registry);
 
+    ~GameLoop() override;
+
+    void stop() override;
+    bool isRaceStarted() const;
+    uint8_t getMaxPlayers() const { return maxPlayers; }
 
 protected:
     void run() override;
 
 private:
+    // estructura de la partida
     void loadMapFromYaml(const std::string& path);
-    void processCmds();
+    void setupRoute();        // setea checkpoints / spawns / recommendedPath según raceIndex
+    void resetRaceState();    // resetea autos, timers y colas entre carreras
 
-    std::list<Cmd> emptyQueue();
-
-    void movementHandler(Cmd& cmd);
-    void initPlayerHandler(Cmd& cmd);
+    // otros helpers
     void disconnectHandler(ID id);
-    void broadcastCarSnapshots();
-    void sendCurrentInfo();
-    void sendPlayerStats();
+    void broadcastNpcCars();
 
-    // box2D
-    WorldManager worldManager;
-    std::unordered_map<ID, Car> cars;
-    std::unordered_map<ID,Checkpoint> checkpoints;
-    std::vector<std::unique_ptr<Building>> buildings;
+    // stats globales de la sesión
+    void updateGlobalStatsFromLastRace();  // acumula tiempos totales
+    void computeGlobalRanking();           // ordena por tiempo total + penalidades
 
-    std::shared_ptr<gameLoopQueue> queue;
+    void createNpcCars();
+
+    Config  config;
+    uint8_t maxPlayers;
+
+
+    std::shared_ptr<gameLoopQueue>   queue;
     std::shared_ptr<ClientsRegistry> registry;
+
+    // mundo físico / eventos
     std::queue<WorldEvent> worldEvents;
-    void processWorldEvents();
+    WorldManager           worldManager;
 
-    void checkPlayersStatus();
-    void waitingForPlayers();
-    bool isConnected(ID id) const;
+    // entidades
+    std::unordered_map<ID, Car>        playerCars;
+    std::unordered_map<ID, Checkpoint> checkpoints;
+    std::vector<std::unique_ptr<Building>> buildings;
+    std::vector<SpawnPointConfig>      spawnPoints;
+    std::vector<RecommendedPoint>      recommendedPath;
+    std::unordered_map<ID, Car>        npcCars;
 
-    //tiempo de la carrera
-    float raceTimeSeconds = 0.0f;
-    std::chrono::steady_clock::time_point raceStartTime;
-    bool raceStarted = false;
-    bool raceEnded   = false;
-    uint8_t finishedCarsCount = 0;
-    uint8_t totalCars = 0;
-    uint8_t raceCarNumber = 0;
+    // upgrades
+    std::vector<UpgradeDef> upgrades;
 
-    std::vector<ID> raceRanking;
-
-    // loop
-    Printer printer;
-
+    // manejadores de lógica
     WorldEventHandlers eventHandlers;
+    PlayerManager      playerManager;
+    LobbyController    lobbyController;
+    RaceController     raceController;
 
-    std::vector<SpawnPointConfig> spawnPoints;
+    // estado de carrera actual
+    float raceTimeSeconds = 0.0f;
+    std::chrono::steady_clock::time_point raceStartTime{};
 
-    void simulatePlayerSpawns(int numPlayers);
+    bool    raceStarted       = false;
+    bool    raceEnded         = false;
+    bool    startRequested    = false;
+    uint8_t finishedCarsCount = 0;
+    uint8_t totalCars         = 0;
+
+    // info de rutas / partidas
+    uint8_t raceIndex  = 0;   // índice de ruta actual
+    uint8_t totalRaces = 0;   // cantidad total de rutas del mapa
+    MapData mapData;
+
+    // ranking de la carrera actual + stats globales
+    std::vector<ID>                 raceRanking;
+    std::vector<RaceResult>         lastRaceResults;
+    std::unordered_map<ID, PlayerGlobalStats> globalStats;
+
 };
 
 #endif

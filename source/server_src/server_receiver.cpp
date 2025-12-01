@@ -7,6 +7,7 @@
 #include "../common_src/cli_msg/init_player.h"
 #include "../common_src/cli_msg/requeststats.h"
 #include "../common_src/srv_msg/new_player.h"
+#include "../common_src/cli_msg/cli_start_game.h"
 
 Receiver::Receiver(Socket& peer_socket, ID clientID, GameManager& game_manager_ref, SendQPtr sender_queue):
         peer(peer_socket),
@@ -27,15 +28,19 @@ void Receiver::run() {
                 break;
             }
             switch (op) {
+                case Opcode::UPGRADE_REQUEST:{
+                    RequestUpgrade ru = protocol.recvUpgradeReq();
+                    auto msg = std::static_pointer_cast<CliMsg>(
+                            std::make_shared<RequestUpgrade>(std::move(ru)));
+                    cmdQueue->push(Cmd{id, msg});
+                    break;
+                }
                 case Opcode::CLIENT_DISCONNECT: {
                     DisconnectReq req = protocol.recvDisconnectReq();
                     if (joined_game_id != 0) {
                         game_manager.LeaveGame(id, joined_game_id);
                         cmdQueue = nullptr;
                         joined_game_id = 0;
-                        //auto msg = std::static_pointer_cast<SrvMsg>(
-                        //    std::make_shared<ClientDisconnect>(id));
-                        //sender_queue->push(msg);
                     }
                     break;
                 }
@@ -78,8 +83,21 @@ void Receiver::run() {
                     cmdQueue->push(Cmd{id, base});
                     break;
                 }
+                case Opcode::START_GAME: {
+                    CliMsgPtr base = std::static_pointer_cast<CliMsg>(
+                            std::make_shared<StartGame>());
+                    cmdQueue->push(Cmd{id, base});
+                    break;
+                }
+                case Opcode::REQUEST_CHEAT: {
+                    CheatRequest rc = protocol.recvCheat();
+                    CliMsgPtr base = std::static_pointer_cast<CliMsg>(
+                            std::make_shared<CheatRequest>(rc));
+                    cmdQueue->push(Cmd{id, base});
+                    break;
+                }
                 default: {
-                    std::cout << "cmd desconocido: " << static_cast<int>(op) << "\n";
+                    std::cout << "[Server receiver] cmd desconocido: " << static_cast<int>(op) << "\n";
                 }
             }
 

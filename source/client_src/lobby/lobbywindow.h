@@ -2,11 +2,11 @@
 
 #include <QMainWindow>
 #include <vector>
-
 #include "../client_protocol.h"
 #include <QVector>
 #include <QString>
 #include <QPixmap>
+#include <QCloseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,7 +21,11 @@ public:
     explicit LobbyWindow(ClientProtocol& protocol, bool& was_closed, QWidget *parent = nullptr);
     ~LobbyWindow() override;
 
-    private slots:
+protected:
+
+    void closeEvent(QCloseEvent* event) override;
+
+private slots:
 
     // Menú principal
     void on_playButton_clicked();
@@ -58,4 +62,6 @@ private:
     int m_currentCar{0};
     ID joined_id{0};
     bool& was_closed;
+    bool silentClose{false};
+    bool disconnected{false};
 };

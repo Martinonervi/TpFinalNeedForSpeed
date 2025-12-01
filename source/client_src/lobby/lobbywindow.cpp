@@ -4,12 +4,25 @@
 #include <QMessageBox>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QFontDatabase>
 
 #include "../../common_src/cli_msg/disconnect_request.h"
 #include "../../common_src/cli_msg/requestgame.h"
 #include "../../common_src/srv_msg/joingame.h"
 
 #include "ui_lobbywindow.h"
+
+static QString ensurePixelFontLoaded() {
+    static QString family;
+    if (!family.isEmpty()) return family;
+
+    const int id = QFontDatabase::addApplicationFont(":/fonts/pressstart2p.ttf");
+    if (id >= 0) {
+        const QStringList fams = QFontDatabase::applicationFontFamilies(id);
+        if (!fams.isEmpty()) family = fams.first();
+    }
+    return family;
+}
 
 LobbyWindow::LobbyWindow(ClientProtocol& protocol, bool& was_closed, QWidget *parent)
     : QMainWindow(parent),
@@ -18,6 +31,9 @@ LobbyWindow::LobbyWindow(ClientProtocol& protocol, bool& was_closed, QWidget *pa
     was_closed(was_closed){
     ui->setupUi(this);
 
+    if (const QString pix = ensurePixelFontLoaded(); !pix.isEmpty()) {
+        qApp->setFont(QFont(pix));
+    }
     applyBackgroundSkin();
     applyLobbySelectorStyles();
     applyCarSelectorStyles();
@@ -34,11 +50,18 @@ LobbyWindow::LobbyWindow(ClientProtocol& protocol, bool& was_closed, QWidget *pa
     ui->stackedPages->setCurrentWidget(ui->MainMenu);
 
     ui->gamesTable->setColumnCount(3);
-    QStringList headers;
-    headers << "ID" << "Jugadores" << "Estado";
-    ui->gamesTable->setHorizontalHeaderLabels(headers);
+    ui->gamesTable->setHorizontalHeaderLabels(QStringList() << "ID" << "Jugadores" << "Estado");
+    ui->gamesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);  // ocupa todo el ancho
+    ui->gamesTable->verticalHeader()->setVisible(false);
     ui->gamesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->gamesTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->gamesTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->gamesTable->setShowGrid(false);
+    ui->gamesTable->setAlternatingRowColors(true);
+    ui->gamesTable->setFocusPolicy(Qt::NoFocus);
+
+    this->setFixedSize(this->size());
+    setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
 
     this->setFixedSize(this->size());
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
@@ -50,30 +73,46 @@ LobbyWindow::~LobbyWindow() {
 }
 
 void LobbyWindow::populateGames(const std::vector<GameMetadata>& games) {
-    ui->gamesTable->clearContents();
-    ui->gamesTable->setRowCount(static_cast<int>(games.size()));
+    auto* table = ui->gamesTable;
+
+    table->clearContents();
+    table->setRowCount(static_cast<int>(games.size()));
 
     for (int row = 0; row < static_cast<int>(games.size()); ++row) {
         const auto& g = games[row];
 
-        // Columna 0: ID (visible y guardado en UserRole)
-        auto* idItem = new QTableWidgetItem(
-            QString::number(static_cast<quint32>(g.game_id)));
+        auto* idItem = new QTableWidgetItem(QString::number(static_cast<quint32>(g.game_id)));
         idItem->setData(Qt::UserRole, static_cast<quint32>(g.game_id));
 
-        // Columna 1: cantidad de jugadores
+        idItem->setData(Qt::UserRole + 1, g.started); // para rebotar gente que entra cuando ya empezó
+
         auto* playersItem = new QTableWidgetItem(QString::number(g.players));
+        auto* statusItem  = new QTableWidgetItem(g.started ? "En curso" : "Esperando");
 
-        // Columna 2: estado
-        const QString estado = g.started ? "En curso" : "Esperando";
-        auto* statusItem = new QTableWidgetItem(estado);
-
-        ui->gamesTable->setItem(row, 0, idItem);
-        ui->gamesTable->setItem(row, 1, playersItem);
-        ui->gamesTable->setItem(row, 2, statusItem);
+        table->setItem(row, 0, idItem);
+        table->setItem(row, 1, playersItem);
+        table->setItem(row, 2, statusItem);
     }
 
-    ui->gamesTable->resizeColumnsToContents();
+    const int viewportH = table->viewport()->height();
+    int rowH = (table->rowCount() > 0 ? table->rowHeight(0)
+                                      : table->fontMetrics().height() + 12);
+    if (rowH <= 0) rowH = 12;
+
+    const int minRowsToFill = qMax(0, viewportH / rowH);
+    if (table->rowCount() < minRowsToFill) {
+        const int extra = minRowsToFill - table->rowCount();
+        const int start = table->rowCount();
+        table->setRowCount(start + extra);
+        for (int r = start; r < start + extra; ++r) {
+            for (int c = 0; c < table->columnCount(); ++c) {
+                auto* it = new QTableWidgetItem(QString());
+                it->setFlags(Qt::NoItemFlags);
+                it->setBackground(Qt::NoBrush);
+                table->setItem(r, c, it);
+            }
+        }
+    }
 }
 
 /* Menú principal  */
@@ -85,7 +124,16 @@ void LobbyWindow::on_playButton_clicked() {
 
     // pedir partidas al servidor
     protocol.requestGames();
-    Op op = protocol.readActionByte();
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        disconnected = true;
+        close();
+        return;
+    }
 
     if (op == REQUEST_GAMES) {
         MetadataGames games = protocol.getMetadata();
@@ -97,7 +145,6 @@ void LobbyWindow::on_playButton_clicked() {
 }
 
 void LobbyWindow::on_quitButton_clicked() {
-    was_closed = true;
     close();
 }
 
@@ -105,7 +152,16 @@ void LobbyWindow::on_quitButton_clicked() {
 
 void LobbyWindow::on_refreshButton_clicked() {
     protocol.requestGames();
-    Op op = protocol.readActionByte();
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        disconnected = true;
+        close();
+        return;
+    }
 
     if (op == REQUEST_GAMES) {
         MetadataGames games = protocol.getMetadata();
@@ -136,7 +192,16 @@ void LobbyWindow::on_joinButton_clicked() {
     RequestGame req(game_id);
     protocol.sendRequestGame(req);
 
-    Op op = protocol.readActionByte();
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        disconnected = true;
+        close();
+        return;
+    }
     if (op != JOIN_GAME) {
         QMessageBox::warning(this, "Unirse a partida",
                              "Respuesta inesperada del servidor.");
@@ -146,6 +211,7 @@ void LobbyWindow::on_joinButton_clicked() {
     JoinGame info = protocol.recvGameInfo();
 
     if (info.couldJoin()) {
+        joined_id = info.getGameID();
         QMessageBox::information(this, "Unirse a partida",
                                  "Te uniste correctamente a la partida.");
         ui->stackedPages->setCurrentWidget(ui->CarSelector);
@@ -157,10 +223,14 @@ void LobbyWindow::on_joinButton_clicked() {
         } else if (code == INEXISTENT_GAME) {
             QMessageBox::warning(this, "Unirse a partida",
                                  "La partida no existe.");
+        } else if (code == STARTED_GAME){
+            QMessageBox::warning(this, "Unirse a partida",
+                                 "La partida ya está empezada.");
         } else {
             QMessageBox::warning(this, "Unirse a partida",
                                  "No se pudo unir a la partida.");
         }
+        on_refreshButton_clicked();
     }
 }
 
@@ -170,7 +240,16 @@ void LobbyWindow::on_createButton_clicked() {
     RequestGame req(game_id);
     protocol.sendRequestGame(req);
 
-    Op op = protocol.readActionByte();
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        disconnected = true;
+        close();
+        return;
+    }
     if (op != JOIN_GAME) {
         QMessageBox::warning(this, "Crear partida",
                              "Respuesta inesperada del servidor.");
@@ -212,13 +291,13 @@ void LobbyWindow::applyLobbySelectorStyles() {
         "}"
         "QLabel#titleLabel {"
         "  color: #f3f0d0;"
-        "  font-size: 28px;"
+        "  font-size: 20px;"
         "  font-weight: 900;"
         "  letter-spacing: 1px;"
         "}"
         "QLabel#subtitleLabel {"
         "  color: #c8d0d8;"
-        "  font-size: 14px;"
+        "  font-size: 9px;"
         "  padding-bottom: 8px;"
         "  border-bottom: 1px solid rgba(255,255,255,0.08);"
         "}"
@@ -248,11 +327,11 @@ void LobbyWindow::applyLobbySelectorStyles() {
         "  min-height: 44px;"
         "  border-radius: 10px;"
         "  font-weight: 800;"
-        "  font-size: 18px;"
-        "  padding: 6px 20px;"
+        "  font-size: 11px;"
+        "  padding: 6px 17px;"
         "  color: white;"
         "}"
-        "QPushButton#createButton { background: #2ecc40; border: 3px solid #0d5f1a; }"
+        "QPushButton#createButton { background: #2ecc40; border: 3px solid #0d5f1a; padding: 6px 16px; }"
         "QPushButton#createButton:hover { background: #3fe24f; }"
         "QPushButton#createButton:pressed { background: #1fa72f; }"
         "QPushButton#joinButton { background: #3a6ea7; border: 3px solid #1f3e61; }"
@@ -278,12 +357,13 @@ void LobbyWindow::applyLobbySelectorStyles() {
     ui->backButton->setStyleSheet(
         "QPushButton#backButton {"
         "  background: #E74C3C;"
+        "  min-height: 25px;"
         "  border: 3px solid #7A1E18;"
         "  color: white;"
         "  font-weight: 800;"
-        "  font-size: 22px;"
+        "  font-size: 12px;"
         "  border-radius: 12px;"
-        "  padding: 10px 36px;"
+        "  padding: 10px 26px;"
         "}"
         "QPushButton#backButton:hover   { background: #FF5E4F; }"
         "QPushButton#backButton:pressed { background: #C83A2C; }"
@@ -396,7 +476,7 @@ void LobbyWindow::applyCarSelectorStyles() {
         "  min-height: 48px;"
         "  background: #2ecc40;"
         "  border: 3px solid #0d5f1a;"
-        "  color: white; font-weight: 900; font-size: 22px;"
+        "  color: white; font-weight: 900; font-size: 14px;"
         "  border-radius: 12px;"
         "}"
         "QPushButton#selectCarButton:hover { background: #3fe24f; }"
@@ -406,12 +486,17 @@ void LobbyWindow::applyCarSelectorStyles() {
     ui->backButtonCar->setStyleSheet(
         "QPushButton#backButtonCar {"
         "  background: #E74C3C;"
+        "  min-height: 25px;"
         "  border: 3px solid #7A1E18;"
-        "  color: white; font-weight: 800; font-size: 22px;"
-        "  border-radius: 12px; padding: 10px 36px;"
+        "  color: white;"
+        "  font-weight: 800;"
+        "  font-size: 12px;"
+        "  border-radius: 12px;"
+        "  padding: 10px 26px;"
         "}"
         "QPushButton#backButtonCar:hover   { background: #FF5E4F; }"
         "QPushButton#backButtonCar:pressed { background: #C83A2C; }"
+        "QPushButton#backButtonCar:disabled{ background:#9E9E9E; border-color:#5E5E5E; color:#E6E6E6; }"
     );
 
     auto *shadow = new QGraphicsDropShadowEffect(ui->carPanel);
@@ -453,7 +538,6 @@ void LobbyWindow::updateCarView() {
         ui->carImage->setText("Sin imagen");
     }
 
-    // habilitar/deshabilitar flechas si querés “bordes duros”
     ui->prevCarButton->setEnabled(m_currentCar > 0);
     ui->nextCarButton->setEnabled(m_currentCar < total - 1);
 }
@@ -461,19 +545,8 @@ void LobbyWindow::updateCarView() {
 void LobbyWindow::on_backButtonCar_clicked() {
     int n = 0;
     DisconnectReq dr(joined_id);
-    CliMsgPtr msg = std::make_shared<DisconnectReq>(dr);
     protocol.sendDisconnectReq(dr);
     joined_id = 0;
-
-    /*
-    Op opcode = protocol.readActionByte();
-
-    if (opcode == INIT_PLAYER) {
-        std::cout << "recibí init player" << std::endl;
-        protocol.recvSendPlayer();
-    }
-    */
-
     ui->stackedPages->setCurrentWidget(ui->LobbySelector);
     on_refreshButton_clicked();
 }
@@ -503,5 +576,60 @@ void LobbyWindow::on_selectCarButton_clicked() {
                      "Respuesta inesperada del servidor.");
         return;
     }
+    Op op;
+    try {
+        op = protocol.readActionByte();
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "Se perdió la conexión con el servidor");
+        disconnected = true;
+        close();
+        return;
+    }
+
+    if (op != CAR_SELECT) {
+        return; // ???????
+    }
+    CarSelect car_confirmation = protocol.recvCarConfirmation();
+    if (!car_confirmation.isSelected()) {
+        QMessageBox::warning(this, "Seleccionar auto",
+             "La partida ya empezó.");
+        on_backButtonCar_clicked();
+        return;
+    }
+    silentClose = true;
     close();
+}
+
+void LobbyWindow::closeEvent(QCloseEvent* event) {
+    if (silentClose) {
+        silentClose = false;
+        event->accept();
+        return;
+    }
+
+    if (!disconnected) {
+        const auto ret = QMessageBox::question(
+            this,
+            tr("Salir"),
+            tr("¿Seguro que querés cerrar?"),
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No
+        );
+        if (ret != QMessageBox::Yes) {
+            event->ignore();
+            return;
+        }
+    }
+
+    if (joined_id != 0) {
+        try {
+            DisconnectReq dr(joined_id);
+            protocol.sendDisconnectReq(dr);
+        } catch (...) {}
+        joined_id = 0;
+    }
+
+    was_closed = true;
+    event->accept();
 }

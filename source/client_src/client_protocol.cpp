@@ -94,9 +94,9 @@ PlayerState ClientProtocol::recvSrvMsg() {
         //endianess para los floats??
 
         uint16_t player_id = ntohs(player_id_BE);
-        float x = decodeFloat100BE(x_BE);
-        float y = decodeFloat100BE(y_BE);
-        float angleRad = decodeFloat100BE(angleRad_BE);
+        float x = decodeFloatBE(x_BE);
+        float y = decodeFloatBE(y_BE);
+        float angleRad = decodeFloatBE(angleRad_BE);
 
 
         PlayerState ps(player_id, x, y, angleRad);
@@ -146,9 +146,9 @@ SendPlayer ClientProtocol::recvSendPlayer() {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
     uint16_t player_id = ntohs(player_id_BE);
-    float x = decodeFloat100BE(x_BE);
-    float y = decodeFloat100BE(y_BE);
-    float angleRad = decodeFloat100BE(angleRad_BE);
+    float x = decodeFloatBE(x_BE);
+    float y = decodeFloatBE(y_BE);
+    float angleRad = decodeFloatBE(angleRad_BE);
     return SendPlayer(player_id, carType, x, y, angleRad);
 }
 
@@ -173,10 +173,10 @@ NewPlayer ClientProtocol::recvNewPlayer() {
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
-    float player_id = ntohs(player_id_BE);
-    float x = decodeFloat100BE(x_BE);
-    float y = decodeFloat100BE(y_BE);
-    float angleRad = decodeFloat100BE(angleRad_BE);
+    uint16_t player_id = ntohs(player_id_BE);
+    float x = decodeFloatBE(x_BE);
+    float y = decodeFloatBE(y_BE);
+    float angleRad = decodeFloatBE(angleRad_BE);
 
     return NewPlayer(player_id, carType, x, y, angleRad);
 }
@@ -279,10 +279,12 @@ SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
     size_t n = 0;
     ID player_id_BE;
     uint32_t health_BE;
+    uint32_t total_health_BE;
 
     try {
-        n = peer.recvall(&player_id_BE, sizeof(uint32_t));
-        n += peer.recvall(&health_BE, sizeof(uint32_t));
+        n = peer.recvall(&player_id_BE, sizeof(ID));
+        n += peer.recvall(&health_BE, sizeof(health_BE));
+        n += peer.recvall(&total_health_BE, sizeof(total_health_BE));
 
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
@@ -292,8 +294,9 @@ SrvCarHitMsg ClientProtocol::recvCollisionEvent(){
     }
 
     ID player_id = ntohl(player_id_BE);
-    float health = decodeFloat100BE(health_BE);
-    return SrvCarHitMsg(player_id, health);
+    float health = decodeFloatBE(health_BE);
+    float totalHealth = decodeFloatBE(total_health_BE);
+    return SrvCarHitMsg(player_id, health, totalHealth);
 }
 
 SrvCheckpointHitMsg ClientProtocol::recvCheckpointHitEvent(){
@@ -360,12 +363,15 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
     try {
         uint32_t speed_BE;
         uint32_t raceTimeSeconds_BE;
-        std::uint8_t raceNumber;
+        uint8_t raceNumber;
         ID nextCheckpointId_BE;
         uint32_t checkX_BE;
         uint32_t checkY_BE;
         uint32_t angleHint_BE;
         uint32_t distanceToChekpoint_BE;
+        uint8_t totalRaces;
+        uint8_t totalCheckpoints;
+        uint8_t ranking;
 
         peer.recvall(&speed_BE, sizeof(speed_BE));
         peer.recvall(&raceTimeSeconds_BE, sizeof(raceTimeSeconds_BE));
@@ -375,19 +381,22 @@ SrvCurrentInfo ClientProtocol::recvCurrentInfo() {
         peer.recvall(&checkY_BE, sizeof(checkY_BE));
         peer.recvall(&angleHint_BE, sizeof(angleHint_BE));
         peer.recvall(&distanceToChekpoint_BE, sizeof(distanceToChekpoint_BE));
+        peer.recvall(&totalRaces, sizeof(totalRaces));
+        peer.recvall(&totalCheckpoints, sizeof(totalCheckpoints));
+        peer.recvall(&ranking, sizeof(ranking));
 
-        float speed = decodeFloat100BE(speed_BE);
-        float raceTimeSecond = decodeFloat100BE(raceTimeSeconds_BE);
+        float speed = decodeFloatBE(speed_BE);
+        float raceTimeSecond = decodeFloatBE(raceTimeSeconds_BE);
         ID nextCheckpointID = ntohs(nextCheckpointId_BE);
-        float checkX = decodeFloat100BE(checkX_BE);
-        float checkY = decodeFloat100BE(checkY_BE);
-        float angleHint = decodeFloat100BE(angleHint_BE);
-        float distanceToheckpoint = decodeFloat100BE(distanceToChekpoint_BE);
+        float checkX = decodeFloatBE(checkX_BE);
+        float checkY = decodeFloatBE(checkY_BE);
+        float angleHint = decodeFloatBE(angleHint_BE);
+        float distanceToheckpoint = decodeFloatBE(distanceToChekpoint_BE);
 
 
-        SrvCurrentInfo ci(nextCheckpointID, checkX, checkY, angleHint,
-                          distanceToheckpoint, raceTimeSecond, raceNumber, speed);
-        return ci;
+        return SrvCurrentInfo(nextCheckpointID, checkX, checkY, angleHint,
+                          distanceToheckpoint, raceTimeSecond, raceNumber, speed,
+                          totalRaces, totalCheckpoints, ranking);
 
     } catch (const std::exception& e) {
         std::cerr << "client_main error: " << e.what() << "\n";
@@ -427,20 +436,209 @@ PlayerStats ClientProtocol::recvStats() {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
 
-    float timeSecToComplete = decodeFloat100BE(timeSecToComplete_BE);
+    float timeSecToComplete = decodeFloatBE(timeSecToComplete_BE);
     return PlayerStats(racePosition, timeSecToComplete);
 }
 
 TimeLeft ClientProtocol::recvTimeLeft() {
     uint8_t time;
+    bool up;
     int n = 0;
     try {
         n += peer.recvall(&time, sizeof(uint8_t));
+        n += peer.recvall(&up, sizeof(bool));
     } catch (...) {
         throw std::runtime_error("recv: closed or error during read");
     }
     if (n == 0) {
         throw std::runtime_error("recv: EOF (0 bytes)");
     }
-    return TimeLeft(time);
+    return TimeLeft(time, up);
+}
+
+void ClientProtocol::sendRequestUpgrade(RequestUpgrade& up) {
+    try{
+        Op opcode = up.type();
+        Upgrade upgrade = up.getUpgrade();
+
+        std::vector<char> buf(sizeof(Op) + sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &upgrade, sizeof(Upgrade));
+        offset += sizeof(Upgrade);
+
+        peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+SendUpgrade ClientProtocol::recvUpgrade() {
+    Upgrade upgrade;
+    bool success;
+    int n = 0;
+    try {
+        n += peer.recvall(&upgrade, sizeof(Op));
+        n += peer.recvall(&success, sizeof(bool));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+
+    return SendUpgrade(upgrade, success);
+}
+
+
+
+UpgradeLogic ClientProtocol::recvUpgradeLogic() {
+    uint8_t size;
+    std::vector<UpgradeDef> uds;
+
+    int n = 0;
+    try {
+        n += peer.recvall(&size, sizeof(size));
+        uds.reserve(size);
+        for (uint8_t i = 0; i < size; i++) {
+            UpgradeDef ud;
+
+            uint8_t t;
+            n += peer.recvall(&t, sizeof(t));
+            ud.type = static_cast<Upgrade>(t);
+
+            uint32_t encodedValue;
+            n += peer.recvall(&encodedValue, sizeof(encodedValue));
+            ud.value = decodeFloatBE(encodedValue);
+
+            uint32_t encodedPenalty;
+            n += peer.recvall(&encodedPenalty, sizeof(encodedPenalty));
+            ud.penaltySec = decodeFloatBE(encodedPenalty);
+
+            uds.push_back(std::move(ud));
+        }
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return UpgradeLogic(std::move(uds));
+}
+
+RecommendedPath ClientProtocol::recvRecommendedPath() {
+    uint8_t size;
+    std::vector<RecommendedPoint> rps;
+
+    int n = 0;
+    try {
+        n += peer.recvall(&size, sizeof(size));
+        rps.reserve(size);
+        for (uint8_t i = 0; i < size; i++) {
+            RecommendedPoint rp;
+
+            uint32_t encodedX;
+            n += peer.recvall(&encodedX, sizeof(encodedX));
+            rp.x = decodeFloatBE(encodedX);
+
+            uint32_t encodedY;
+            n += peer.recvall(&encodedY, sizeof(encodedY));
+            rp.y = decodeFloatBE(encodedY);
+
+            rps.push_back(std::move(rp));
+        }
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+    return RecommendedPath(std::move(rps));
+}
+
+
+int ClientProtocol::sendStartGame(const StartGame& sg) {
+    try {
+        Op type = sg.type();
+
+        std::vector<char> buf(sizeof(Op));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &type , sizeof(Op));
+        offset += sizeof(type);
+
+        int n = peer.sendall(buf.data(), offset);
+        return n;
+    }  catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+CarSelect ClientProtocol::recvCarConfirmation() {
+    bool confirmation;
+
+    int n = 0;
+    try {
+        n += peer.recvall(&confirmation, sizeof(bool));
+    } catch (...) {
+        throw std::runtime_error("recv: closed or error during read");
+    }
+    if (n == 0) {
+        throw std::runtime_error("recv: EOF (0 bytes)");
+    }
+
+    return CarSelect(confirmation);
+}
+
+int ClientProtocol::sendCheat(const CheatRequest& up) {
+    try{
+        Op opcode = up.type();
+        Cheat cheat = up.getCheat();
+
+        std::vector<char> buf(sizeof(opcode) + sizeof(cheat));
+        size_t offset = 0;
+
+        memcpy(buf.data() + offset, &opcode, sizeof(Op));
+        offset += sizeof(Op);
+
+        memcpy(buf.data() + offset, &cheat, sizeof(cheat));
+        offset += sizeof(cheat);
+
+        return peer.sendall(buf.data(), offset);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        throw("Error sending");
+    }
+}
+
+
+SrvNpcSpawn ClientProtocol::recvNpcSpawn() {
+    try {
+        ID id_BE;
+        CarType carType;
+        uint32_t x_BE;
+        uint32_t y_BE;
+        uint32_t angle_BE;
+
+        peer.recvall(&id_BE,    sizeof(id_BE));
+        peer.recvall(&carType,  sizeof(carType));
+        peer.recvall(&x_BE,     sizeof(x_BE));
+        peer.recvall(&y_BE,     sizeof(y_BE));
+        peer.recvall(&angle_BE, sizeof(angle_BE));
+
+        ID id        = ntohs(id_BE);
+        float x      = decodeFloatBE(x_BE);
+        float y      = decodeFloatBE(y_BE);
+        float angle  = decodeFloatBE(angle_BE);
+
+        return SrvNpcSpawn(id, carType, x, y, angle);
+    } catch (const std::exception& e) {
+        std::cerr << "recvNpcSpawn error: " << e.what() << "\n";
+        throw RETURN_FAILURE;
+    }
 }

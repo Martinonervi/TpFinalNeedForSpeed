@@ -1,7 +1,8 @@
 #include "hud_texture.h"
 
-HudTexture::HudTexture(SDL2pp::Texture& bars, SDL2pp::Texture& upgradeFrame) :
-    bars(bars), upgradeFrame(upgradeFrame)
+HudTexture::HudTexture(SDL2pp::Texture& healthAndNitro, SDL2pp::Texture& swordAndShield, SDL2pp::Texture& upgradeFrame,
+        SDL2pp::Texture& upgrades) :
+    healthAndNitro(healthAndNitro), swordAndShield(swordAndShield), upgradeFrame(upgradeFrame), upgrades(upgrades)
 {}
 
 SDL2pp::Rect HudTexture::getHealthBar() const {
@@ -20,10 +21,21 @@ SDL2pp::Rect HudTexture::getEnergyBar() const {
     return {x, y, w, h};
 }
 
-SDL2pp::Texture& HudTexture::getBarsTexture() const {
-    return bars;
+SDL2pp::Texture& HudTexture::getBarsTexture() const { // cambiar nombre
+    return healthAndNitro;
 }
 
 SDL2pp::Texture& HudTexture::getUpgradeFrame() const {
     return upgradeFrame;
+}
+
+SDL2pp::Texture& HudTexture::getUpgrades() const {
+    return upgrades;
+}
+
+SDL2pp::Rect HudTexture::getUpgradeIconRect(const Upgrade type) const {
+    auto it = rects.find(type);
+    if (it != rects.end()) return it->second;
+
+    return SDL2pp::Rect(0, 0, 0, 0);
 }

@@ -2,7 +2,7 @@
 #define TPFINALNEEDFORSPEED_SERVER_MSG_H
 
 #include "../opcodes.h"
-
+#include "../constants.h"
 class SrvMsg {
 public:
     virtual ~SrvMsg() = default;

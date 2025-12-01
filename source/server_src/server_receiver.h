@@ -25,7 +25,9 @@ public:
     void setCmdQueue(std::shared_ptr<gameLoopQueue>);
 
 protected:
-    void run() override;  // bucle de lectura
+    
+    // bucle de lectura
+    void run() override;
 
 private:
     Socket& peer;

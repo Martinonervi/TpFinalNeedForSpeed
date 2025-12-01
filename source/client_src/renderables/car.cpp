@@ -21,6 +21,10 @@ void Car::draw(const Camera& camera) {
     SDL2pp::Rect srcRect(tm.getCars().getFrame(carType, angle));
     const int drawX = static_cast<int>(x - camera.getX() - srcRect.w / 2);
     const int drawY = static_cast<int>(y - camera.getY() - srcRect.h / 2);
+
+    bool val = drawX > 0 && drawY > 0 && drawX < SCREEN_WIDTH && drawY < SCREEN_HEIGHT;
+
+    setInCamera(val);
     SDL2pp::Rect dstRect(drawX, drawY, srcRect.w/1.25, srcRect.h/1.25);
 
     renderer.Copy(texture, srcRect,dstRect);
@@ -36,9 +40,11 @@ void Car::setCarType(const CarType newCarType) {
 }
 
 void Car::setHealth(const float newHealth) {
-    if (newHealth <= 0 && carState == ALIVE) {
+    if (newHealth <= 0 && (carState == LOW_HEALTH || carState == ALIVE)) {
         explosionFrame = 1;
         carState = EXPLODING;
+    } else if (newHealth <= 20 && carState == ALIVE) {
+        carState = LOW_HEALTH;
     }
     health = newHealth;
 }
@@ -66,11 +72,45 @@ void Car::drawExplosion(const Camera& camera) {
     }
 }
 
+void Car::setMaxHealth(const float newMaxHealth) {
+    maxHealth = newMaxHealth;
+}
+
 CarState Car::getState() const { return carState; }
 
 float Car::getAngle() const { return angle; }
 
-float Car::getHealth() const { return health; }
+float Car::getHealthPercentage() const { return health/maxHealth; }
 
 float Car::getSpeed() const { return speed; }
 void Car::setSpeed(const float newSpeed) { speed=newSpeed; }
+
+void Car::addUpgrade(const Upgrade newUp) {
+    if (upgrades.size() == 3) return;
+    upgrades.push_back(newUp);
+}
+
+std::vector<Upgrade> Car::getUpgrades() {
+    return upgrades;
+}
+
+void Car::clearUpgrades() {
+    upgrades.clear();
+}
+
+float Car::getHealth() const { return health; }
+
+float Car::getMaxHealth() const { return maxHealth; }
+
+bool Car::getInCamera() const { return inCamera; }
+void Car::setInCamera(const bool newInCamera) {
+    inCamera = newInCamera;
+}
+
+void Car::setState(CarState state) { carState = state; }
+
+void Car::resetStats() {
+    health = maxHealth;
+    speed = 0;
+    inCamera = true;
+}

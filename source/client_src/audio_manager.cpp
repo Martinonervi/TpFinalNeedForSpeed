@@ -1,0 +1,114 @@
+#include "audio_manager.h"
+#include <iostream>
+
+AudioManager::AudioManager() {
+    init();
+}
+
+bool AudioManager::init() {
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        std::cout << "SDL_mixer error: " << Mix_GetError() << std::endl;
+        return false;
+    }
+    initSfx();
+
+    return true;
+}
+
+void AudioManager::initSfx() {
+    loadSound("explosion", "../assets/sfx/explosion.wav");
+    loadSound("crash", "../assets/sfx/crash.wav");
+    loadSound("checkpoint", "../assets/sfx/checkpoint.wav");
+    loadSound("countdown", "../assets/sfx/countdown.wav");
+    loadSound("engine", "../assets/sfx/engine.wav");
+    loadSound("purchase", "../assets/sfx/purchase.wav");
+
+    loadMusic("game_music", "../assets/sfx/game-music.wav");
+}
+
+void AudioManager::close() {
+    for (auto& pair : sounds) {
+        Mix_FreeChunk(pair.second);
+    }
+    for (auto& pair : music) {
+        Mix_FreeMusic(pair.second);
+    }
+
+    sounds.clear();
+    music.clear();
+
+    Mix_CloseAudio();
+}
+
+void AudioManager::loadSound(const std::string& name, const std::string& path) {
+    Mix_Chunk* s = Mix_LoadWAV(path.c_str());
+    if (!s) {
+        std::cout << "Error cargando sonido '" << name << "': " << Mix_GetError() << std::endl;
+        return;
+    }
+    sounds[name] = s;
+}
+
+void AudioManager::loadMusic(const std::string& name, const std::string& path) {
+    Mix_Music* m = Mix_LoadMUS(path.c_str());
+    if (!m) {
+        std::cout << "Error cargando música '" << name << "': " << Mix_GetError() << std::endl;
+        return;
+    }
+    music[name] = m;
+}
+
+void AudioManager::playSound(const std::string& name, int loops) {
+    if (!sounds.count(name)) return;
+
+    if (channels.count(name)) {
+        int ch = channels[name];
+        if (Mix_Playing(ch)) {
+            return;
+        }
+    }
+
+    int ch = Mix_PlayChannel(-1, sounds[name], loops);
+    if (ch != -1) {
+        channels[name] = ch;
+    }
+}
+
+
+void AudioManager::stopSound(const std::string& name) {
+    if (channels.count(name)) {
+        Mix_HaltChannel(channels[name]);
+        channels.erase(name);
+    }
+}
+
+
+void AudioManager::playMusic(const std::string& name, int loops) {
+    if (music.count(name)) {
+        Mix_PlayMusic(music[name], loops);
+    }
+}
+
+void AudioManager::stopMusic() {
+    Mix_HaltMusic();
+}
+
+AudioManager::~AudioManager() {
+    close();
+}
+
+void AudioManager::lowerVolume() {
+    masterVolume -= VOLUME_AMOUNT;
+    if (masterVolume < 0) masterVolume = 0;
+
+    Mix_Volume(-1, masterVolume);
+    Mix_VolumeMusic(masterVolume);
+}
+
+void AudioManager::raiseVolume() {
+    masterVolume += VOLUME_AMOUNT;
+    if (masterVolume > MIX_MAX_VOLUME) masterVolume = MIX_MAX_VOLUME;
+
+    Mix_Volume(-1, masterVolume);
+    Mix_VolumeMusic(masterVolume);
+}

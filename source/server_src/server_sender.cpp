@@ -8,6 +8,10 @@
 #include "../common_src/srv_msg/send_player.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
+#include "../common_src/srv_msg/srv_starting_game.h"
+#include "../common_src/srv_msg/srv_race_finished.h"
 
 Sender::Sender(Socket& peer_socket, SendQPtr queue):
         peer(peer_socket), msg_queue(std::move(queue)), protocol(peer) {}
@@ -30,10 +34,12 @@ void Sender::run() {
 
             switch (msg->type()) {
                 case Opcode::TIME: {
+                    if (!playing){continue;}
                     n = protocol.sendTimeLeft(dynamic_cast<TimeLeft&>(*msg));
                     break;
                 }
                 case Opcode::STATS:{ // no esta testeado
+                    if (!playing){continue;}
                     n = protocol.sendPlayerStats(dynamic_cast<PlayerStats&>(*msg));
                     break;
                 }
@@ -68,15 +74,49 @@ void Sender::run() {
                     break;
                 }
                 case Opcode::CLIENT_DISCONNECT: {
+                    if (!playing){continue;}
                     n = protocol.sendClientDisconnect(dynamic_cast<ClientDisconnect&>(*msg));
                     break;
                 }
                 case Opcode::CURRENT_INFO: {
+                    if (!playing){continue;}
                     n = protocol.sendCurrentInfo(dynamic_cast<SrvCurrentInfo&>(*msg));
                     break;
                 }
+                case Opcode::UPGRADE_SEND: {
+                    if (!playing){continue;}
+                    n = protocol.sendUpgrade(dynamic_cast<SendUpgrade&>(*msg));
+                    break;
+                }
+                case Opcode::UPGRADE_LOGIC: {
+                    if (!playing){continue;}
+                    n = protocol.sendUpgradeLogic(dynamic_cast<UpgradeLogic&>(*msg));
+                    break;
+                }
+                case Opcode::RECOMMENDED_PATH: {
+                    if (!playing){continue;}
+                    n = protocol.sendRecommendedPath(dynamic_cast<RecommendedPath&>(*msg));
+                    break;
+                }
+                case Opcode::CAR_SELECT: {
+                    n = protocol.sendCarConfirmation(dynamic_cast<CarSelect&>(*msg));
+                    break;
+                }
+                case Opcode::STARTING_GAME: {
+                    if (!playing){continue;}
+                    n = protocol.sendSartingGame(dynamic_cast<StartingGame&>(*msg));
+                    break;
+                }
+                case Opcode::RACE_FINISHED: {
+                    n = protocol.sendRaceFinished(dynamic_cast<RaceFinished&>(*msg));
+                    break;
+                }
+                case Opcode::NPC_SPAWN: {
+                    n = protocol.sendNpcSpawn(dynamic_cast<SrvNpcSpawn&>(*msg));
+                    break;
+                }
                 default: {
-                    std::cout << "cmd desconocido: " << msg->type() << "\n";
+                    std::cout << "[Server Sender] cmd desconocido: " << msg->type() << "\n";
                     n = 0; //quiero salir
                 }
             }

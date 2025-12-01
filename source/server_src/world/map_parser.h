@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "entities/checkpoint.h"
+#include <yaml-cpp/yaml.h>
+#include "../../common_src/srv_msg/srv_recommended_path.h"
 
 struct BuildingConfig {
     float x;
@@ -25,9 +27,17 @@ struct CheckpointConfig {
 };
 
 struct SpawnPointConfig {
+    ID spawnId;
     float x; // en metros
     float y; // en metros
     float angle; // en radianes
+};
+
+struct NpcConfig {
+    float x;
+    float y;
+    float angle;
+    std::string carType;
 };
 
 struct RouteConfig {
@@ -36,20 +46,34 @@ struct RouteConfig {
 
     std::vector<CheckpointConfig> checkpoints;
     std::vector<SpawnPointConfig> spawnPoints;
+    std::vector<RecommendedPoint> recommendedPath;
 };
 
 struct MapData {
     std::string city;
     std::vector<BuildingConfig> buildings;
-    std::vector<CheckpointConfig> checkpoints; //la primera
-    std::vector<SpawnPointConfig> spawn;
-    // todos las recorridos
     std::vector<RouteConfig> routes;
+
+    std::vector<NpcConfig> npcParked;
 };
 
 class MapParser {
 public:
     MapData load(const std::string& path);
+
+private:
+    void parseCheckpointList(const YAML::Node& cpList,
+                                        std::vector<CheckpointConfig>& out) const;
+    void parseSpawnPoints(const YAML::Node& spList,
+                                     std::vector<SpawnPointConfig>& out) const;
+    void parseRecommendedPath(const YAML::Node& pathList,
+                                         std::vector<RecommendedPoint>& out) const;
+
+    void parseBuildings(const YAML::Node& buildingsNode,
+                        std::vector<BuildingConfig>& out) const;
+
+    void parseNpcCars(const YAML::Node& npcList,
+                      std::vector<NpcConfig>& out) const;
 };
 
 #endif

@@ -4,7 +4,7 @@ import yaml
 INPUT = "mapa_tiled.tmj"
 OUTPUT = "map_buildings.yaml"
 
-CITY_NAME = "Liberty City"  # cambialo si querés
+CITY_NAME = "Liberty City"
 
 with open(INPUT, "r", encoding="utf-8") as f:
     mapa = json.load(f)
@@ -32,7 +32,6 @@ for obj in layer["objects"]:
         "y": float(y_px),
         "w": float(w_px),
         "h": float(h_px),
-        # si tu juego espera radianes, después lo convertís al leer el YAML
         "angle": float(angle_deg),
     })
 

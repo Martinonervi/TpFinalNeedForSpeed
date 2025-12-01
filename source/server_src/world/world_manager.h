@@ -27,7 +27,6 @@ public:
     ~WorldManager();
     void step(float dt, int subSteps);
 
-    void mapLimits();
     EntityId createCarBody(b2Vec2 pos, float angleRad);
     EntityId createBuilding(float x, float y, float w, float h, float angleRad);
     EntityId createCheckpointSensor(float cx, float cy,
@@ -37,6 +36,7 @@ public:
     b2BodyId getBody(EntityId id) const;
 
     void destroyEntity(EntityId id);
+    void resetCheckpoints(std::unordered_map<ID, Checkpoint>& checkpoints);
 
 
 private:

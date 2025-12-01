@@ -10,24 +10,32 @@ Acceptor::Acceptor(Socket listen_sock, GameManager& game_manager_ref):
 void Acceptor::run() {
     try {
         while (should_keep_running()) {
+            try {
+                Socket peer = acceptor.accept();
 
-            Socket peer = acceptor.accept();
+                SendQPtr client_queue = std::make_shared<SendQ>();
+                auto h = std::make_unique<ClientHandler>(
+                    std::move(peer), ++last_id, client_queue, game_manager);
+                h->start();
+                handlers.push_back(std::move(h));
 
-            SendQPtr client_queue = std::make_shared<SendQ>();
-            auto h = std::make_unique<ClientHandler>(std::move(peer),++last_id, client_queue, game_manager);
-            h->start();
-            handlers.push_back(std::move(h));
+                for (auto& it : handlers)
+                    if (it) it->poll();
 
-            for (auto& it: handlers)
-                if (it)
-                    it->poll();  // checkeo señal del receiver para cerrar
-
-            reap_dead();
+                reap_dead();
+            } catch (const std::exception& e) {
+                if (!should_keep_running()) {
+                    break;
+                }
+                std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
+                break;
+            }
         }
     } catch (const std::exception& e) {
-        std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
+        if (should_keep_running()) {
+            std::cerr << "[Acceptor] fatal: " << e.what() << "\n";
+        }
     }
-
     kill_all();
 }
 

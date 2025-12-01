@@ -2,10 +2,16 @@
 
 #include "../common_src/queue.h"
 #include "../common_src/srv_msg/client_disconnect.h"
+#include "../common_src/srv_msg/playerstats.h"
 #include "../common_src/srv_msg/srv_car_hit_msg.h"
 #include "../common_src/srv_msg/srv_checkpoint_hit_msg.h"
 #include "../common_src/srv_msg/srv_current_info.h"
-#include "../common_src/srv_msg/playerstats.h"
+#include "../common_src/srv_msg/srv_disconnection.h"
+#include "../common_src/srv_msg/srv_race_finished.h"
+#include "../common_src/srv_msg/srv_recommended_path.h"
+#include "../common_src/srv_msg/srv_starting_game.h"
+#include "../common_src/srv_msg/srv_upgrade_logic.h"
+#include "../common_src/srv_msg/srv_npc_spawn.h"
 
 ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& receiverQueue)
     :protocol(protocol), receiverQueue(receiverQueue){}
@@ -16,10 +22,12 @@ void ClientReceiver::run(){
         try {
             op = protocol.readActionByte();
         } catch (...) {
-            peerClosed = true;
+            SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                    std::make_shared<SrvDisconnection>());
+            receiverQueue.push(base);
+            // peerClosed = true; // ????
             break;
         }
-
         switch (op) {
             case Opcode::Movement: {
                 PlayerState ps = protocol.recvSrvMsg();
@@ -93,6 +101,54 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                             std::make_shared<TimeLeft>(std::move(msg)));
                 receiverQueue.push(base);
+                break;
+            }
+            case Opcode::UPGRADE_SEND: {
+                SendUpgrade msg = protocol.recvUpgrade();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<SendUpgrade>(std::move(msg)));
+                receiverQueue.push(base);
+                //std::cout << "[client Receiver] upgrade: " << static_cast<int>(msg.getUpgrade()) << "y success: "
+                //<< msg.couldBuy() << "\n";
+                //1 true
+                //0 false
+                break;
+            }
+
+            case Opcode::UPGRADE_LOGIC: {
+                UpgradeLogic msg = protocol.recvUpgradeLogic();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<UpgradeLogic>(std::move(msg)));
+                receiverQueue.push(base);
+                break;
+            }
+            case Opcode::RECOMMENDED_PATH: {
+                RecommendedPath msg = protocol.recvRecommendedPath();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<RecommendedPath>(std::move(msg)));
+                receiverQueue.push(base);
+                break;
+            }
+            case Opcode::STARTING_GAME: {
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<StartingGame>());
+                receiverQueue.push(base);
+                break;
+            }
+            case Opcode::RACE_FINISHED: {
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<RaceFinished>());
+                receiverQueue.push(base);
+                std::cout << "[client Receiver] RACE_FINISHED\n";
+                break;
+            }
+            case Opcode::NPC_SPAWN: {
+                SrvNpcSpawn msg = protocol.recvNpcSpawn();
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<SrvNpcSpawn>(std::move(msg)));
+                receiverQueue.push(base);
+                std::cout << "[client Receiver] NPC RECIBIDO\n";
+                break;
             }
 
             default: {
@@ -102,6 +158,6 @@ void ClientReceiver::run(){
     }
 }
 
-bool ClientReceiver::is_listening() const { return !peerClosed; }
+/*bool ClientReceiver::is_listening() const { return !peerClosed; }*/
 
 

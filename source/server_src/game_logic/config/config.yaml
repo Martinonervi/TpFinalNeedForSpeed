@@ -1,0 +1,63 @@
+loops:
+  lobby_hz: 5.0
+  race_hz: 60.0
+
+lobby:
+  max_players: 8 #enunciado: 8
+  upgrades_phase_sec: 10.0 #enunciado: 10seg
+  pre_race_countdown_sec: 3.0
+  max_race_time_sec: 600.0 #enunciado: 10mins
+
+physics:
+  time_step: 0.0166667   # 1/60
+  sub_step_count: 4
+
+car_handling:
+  base_health: 100.0
+  max_fwd_speed: 50.0
+  max_bck_speed: -10.0
+  engine_impulse: 600.0
+  brake_accel: 100.0
+  max_angular_vel: 2.5
+  lateral_damp: 9.0
+
+collisions:
+  building:
+    min_impact_speed: 1.5
+    base_damage_factor: 0.6
+    min_frontal_alignment: 0.7
+    frontal_multiplier: 3.5
+    velocity_damp_factor: 0.5
+
+  car:
+    min_impact_speed: 1.5
+    base_damage_factor: 0.6
+    min_frontal_alignment: 0.7
+    frontal_multiplier: 3.5
+    velocity_damp_factor: 0.4
+
+upgrades:
+  - type: ENGINE_FORCE
+    factor: 2.5 #multi aceleracion
+    penalty: 8.0
+
+  - type: HEALTH
+    factor: 2.0 #multi vida
+    penalty: 5.0
+
+  - type: SHIELD
+    factor: 0.5 #mas chico, mas reduce daño
+    penalty: 4.0
+
+  - type: DAMAGE
+    factor: 2.0 #multi daño
+    penalty: 3.0
+
+cheats:
+  enabled: true
+  allow_health_cheat: true
+  allow_free_speed_cheat: true
+  allow_next_checkpoint_cheat: true
+  allow_win_race_cheat: true
+  allow_lost_race_cheat: true
+

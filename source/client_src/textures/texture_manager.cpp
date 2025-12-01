@@ -10,22 +10,28 @@ TextureManager::TextureManager(SDL2pp::Renderer& renderer)
 {
     flagTexture.emplace(renderer, CHECKPOINT_PATH);
     arrowTexture.emplace(renderer, "../assets/extras/arrow.png");
-    barsTexture.emplace(renderer, BARS_PATH);
+    healthNitroTexture.emplace(renderer, HEALTH_NITRO_PATH);
+    swordShieldTexture.emplace(renderer, SWORD_SHIELD_PATH);
     upgradeFrameTexture.emplace(renderer, "../assets/extras/item-frame.png");
+    upgradeTexture.emplace(renderer, UPGRADES_PATH);
 
-    hudManager.emplace(*barsTexture, *upgradeFrameTexture);
+    hudManager.emplace(*healthNitroTexture, *swordShieldTexture, *upgradeFrameTexture, *upgradeTexture);
 
     speedometerTexture.emplace(loadWithColorKey(renderer, SPEEDOMETER_PATH, 221, 221, 56));
     carsTexture.emplace(loadWithColorKey(renderer, CARS_PATH, 163, 163, 13));
     carManager.emplace(*carsTexture, *speedometerTexture);
 
-    peopleTexture.emplace(loadWithColorKey(renderer, PEOPLE_PATH, 163, 163, 13));
-    peopleManager.emplace(*peopleTexture);
-
     cityLibertyTexture.emplace(renderer, SDL2pp::Surface(LIBERTY_CITY_PATH));
+    cityLibertyOverTexture.emplace(renderer, SDL2pp::Surface(LIBERTY_OVER_PATH));
+
     citySanAndreasTexture.emplace(renderer, SDL2pp::Surface(SAN_ANDREAS_PATH));
     cityViceCityTexture.emplace(renderer, SDL2pp::Surface(VICE_CITY_PATH));
-    cityManager.emplace(*cityLibertyTexture, *citySanAndreasTexture, *cityViceCityTexture, *flagTexture, *arrowTexture);
+
+    startBackTexture.emplace(renderer, SDL2pp::Surface(START_BACK_PATH));
+
+    cityManager.emplace(*cityLibertyTexture, *cityLibertyOverTexture,
+        *citySanAndreasTexture, *cityViceCityTexture,
+        *flagTexture, *arrowTexture, *startBackTexture);
 
     explosionTextures.emplace(renderer, SDL2pp::Surface(EXPLOSION_PATH));
     effectsManager.emplace(*explosionTextures);
@@ -43,7 +49,6 @@ SDL2pp::Texture TextureManager::loadWithColorKey(SDL2pp::Renderer& renderer,
 }
 
 CarTexture& TextureManager::getCars() { return carManager.value(); }
-PeopleTexture& TextureManager::getPeople() { return peopleManager.value(); }
 CityTexture& TextureManager::getCities() { return cityManager.value(); }
 EffectsTexture& TextureManager::getEffects() { return effectsManager.value(); }
 HudTexture& TextureManager::getHud() { return hudManager.value(); }
