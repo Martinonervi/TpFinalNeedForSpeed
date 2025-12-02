@@ -251,7 +251,6 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             break;
         }
         case STARTING_GAME: {
-            std::cout << "STARTING_GAME" << std::endl;
             std::cout << countdown << std::endl;
             showScreen = false;
             startScreen.changeIsStart();

@@ -112,6 +112,7 @@ void Sender::run() {
                     break;
                 }
                 case Opcode::NPC_SPAWN: {
+                    if (!playing){continue;}
                     n = protocol.sendNpcSpawn(dynamic_cast<SrvNpcSpawn&>(*msg));
                     break;
                 }

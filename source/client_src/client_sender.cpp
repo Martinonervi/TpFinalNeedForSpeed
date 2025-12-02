@@ -39,11 +39,11 @@ void ClientSender::run(){
                 }
 
                 default: {
-                    std::cout << "comando desconocido: " << cliMsg->type() << "\n";
+                    std::cout << "[Client Sender] comando desconocido: " << cliMsg->type() << "\n";
                 }
             }
         } catch (const std::out_of_range& e) {
-            std::cout << "[Client Sender]cmd desconocido: " << "\n";
+            std::cout << "[Client Sender] cmd desconocido: " << "\n";
         } catch (const std::exception& e) {
             std::cerr << "client_main error: " << e.what() << "\n";
         }
