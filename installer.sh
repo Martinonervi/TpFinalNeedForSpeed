@@ -231,3 +231,10 @@ echo -e "${GREEN}Instalación completa.${NC}"
 echo -e "${GREEN}Podés ejecutar:${NC}"
 echo -e "  ${GREEN}nfs-client${NC}  (cliente)"
 echo -e "  ${GREEN}nfs-server${NC}  (servidor)"
+
+echo -e "  ${GREEN}EJECUTANDO PRUEBAS${NC}"
+
+cd ${INSTALL_DIR}/source/build-installer/
+
+
+./protocol_tests
