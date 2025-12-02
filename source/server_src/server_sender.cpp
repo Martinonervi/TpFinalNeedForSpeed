@@ -108,6 +108,7 @@ void Sender::run() {
                     break;
                 }
                 case Opcode::RACE_FINISHED: {
+                    if (!playing){continue;}
                     n = protocol.sendRaceFinished(dynamic_cast<RaceFinished&>(*msg));
                     break;
                 }
