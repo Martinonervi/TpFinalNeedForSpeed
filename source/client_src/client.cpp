@@ -82,5 +82,10 @@ void Client::join(){
     sender.join();
     std::cout << "[Client] Sender y Receiver joineados" <<std::endl;
 }
-void Client::close() { peer.close(); }
+void Client::close() {
+    try {
+        peer.shutdown(2);
+        peer.close();
+    }catch (...){}
+}
 
