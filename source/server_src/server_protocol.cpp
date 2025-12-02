@@ -433,7 +433,7 @@ int ServerProtocol::sendUpgrade(SendUpgrade& up) {
         Upgrade upgrade = up.getUpgrade();
         bool success = up.couldBuy();
 
-        std::vector<char> buf(sizeof(Op) + sizeof(Op));
+        std::vector<char> buf(sizeof(Op) + sizeof(Op) + sizeof(bool));
         size_t offset = 0;
 
         memcpy(buf.data() + offset, &opcode, sizeof(Op));
