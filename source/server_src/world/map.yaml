@@ -4832,12 +4832,11 @@ buildings:
     h: 6.02159170740811
     angle: 0.0
 
-  #90.0 mirando eje y
 
 npc_cars:
   - x: 439.0
     y: 664.0
-    angle: 180.0 #mirando ejex
+    angle: 180.0
     carType: green
   - x: 570.0
     y: 436.0
@@ -4846,63 +4845,59 @@ npc_cars:
   - x: 1349.0
     y: 756.0
     angle: 180.0
-    carType: red
+    carType: porsche
   - x: 2283.0
     y: 400.0
     angle: 180.0
     carType: red
-
   - x: 2062.0
     y: 722.0
     angle: 180.0
-    carType: red
+    carType: lightBlue
   - x: 2085.0
     y: 722.0
     angle: 180.0
-    carType: red
+    carType: jeep
   - x: 2108.0
     y: 722.0
     angle: 180.0
-    carType: red
-
+    carType: pickup
   - x: 2224.0
     y: 983.0
     angle: 180.0
-    carType: red
+    carType: limo
   - x: 2194.0
     y: 983.0
     angle: 0.0
     carType: red
-
   - x: 2894.0
     y: 1170.0
     angle: 0.0
-    carType: red
+    carType: pickup
   - x: 3056.0
     y: 1286.0
     angle: 180.0
-    carType: red
+    carType: green
   - x: 4430.0
     y: 1417.0
     angle: 180.0
-    carType: red
+    carType: lightBlue
   - x: 3299.0
     y: 1662.0
     angle: 180.0
-    carType: red
+    carType: lightBlue
   - x: 3595.0
     y: 1818.0
     angle: 180.0
     carType: red
-
   - x: 490.0
     y: 4210.0
     angle: 180.0
-    carType: red
+    carType: porsche
   - x: 520.0
     y: 4210.0
     angle: 180.0
-    carType: red
+    carType: jeep
   - x: 550.0
     y: 4210.0
     angle: 180.0
@@ -4911,12 +4906,10 @@ npc_cars:
     y: 4135.0
     angle: 270.0
     carType: red
-
   - x: 3040.0
     y: 1905.0
     angle: 90.0
-    carType: red
-
+    carType: porsche
   - x: 1771.0
     y: 4390.0
     angle: 90.0
@@ -4924,7 +4917,7 @@ npc_cars:
   - x: 1771.0
     y: 4434.0
     angle: 90.0
-    carType: red
+    carType: jeep
 
 
 routes:
