@@ -4,6 +4,11 @@
 #include "../common_src/srv_msg/metadatagames.h"
 #include "game_logic/server_gameloop.h"
 
+
+GameManager::GameManager()
+    :config(ConfigParser().load("../server_src/game_logic/config/config.yaml")){}
+
+
 std::pair<std::shared_ptr<gameLoopQueue>, ID>
 GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
     if (!sender_queue) {
@@ -11,9 +16,9 @@ GameManager::CreateJoinGame(ID game_id, SendQPtr sender_queue, ID client_id) {
     }
 
     if (game_id == 0) { // id estandar para crear partida
-        auto reg = std::make_shared<ClientsRegistry>();
+        auto reg = std::make_shared<ClientsRegistry>(config.lobby.maxPlayers);
         auto q = std::make_shared<gameLoopQueue>();
-        auto loop = std::make_unique<GameLoop>(q, reg);
+        auto loop = std::make_unique<GameLoop>(q, reg, config);
 
         reg->AddClient(sender_queue, client_id);
 

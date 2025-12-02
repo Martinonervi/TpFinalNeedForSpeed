@@ -25,8 +25,8 @@ using Clock = std::chrono::steady_clock;
 
 
 GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue,
-                   std::shared_ptr<ClientsRegistry> registry)
-    : config(ConfigParser().load("../server_src/game_logic/config/config.yaml"))
+                   std::shared_ptr<ClientsRegistry> registry, const Config& config)
+    : config(config)
     , maxPlayers(config.lobby.maxPlayers)
     , worldEvents()
     , worldManager(worldEvents)

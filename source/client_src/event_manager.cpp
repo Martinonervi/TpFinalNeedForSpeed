@@ -175,7 +175,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
                 cars[check_hit.getPlayerId()]->setState(DESTROYED);
             }
 
-            if ( myCarId == check_hit.getPlayerId() ) {
+            if ( myCarId == check_hit.getPlayerId() && checkpoints.count(nextCheckpoint)) {
                 audio.stopSound("checkpoint");
                 audio.playSound("checkpoint");
                 checkpoints[nextCheckpoint]->setInactive();
