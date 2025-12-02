@@ -42,9 +42,12 @@ void ClientSender::run(){
                     std::cout << "[Client Sender] comando desconocido: " << cliMsg->type() << "\n";
                 }
             }
+        } catch (ClosedQueue&) {
+            break;
         } catch (const std::out_of_range& e) {
             std::cout << "[Client Sender] cmd desconocido: " << "\n";
         } catch (const std::exception& e) {
+            if (!should_keep_running()) break; // salida correcta
             std::cerr << "client_main error: " << e.what() << "\n";
         }
     }

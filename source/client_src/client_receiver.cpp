@@ -17,127 +17,131 @@ ClientReceiver::ClientReceiver(ClientProtocol& protocol, Queue<SrvMsgPtr>& recei
     :protocol(protocol), receiverQueue(receiverQueue){}
 
 void ClientReceiver::run(){
-    while (should_keep_running()){
-        Op op;
-        try {
-            op = protocol.readActionByte();
-        } catch (...) {
-            SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                    std::make_shared<SrvDisconnection>());
-            receiverQueue.push(base);
-            // peerClosed = true; // ????
-            break;
+    try {
+        while (should_keep_running()){
+            Op op;
+            try {
+                op = protocol.readActionByte();
+            } catch (...) {
+                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                        std::make_shared<SrvDisconnection>());
+                try {
+                    receiverQueue.push(base);
+                } catch (ClosedQueue&) {}
+                // peerClosed = true; // ????
+                break;
+            }
+            switch (op) {
+                case Opcode::Movement: {
+                    PlayerState ps = protocol.recvSrvMsg();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<PlayerState>(std::move(ps)));
+                    //std::cout << "[client Receiver] movement, id:" << ps.getPlayerId() << "\n";
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::INIT_PLAYER: {
+                    SendPlayer sp = protocol.recvSendPlayer();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<SendPlayer>(std::move(sp)));
+                    receiverQueue.push(base);
+
+                    break;
+                } case Opcode::NEW_PLAYER: {
+                    NewPlayer sp = protocol.recvNewPlayer();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<NewPlayer>(std::move(sp)));
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::COLLISION: {
+                    SrvCarHitMsg msg = protocol.recvCollisionEvent();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<SrvCarHitMsg>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::CHECKPOINT_HIT: {
+                    SrvCheckpointHitMsg msg = protocol.recvCheckpointHitEvent();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<SrvCheckpointHitMsg>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::CLIENT_DISCONNECT: {
+                    ClientDisconnect msg = protocol.recvClientDisconnect();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<ClientDisconnect>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::CURRENT_INFO: {
+                    SrvCurrentInfo msg = protocol.recvCurrentInfo();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<SrvCurrentInfo>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::STATS: {
+                    PlayerStats msg = protocol.recvStats();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<PlayerStats>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::TIME: {
+                    TimeLeft msg = protocol.recvTimeLeft();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                                std::make_shared<TimeLeft>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::UPGRADE_SEND: {
+                    SendUpgrade msg = protocol.recvUpgrade();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                                std::make_shared<SendUpgrade>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+
+                case Opcode::UPGRADE_LOGIC: {
+                    UpgradeLogic msg = protocol.recvUpgradeLogic();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<UpgradeLogic>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::RECOMMENDED_PATH: {
+                    RecommendedPath msg = protocol.recvRecommendedPath();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<RecommendedPath>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::STARTING_GAME: {
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<StartingGame>());
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::RACE_FINISHED: {
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<RaceFinished>());
+                    receiverQueue.push(base);
+                    break;
+                }
+                case Opcode::NPC_SPAWN: {
+                    SrvNpcSpawn msg = protocol.recvNpcSpawn();
+                    SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
+                            std::make_shared<SrvNpcSpawn>(std::move(msg)));
+                    receiverQueue.push(base);
+                    break;
+                }
+
+                default: {
+                    std::cout << "[Client Receiver]comando desconocido: " << op << "\n";
+                }
+            }
         }
-        switch (op) {
-            case Opcode::Movement: {
-                PlayerState ps = protocol.recvSrvMsg();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<PlayerState>(std::move(ps)));
-                //std::cout << "[client Receiver] movement, id:" << ps.getPlayerId() << "\n";
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::INIT_PLAYER: {
-                SendPlayer sp = protocol.recvSendPlayer();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<SendPlayer>(std::move(sp)));
-                receiverQueue.push(base);
-
-                break;
-            } case Opcode::NEW_PLAYER: {
-                NewPlayer sp = protocol.recvNewPlayer();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<NewPlayer>(std::move(sp)));
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::COLLISION: {
-                SrvCarHitMsg msg = protocol.recvCollisionEvent();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<SrvCarHitMsg>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::CHECKPOINT_HIT: {
-                SrvCheckpointHitMsg msg = protocol.recvCheckpointHitEvent();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<SrvCheckpointHitMsg>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::CLIENT_DISCONNECT: {
-                ClientDisconnect msg = protocol.recvClientDisconnect();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<ClientDisconnect>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::CURRENT_INFO: {
-                SrvCurrentInfo msg = protocol.recvCurrentInfo();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<SrvCurrentInfo>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::STATS: {
-                PlayerStats msg = protocol.recvStats();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<PlayerStats>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::TIME: {
-                TimeLeft msg = protocol.recvTimeLeft();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                            std::make_shared<TimeLeft>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::UPGRADE_SEND: {
-                SendUpgrade msg = protocol.recvUpgrade();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                            std::make_shared<SendUpgrade>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-
-            case Opcode::UPGRADE_LOGIC: {
-                UpgradeLogic msg = protocol.recvUpgradeLogic();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<UpgradeLogic>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::RECOMMENDED_PATH: {
-                RecommendedPath msg = protocol.recvRecommendedPath();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<RecommendedPath>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::STARTING_GAME: {
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<StartingGame>());
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::RACE_FINISHED: {
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<RaceFinished>());
-                receiverQueue.push(base);
-                break;
-            }
-            case Opcode::NPC_SPAWN: {
-                SrvNpcSpawn msg = protocol.recvNpcSpawn();
-                SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
-                        std::make_shared<SrvNpcSpawn>(std::move(msg)));
-                receiverQueue.push(base);
-                break;
-            }
-
-            default: {
-                std::cout << "[Client Receiver]comando desconocido: " << op << "\n";
-            }
-        }
-    }
+    } catch (ClosedQueue&) {}
 }
