@@ -251,7 +251,7 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
             break;
         }
         case STARTING_GAME: {
-            std::cout << countdown << std::endl;
+            //std::cout << countdown << std::endl;
             showScreen = false;
             startScreen.changeIsStart();
             ups.clearButtons();
@@ -276,9 +276,9 @@ void EventManager::handleServerMessage(const SrvMsgPtr& msg, AudioManager& audio
                                                                 npcSpawn.getY(), npcSpawn.getCarType(),
                                                                 npcSpawn.getAngleRad());
             }
-            std::cout << npcSpawn.getId() << std::endl;
-            std::cout << npcSpawn.getX() << std::endl;
-            std::cout << npcSpawn.getY() << std::endl;
+            //std::cout << npcSpawn.getId() << std::endl;
+            //std::cout << npcSpawn.getX() << std::endl;
+            //std::cout << npcSpawn.getY() << std::endl;
 
             break;
         }
