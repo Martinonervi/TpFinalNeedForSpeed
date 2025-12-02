@@ -16,7 +16,7 @@ car_handling:
   base_health: 100.0
   max_fwd_speed: 50.0
   max_bck_speed: -10.0
-  engine_impulse: 600.0
+  engine_impulse: 800.0
   brake_accel: 100.0
   max_angular_vel: 2.5
   lateral_damp: 9.0

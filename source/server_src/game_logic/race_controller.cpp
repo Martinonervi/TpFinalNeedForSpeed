@@ -159,9 +159,6 @@ void RaceController::checkPlayersStatus() {
     for (ID idToDisconnect : toDisconnect) {
         disconnectHandler(idToDisconnect);
 
-        std::cout << "[RaceController] auto con id: "
-                  << idToDisconnect << " borrado\n";
-
         auto msg = std::static_pointer_cast<SrvMsg>(
             std::make_shared<ClientDisconnect>(idToDisconnect));
         registry.broadcast(msg);

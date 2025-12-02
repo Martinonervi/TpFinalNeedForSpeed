@@ -41,7 +41,6 @@ void ClientReceiver::run(){
                 SendPlayer sp = protocol.recvSendPlayer();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SendPlayer>(std::move(sp)));
-                std::cout << "[client Receiver] initPlayer, id:" << sp.getPlayerId() << "\n";
                 receiverQueue.push(base);
 
                 break;
@@ -49,7 +48,6 @@ void ClientReceiver::run(){
                 NewPlayer sp = protocol.recvNewPlayer();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<NewPlayer>(std::move(sp)));
-                std::cout << "[client Receiver] newPlayer, id:" << sp.getPlayerId() << "\n";
                 receiverQueue.push(base);
                 break;
             }
@@ -64,8 +62,6 @@ void ClientReceiver::run(){
                 SrvCheckpointHitMsg msg = protocol.recvCheckpointHitEvent();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SrvCheckpointHitMsg>(std::move(msg)));
-                std::cout << "[client Receiver] CHECKPOINT_HIT, id:" << msg.getCheckpointId()
-                          << "\n";
                 receiverQueue.push(base);
                 break;
             }
@@ -73,9 +69,6 @@ void ClientReceiver::run(){
                 ClientDisconnect msg = protocol.recvClientDisconnect();
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<ClientDisconnect>(std::move(msg)));
-                std::cout << "[client Receiver] CLIENT_DISCONNECT, id:"
-                << msg.getPlayerId()
-                << "\n";
                 receiverQueue.push(base);
                 break;
             }
@@ -91,9 +84,6 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<PlayerStats>(std::move(msg)));
                 receiverQueue.push(base);
-                std::cout << "[client Receiver] STATAS, ranking: "
-                          << static_cast<int>(msg.getRacePosition())
-                          << " y tiempo: " << msg.getTimeSecToComplete() << "\n";
                 break;
             }
             case Opcode::TIME: {
@@ -108,10 +98,6 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                             std::make_shared<SendUpgrade>(std::move(msg)));
                 receiverQueue.push(base);
-                //std::cout << "[client Receiver] upgrade: " << static_cast<int>(msg.getUpgrade()) << "y success: "
-                //<< msg.couldBuy() << "\n";
-                //1 true
-                //0 false
                 break;
             }
 
@@ -139,7 +125,6 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<RaceFinished>());
                 receiverQueue.push(base);
-                std::cout << "[client Receiver] RACE_FINISHED\n";
                 break;
             }
             case Opcode::NPC_SPAWN: {
@@ -147,17 +132,12 @@ void ClientReceiver::run(){
                 SrvMsgPtr base = std::static_pointer_cast<SrvMsg>(
                         std::make_shared<SrvNpcSpawn>(std::move(msg)));
                 receiverQueue.push(base);
-                std::cout << "[client Receiver] NPC RECIBIDO\n";
                 break;
             }
 
             default: {
-                std::cout << "comando desconocido: " << op << "\n";
+                std::cout << "[Client Receiver]comando desconocido: " << op << "\n";
             }
         }
     }
 }
-
-/*bool ClientReceiver::is_listening() const { return !peerClosed; }*/
-
-

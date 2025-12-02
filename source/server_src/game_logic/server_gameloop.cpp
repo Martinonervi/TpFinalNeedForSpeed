@@ -130,12 +130,6 @@ void GameLoop::createNpcCars() {
             Car(worldManager, npcId, pos, angleRad, type, config.carHandling)
         );
 
-        if (ok) {
-            b2BodyId body = it->second.getBody();
-            std::cout << "[NPC] creado id=" << npcId
-                      << " body=" << body.index1
-                      << " pos=(" << pos.x << "," << pos.y << ")\n";
-        }
     }
 }
 

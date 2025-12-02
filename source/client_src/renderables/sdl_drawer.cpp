@@ -65,7 +65,7 @@ void SdlDrawer::loadFont() {
     if (!font) {
         std::cerr << "Error cargando fuente: " << TTF_GetError() << std::endl;
     } else {
-        std::cout << "Fuente cargada correctamente." << std::endl;
+        //std::cout << "Fuente cargada correctamente." << std::endl;
     }
 }
 

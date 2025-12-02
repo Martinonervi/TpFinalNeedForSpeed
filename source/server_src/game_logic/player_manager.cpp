@@ -29,20 +29,20 @@ bool PlayerManager::initPlayer(Cmd& cmd) {
         std::make_shared<CarSelect>(!raceStarted));
     registry.sendTo(cmd.client_id, init_msg);
     if (raceStarted) {
-        std::cout << "[Player Manager] ya empezó"<< std::endl;
+        //std::cout << "[Player Manager] ya empezó"<< std::endl;
         return false;
     }
     const auto& ip  = dynamic_cast<const InitPlayer&>(*cmd.msg);
 
     if (spawnPoints.empty()) {
-        std::cerr << "[PlayerManager] ERROR: no hay spawnPoints cargados\n";
+        //std::cerr << "[PlayerManager] ERROR: no hay spawnPoints cargados\n";
         return false;
     }
 
     int chosenIndex = findFreeSpawnIndex();
 
     if (chosenIndex == -1) {
-        std::cerr << "[PlayerManager] WARNING: no hay spawn libre\n";
+        //std::cerr << "[PlayerManager] WARNING: no hay spawn libre\n";
         return false;
     }
 
@@ -224,13 +224,6 @@ void PlayerManager::disconnectPlayer(ID id) {
 }
 
 void PlayerManager::sendPlayerStats(const std::unordered_map<ID, PlayerGlobalStats>& globalStats) {
-    std::cout << "[PlayerManager] globalStats size = " << globalStats.size() << "\n";
-    for (auto& [id, stats] : globalStats) {
-        std::cout << "  playerId=" << id
-                  << " totalTime=" << stats.totalTime
-                  << " globalPos=" << (int)stats.globalPosition << "\n";
-    }
-
     for (auto& [id, car] : playerCars) {
         float   totalTime   = 0.0f;
         uint8_t globalPos   = 0;    // 0 = sin ranking (nunca terminó)
