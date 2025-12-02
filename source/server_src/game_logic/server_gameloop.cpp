@@ -49,9 +49,15 @@ GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue,
 {
     loadMapFromYaml(FILE_YAML_PATH);
 }
+
 CarType carTypeFromString(const std::string& s) {
     if (s == "green")  return CarType::CAR_GREEN;
     if (s == "red")    return CarType::CAR_RED;
+    if (s == "porsche") return CarType::CAR_PORSCHE;
+    if (s == "lightBlue") return CarType::CAR_LIGHT_BLUE;
+    if (s == "jeep") return CarType::CAR_JEEP;
+    if (s == "pickup") return CarType::CAR_PICKUP;
+    if (s == "limo") return CarType::CAR_LIMO;
     return CarType::CAR_GREEN;
 }
 
