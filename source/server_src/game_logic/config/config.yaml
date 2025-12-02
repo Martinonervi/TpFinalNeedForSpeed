@@ -3,7 +3,7 @@ loops:
   race_hz: 60.0
 
 lobby:
-  max_players: 2 #ACEPTA HASTA 8 JUGADORES
+  max_players: 8 #ACEPTA HASTA 8 JUGADORES
   upgrades_phase_sec: 10.0 #enunciado: 10seg
   pre_race_countdown_sec: 3.0
   max_race_time_sec: 600.0 #enunciado: 10mins

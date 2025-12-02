@@ -30,7 +30,8 @@ public:
                   std::unordered_map<ID, Car>& playerCars,
                   const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
                   const std::unordered_map<ID,Checkpoint>& checkpoints,
-                  const std::vector<UpgradeDef>& upgrades, const Config& config);
+                  const std::vector<UpgradeDef>& upgrades, const Config& config,
+                  uint8_t& raceIndex);
 
     // Devuelve true si se pudo crear el jugador (si había spawn)
     bool initPlayer(Cmd& cmd);
@@ -59,6 +60,7 @@ private:
     const std::unordered_map<ID,Checkpoint>& checkpoints;
     const std::vector<SpawnPointConfig>& spawnPoints;
     bool& raceStarted;
+    uint8_t& raceIndex;
 
     // manejo de spawns
     std::unordered_set<ID> usedSpawnIds;       // spawnId ocupados

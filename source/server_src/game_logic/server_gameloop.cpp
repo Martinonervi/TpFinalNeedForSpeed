@@ -37,7 +37,7 @@ GameLoop::GameLoop(std::shared_ptr<gameLoopQueue> queue,
                     raceEnded, raceRanking, lastRaceResults, config.collisions)
     , upgrades(config.upgrades)
     , playerManager(worldManager, *this->registry,playerCars,
-                    spawnPoints,raceStarted, checkpoints, upgrades, config)
+                    spawnPoints,raceStarted, checkpoints, upgrades, config, raceIndex)
     , lobbyController(this->queue,*this->registry, playerManager,
                       playerCars, upgrades, config, startRequested,
                       raceStarted, totalCars)

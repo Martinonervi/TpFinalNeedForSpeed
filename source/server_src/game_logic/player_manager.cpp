@@ -11,13 +11,20 @@ PlayerManager::PlayerManager(WorldManager& world,
                              const std::vector<SpawnPointConfig>& spawnPoints, bool& raceStarted,
                              const std::unordered_map<ID,Checkpoint>& checkpoints,
                              const std::vector<UpgradeDef>& upgrades,
-                             const Config& config):
+                             const Config& config, uint8_t& raceIndex):
     world(world), registry(registry),
     playerCars(playerCars), spawnPoints(spawnPoints),
-    raceStarted(raceStarted), checkpoints(checkpoints), upgrades(upgrades), config(config)
+    raceStarted(raceStarted), checkpoints(checkpoints), upgrades(upgrades),
+        config(config), raceIndex(raceIndex)
 {}
 
 bool PlayerManager::initPlayer(Cmd& cmd) {
+    if (raceIndex > 0) {
+        auto init_msg = std::static_pointer_cast<SrvMsg>(
+                std::make_shared<CarSelect>(false));
+        registry.sendTo(cmd.client_id, init_msg);
+        return false;
+    }
     auto init_msg = std::static_pointer_cast<SrvMsg>(
         std::make_shared<CarSelect>(!raceStarted));
     registry.sendTo(cmd.client_id, init_msg);
