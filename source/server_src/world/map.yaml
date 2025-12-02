@@ -4832,15 +4832,100 @@ buildings:
     h: 6.02159170740811
     angle: 0.0
 
+  #90.0 mirando eje y
+
 npc_cars:
-  - x: 84.6534238538261
-    y: 830.609337021205
-    angle: 180.0
+  - x: 439.0
+    y: 664.0
+    angle: 180.0 #mirando ejex
     carType: green
-  - x: 1000.00
-    y: 833.1747542023469
+  - x: 570.0
+    y: 436.0
+    angle: 0.0
+    carType: red
+  - x: 1349.0
+    y: 756.0
+    angle: 180.0
+    carType: red
+  - x: 2283.0
+    y: 400.0
+    angle: 180.0
+    carType: red
+
+  - x: 2062.0
+    y: 722.0
+    angle: 180.0
+    carType: red
+  - x: 2085.0
+    y: 722.0
+    angle: 180.0
+    carType: red
+  - x: 2108.0
+    y: 722.0
+    angle: 180.0
+    carType: red
+
+  - x: 2224.0
+    y: 983.0
+    angle: 180.0
+    carType: red
+  - x: 2194.0
+    y: 983.0
+    angle: 0.0
+    carType: red
+
+  - x: 2894.0
+    y: 1170.0
+    angle: 0.0
+    carType: red
+  - x: 3056.0
+    y: 1286.0
+    angle: 180.0
+    carType: red
+  - x: 4430.0
+    y: 1417.0
+    angle: 180.0
+    carType: red
+  - x: 3299.0
+    y: 1662.0
+    angle: 180.0
+    carType: red
+  - x: 3595.0
+    y: 1818.0
+    angle: 180.0
+    carType: red
+
+  - x: 490.0
+    y: 4210.0
+    angle: 180.0
+    carType: red
+  - x: 520.0
+    y: 4210.0
+    angle: 180.0
+    carType: red
+  - x: 550.0
+    y: 4210.0
+    angle: 180.0
+    carType: red
+  - x: 478.0
+    y: 4135.0
+    angle: 270.0
+    carType: red
+
+  - x: 3040.0
+    y: 1905.0
     angle: 90.0
     carType: red
+
+  - x: 1771.0
+    y: 4390.0
+    angle: 90.0
+    carType: red
+  - x: 1771.0
+    y: 4434.0
+    angle: 90.0
+    carType: red
+
 
 routes:
   - name: recorido1
