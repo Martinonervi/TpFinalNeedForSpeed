@@ -26,7 +26,13 @@ Para compilar y ejecutar el proyecto, ejecutar los siguientes comandos:
 chmod +x installer.sh
 ./installer.sh
 ```
+Entramos a la carpeta contenedora y damos permisos a los scripts correr el programa:
 
+```bash
+cd need-for-speed-tp
+chmod +x server.sh
+chmod +x client.sh
+```
 Luego, se podrá levantar el servidor ejecutando el siguiente comando:
 
 ```bash
