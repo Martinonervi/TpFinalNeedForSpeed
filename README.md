@@ -43,3 +43,4 @@ Y finalmente para conectar un cliente se puede ejecutar este último comando:
 ```bash
 ./client.sh
 ```
+Para más información o problemas a la hora de la instalación dentro del directorio ```docs``` se puede revisar el Manual de Usuario.
